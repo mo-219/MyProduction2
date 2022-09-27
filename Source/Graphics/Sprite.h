@@ -34,6 +34,18 @@ public:
 	// テクスチャ高さ取得
 	int GetTextureHeight() const { return textureHeight; }
 
+
+
+	// シェーダーリソースビューの設定
+	void SetShaderResourceView(const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& srv, int texWidth, int texHeight);
+
+	// 頂点バッファの取得
+	const Microsoft::WRL::ComPtr<ID3D11Buffer>& GetVertexBuffer() const { return vertexBuffer; }
+
+	// シェーダーリソースビューの取得
+	const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& GetShaderResourceView() const { return shaderResourceView; }
+
+
 private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>			vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader>			pixelShader;

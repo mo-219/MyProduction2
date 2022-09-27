@@ -2,6 +2,13 @@
 #include "Graphics/LambertShader.h"
 #include "Graphics/Graphics.h"
 
+// シェーダー用へっだーいんくるーど
+#include "Graphics/DefaultModelShader.h"
+#include "Graphics/DefaultSpriteShader.h"
+#include "Graphics/UVScrollShader.h"
+#include "Graphics/MaskShader.h"
+#include "Graphics/PhongShader.h"
+
 Graphics* Graphics::instance = nullptr;
 
 // コンストラクタ
@@ -132,6 +139,20 @@ Graphics::Graphics(HWND hWnd)
 	{
 		shader = std::make_unique<LambertShader>(device.Get());
 	}
+
+
+	// モデルシェーダー
+	{
+		modelShaders[static_cast<int>(ModelShaderId::Default)] = std::make_unique<DefaultModelShader>(device.Get());
+		modelShaders[static_cast<int>(ModelShaderId::Phong)] = std::make_unique<PhongShader>(device.Get());
+	}
+	// スプライトシェーダー
+	{
+		spriteShaders[static_cast<int>(SpriteShaderId::Default)] = std::make_unique<DefaultSpriteShader>(device.Get());
+		spriteShaders[static_cast<int>(SpriteShaderId::UVScroll)] = std::make_unique<UVScrollShader>(device.Get());
+		spriteShaders[static_cast<int>(SpriteShaderId::Mask)] = std::make_unique<MaskShader>(device.Get());
+	}
+
 
 	// レンダラ
 	{
