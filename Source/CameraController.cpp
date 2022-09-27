@@ -22,6 +22,7 @@ void CameraController::Update(float elapsedTime)
     if (angle.y > DirectX::XM_PI)  angle.y -= DirectX::XM_2PI;
     if (angle.y < DirectX::XM_PI)  angle.y += DirectX::XM_2PI;
 
+    angle.x = -18.0f;
 
 
     // ƒJƒƒ‰‚Ì‰ñ“]’l‚ð‰ñ“]s—ñ‚É•ÏŠ·

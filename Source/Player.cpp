@@ -15,7 +15,7 @@
 // コンストラクタ
 Player::Player()
 {
-    model = new Model("Data/Model/Mr.Incredible/Mr.Incredible.mdl");
+    model = new Model("Data/Model/Player.mdl");
 
     hitEffect = new Effect("Data/Effect/Hit.efk");
 

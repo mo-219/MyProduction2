@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<EffekseerProject>
+  <Option>
+    <LanguageSelector>ja</LanguageSelector>
+  </Option>
+  <Environment>
+    <Background>
+      <BackgroundColor>
+        <R>255</R>
+        <G>254</G>
+        <B>254</B>
+        <A>0</A>
+      </BackgroundColor>
+    </Background>
+  </Environment>
+  <Recording>
+    <RecordingWidth>1280</RecordingWidth>
+    <RecordingHeight>720</RecordingHeight>
+    <IsRecordingGuideShown>True</IsRecordingGuideShown>
+    <RecordingStartingFrame>10</RecordingStartingFrame>
+    <RecordingEndingFrame>110</RecordingEndingFrame>
+    <RecordingFrequency>10</RecordingFrequency>
+    <RecordingHorizontalCount>10</RecordingHorizontalCount>
+    <RecordingTransparentMethod>2</RecordingTransparentMethod>
+  </Recording>
+</EffekseerProject>
