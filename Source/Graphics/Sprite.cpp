@@ -355,3 +355,10 @@ void Sprite::Render(ID3D11DeviceContext *immediate_context,
 	}
 }
 
+// シェーダーリソースビューの設定
+void Sprite::SetShaderResourceView(const Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>& srv, int texWidth, int texHeight)
+{
+	shaderResourceView = srv;
+	textureWidth = texWidth;
+	textureHeight = texHeight;
+}
