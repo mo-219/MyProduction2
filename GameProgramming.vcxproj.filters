@@ -207,6 +207,10 @@
     <ClInclude Include="Source\Graphics\UVScrollShader.h">
       <Filter>Source\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Light.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\imgui\imgui.cpp">
@@ -347,6 +351,12 @@
     <ClCompile Include="Source\Graphics\UVScrollShader.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Light.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Texture.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\Debug.hlsli">
@@ -362,6 +372,18 @@
       <Filter>HLSL</Filter>
     </None>
     <None Include="HLSL\Sprite.hlsli">
+      <Filter>HLSL</Filter>
+    </None>
+    <None Include="HLSL\Mask.hlsli">
+      <Filter>HLSL</Filter>
+    </None>
+    <None Include="HLSL\Phong.hlsli">
+      <Filter>HLSL</Filter>
+    </None>
+    <None Include="HLSL\UVScroll.hlsli">
+      <Filter>HLSL</Filter>
+    </None>
+    <None Include="HLSL\Light.hlsli">
       <Filter>HLSL</Filter>
     </None>
   </ItemGroup>
@@ -394,6 +416,24 @@
       <Filter>HLSL</Filter>
     </FxCompile>
     <FxCompile Include="HLSL\SpritePS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\MaskPS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\MaskVS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\PhongPS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\PhongVS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\UVScrollPS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\UVScrollVS.hlsl">
       <Filter>HLSL</Filter>
     </FxCompile>
   </ItemGroup>

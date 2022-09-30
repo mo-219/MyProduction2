@@ -24,6 +24,25 @@ void SceneGame::Initialize()
 		graphics.GetScreenWidth() / graphics.GetScreenHeight(),
 		0.1f,
 		1000.0f);
+	{
+		// テクスチャを読み込む
+		texture = std::make_unique<Texture>("Data/Texture/Title.png");
+
+		// スプライト
+		sprite = std::make_unique<Sprite>();
+		sprite->SetShaderResourceView(texture->GetShaderResourceView(), texture->GetWidth(), texture->GetHeight());
+
+		// マスクテクスチャの読み込み
+		maskTexture = std::make_unique<Texture>("Data/Texture/dissolve_animation.png");
+		dissolveThreshold = 0.0f;
+		edgeThreshold = 0.2f; 			// 縁の閾値
+		edgeColor = { 1, 0, 0, 1 };		// 縁の色
+
+		// 平行光源を追加
+		directional_light = std::make_unique<Light>(LightType::Directional);
+		ambientLightColor = { 0.2f, 0.2f, 0.2f, 0.2f };
+
+	}
 
 	// カメラコントローラー初期化
 	cameraController = new CameraController();
@@ -38,6 +57,8 @@ void SceneGame::Initialize()
 	enemy = new EnemySlime();
 	enemy->setPosition(DirectX::XMFLOAT3{ 7, 0, 5 });
 	enemyManager.Register(enemy);
+
+
 }
 
 // 終了化
@@ -105,12 +126,25 @@ void SceneGame::Render()
 
 	// 描画処理
 	RenderContext rc;
-	rc.directionalLightData.direction = { 0.0f, -1.0f, 0.0f, 0.0f };	// ライト方向（下方向）
+	rc.deviceContext = dc;
+	rc.ambientLightColor = ambientLightColor;
+	rc.directionalLightData.direction.x = directional_light->GetDirection().x;
+	rc.directionalLightData.direction.y = directional_light->GetDirection().y;
+	rc.directionalLightData.direction.z = directional_light->GetDirection().z;
+	rc.directionalLightData.direction.w = 0;
+	rc.directionalLightData.color = directional_light->GetColor();
 
 	// カメラパラメータ設定
 	Camera& camera = Camera::Instance();
+	rc.viewPosition.x = camera.GetEye().x;
+	rc.viewPosition.y = camera.GetEye().y;
+	rc.viewPosition.z = camera.GetEye().z;
+	rc.viewPosition.w = 1;
 	rc.view = camera.GetView();
 	rc.projection = camera.GetProjection();
+
+	//rc.view = camera.GetView();
+	//rc.projection = camera.GetProjection();
 
 	// 01までの処理													
 #if 0
@@ -137,19 +171,17 @@ void SceneGame::Render()
 	}	 
 #endif	
 
-
 	// 3Dモデル描画
 	{
-		Shader* shader = graphics.GetShader();
-		shader->Begin(dc, rc);
+		ModelShader* shader = graphics.GetShader(ModelShaderId::Phong);
+		shader->Begin(rc);
+
 		// ステージ描画
-		stage->Render(dc, shader);
-		player->Render(dc,shader);
+		stage->Render(rc, shader);
+		player->Render(rc,shader);
+		EnemyManager::Instance().Render(rc, shader);
 
-		EnemyManager::Instance().Render(dc, shader);
-
-		shader->End(dc);
-
+		shader->End(rc);
 	}
 
 	//3Dエフェクト描画
@@ -169,11 +201,30 @@ void SceneGame::Render()
 
 		// デバッグレンダラ描画実行
 		graphics.GetDebugRenderer()->Render(dc, rc.view, rc.projection);
+
+		if (ImGui::TreeNode("Mask"))
+		{
+			ImGui::SliderFloat("Dissolve Threshold", &dissolveThreshold, 0.0f, 1.0f);
+			ImGui::SliderFloat("Edge Threshold", &edgeThreshold, 0.0f, 1.0f);
+			ImGui::ColorEdit4("Edge Color", &edgeColor.x);
+
+			ImGui::TreePop();
+		}
 	}
 
 	// 2Dスプライト描画
 	{
+		SpriteShader* shader = graphics.GetShader(SpriteShaderId::Mask);
+		shader->Begin(rc);
 
+		rc.uvScrollData = uvScrollData;
+		rc.maskData.maskTexture = maskTexture->GetShaderResourceView().Get();
+		rc.maskData.dissolveThreshold = dissolveThreshold;
+		rc.maskData.edgeThreshold = edgeThreshold;
+		rc.maskData.edgeColor = edgeColor;
+		shader->Draw(rc, sprite.get());
+
+		shader->End(rc);
 	}
 
 	// 2DデバッグGUI描画

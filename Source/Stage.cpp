@@ -38,6 +38,11 @@ void Stage::Render(ID3D11DeviceContext* dc, Shader* shader)
     shader->Draw(dc, model);
 }
 
+void Stage::Render(const RenderContext& rc, ModelShader* shader)
+{
+    shader->Draw(rc, model);
+}
+
 // レイキャスト
 bool Stage::RayCast(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hit)
 {

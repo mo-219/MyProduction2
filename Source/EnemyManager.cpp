@@ -40,6 +40,13 @@ void EnemyManager::Render(ID3D11DeviceContext* context, Shader* shader)
         enemy->Render(context, shader);
     }
 }
+void EnemyManager::Render(const RenderContext& rc, ModelShader* shader)
+{
+    for (Enemy* enemy : enemies)
+    {
+        enemy->Render(rc, shader);
+    }
+}
 
 // ƒGƒlƒ~[“o˜^
 void EnemyManager::Register(Enemy* enemy)

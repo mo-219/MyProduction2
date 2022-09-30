@@ -191,7 +191,7 @@ void LambertShader::Begin(ID3D11DeviceContext* dc, const RenderContext& rc)
 	DirectX::XMMATRIX P = DirectX::XMLoadFloat4x4(&rc.projection);
 	DirectX::XMStoreFloat4x4(&cbScene.viewProjection, V * P);
 
-	cbScene.lightDirection = rc.lightDirection;
+	cbScene.lightDirection = rc.directionalLightData.direction;
 	dc->UpdateSubresource(sceneConstantBuffer.Get(), 0, 0, &cbScene, 0, 0);
 }
 

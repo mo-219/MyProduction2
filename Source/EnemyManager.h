@@ -24,6 +24,7 @@ public:
 
     // •`‰æˆ—
     void Render(ID3D11DeviceContext* context, Shader* shader);
+    void Render(const RenderContext& rc, ModelShader* shader);
 
     // ƒGƒlƒ~[“o˜^
     void Register(Enemy* enemy);

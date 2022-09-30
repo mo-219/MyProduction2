@@ -113,6 +113,11 @@ void Player::Render(ID3D11DeviceContext* dc, Shader* shader)
     shader->Draw(dc, model);
 }
 
+void Player::Render(const RenderContext& rc, ModelShader* shader)
+{
+    shader->Draw(rc, model);
+}
+
 // デバッグ用GUI描画
 void Player::DrawDebugGUI()
 {
