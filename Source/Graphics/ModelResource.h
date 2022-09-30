@@ -130,6 +130,10 @@ protected:
 	// モデルセットアップ
 	void BuildModel(ID3D11Device* device, const char* dirname);
 
+	// テクスチャ読み込み
+	HRESULT LoadTexture(ID3D11Device* device, const char* filename, const char* suffix, bool dummy, ID3D11ShaderResourceView** srv, UINT dummy_color = 0xFFFFFFFF);
+
+
 	// シリアライズ
 	void Serialize(const char* filename);
 

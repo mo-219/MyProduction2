@@ -16,6 +16,8 @@ public:
 
     // •`‰æˆ—
     void Render(ID3D11DeviceContext* dc, Shader* shader) override;
+    void Render(const RenderContext& rc, ModelShader* shader) override;
+
 
 protected:
     // €–S‚µ‚½‚Æ‚«‚ÉŒÄ‚Î‚ê‚é

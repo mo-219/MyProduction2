@@ -69,7 +69,7 @@ dcl_temps 9
 //   v4.x <- pin.color.x; v4.y <- pin.color.y; v4.z <- pin.color.z; v4.w <- pin.color.w; 
 //   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
 //
-#line 8 "C:\Users\2210131\Desktop\個人製作\シェーダープログラミングⅠ\シェーダープログラミングⅠ\学生E"
+#line 8 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\PhongPS.hlsl"
 sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v3.xyxx, t0.xyzw, s0
 mul r0.xyzw, r0.xyzw, v4.xyzw  // r0.x <- diffuseColor.x; r0.y <- diffuseColor.y; r0.z <- diffuseColor.z; r0.w <- diffuseColor.w
 
@@ -112,7 +112,7 @@ mov r2.xyz, r2.xyzx
 mov r7.xyz, cb0[7].xyzx
 mov r5.xyz, r5.xyzx
 
-#line 22 "C:\Users\2210131\Desktop\個人製作\シェーダープログラミングⅠ\シェーダープログラミングⅠ\学生配布\UNIT03までのゲープロ実装\UNIT03\HLSL\Light.hlsli"
+#line 22 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\Light.hlsli"
 mov r8.xyz, -r2.xyzx
 dp3 r2.w, r1.xyzx, r8.xyzx
 max r2.w, r2.w, l(0.000000)
@@ -122,7 +122,7 @@ min r2.w, r2.w, l(1.000000)  // r2.w <- d
 mul r7.xyz, r2.wwww, r7.xyzx
 mul r5.xyz, r5.xyzx, r7.xyzx  // r5.x <- <CalcLambertDiffuse return value>.x; r5.y <- <CalcLambertDiffuse return value>.y; r5.z <- <CalcLambertDiffuse return value>.z
 
-#line 24 "C:\Users\2210131\Desktop\個人製作\シェーダープログラミングⅠ\シェーダープログラミングⅠ\学生E"
+#line 24 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\PhongPS.hlsl"
 mov r5.xyz, r5.xyzx  // r5.x <- directionalDiffuse.x; r5.y <- directionalDiffuse.y; r5.z <- directionalDiffuse.z
 
 #line 25
@@ -134,7 +134,7 @@ mov r3.xyz, r3.xyzx
 mov r1.w, r1.w
 mov r6.xyz, r6.xyzx
 
-#line 41 "C:\Users\2210131\Desktop\個人製作\シェーダープログラミングⅠ\シェーダープログラミングⅠ\学生配布\UNIT03までのゲープロ実装\UNIT03\HLSL\Light.hlsli"
+#line 41 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\Light.hlsli"
 dp3 r2.w, r2.xyzx, r1.xyzx
 add r2.w, r2.w, r2.w
 mov r2.w, -r2.w
@@ -155,7 +155,7 @@ exp r1.x, r1.x  // r1.x <- d
 mul r1.xyz, r1.xxxx, r7.xyzx
 mul r1.xyz, r6.xyzx, r1.xyzx  // r1.x <- <CalcPhongSpecular return value>.x; r1.y <- <CalcPhongSpecular return value>.y; r1.z <- <CalcPhongSpecular return value>.z
 
-#line 25 "C:\Users\2210131\Desktop\個人製作\シェーダープログラミングⅠ\シェーダープログラミングⅠ\学生E"
+#line 25 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\PhongPS.hlsl"
 mov r1.xyz, r1.xyzx  // r1.x <- directionalSpecular.x; r1.y <- directionalSpecular.y; r1.z <- directionalSpecular.z
 
 #line 27

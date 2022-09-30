@@ -8,7 +8,6 @@
 // {
 //
 //   row_major float4x4 viewProjection; // Offset:    0 Size:    64
-//   float4 lightDirection;             // Offset:   64 Size:    16
 //
 // }
 //
@@ -42,7 +41,7 @@
 // Name                 Index   Mask Register SysValue  Format   Used
 // -------------------- ----- ------ -------- -------- ------- ------
 // POSITION                 0   xyzw        0     NONE   float   xyzw
-// NORMAL                   0   xyz         1     NONE   float   xyz 
+// NORMAL                   0   xyz         1     NONE   float       
 // TANGENT                  0   xyz         2     NONE   float       
 // TEXCOORD                 0   xy          3     NONE   float   xy  
 // COLOR                    0   xyzw        4     NONE   float   xyzw
@@ -68,11 +67,10 @@ dcl_immediateConstantBuffer { { 1.000000, 0, 0, 0},
                               { 0, -1, 0, 0},
                               { 0, 0, -1, 0},
                               { 0, 0, 0, -1} }
-dcl_constantbuffer CB0[5], immediateIndexed
+dcl_constantbuffer CB0[4], immediateIndexed
 dcl_constantbuffer CB1[512], dynamicIndexed
 dcl_constantbuffer CB2[1], immediateIndexed
 dcl_input v0.xyzw
-dcl_input v1.xyz
 dcl_input v3.xy
 dcl_input v4.xyzw
 dcl_input v5.xyzw
@@ -80,7 +78,7 @@ dcl_input v6.xyzw
 dcl_output_siv o0.xyzw, position
 dcl_output o1.xy
 dcl_output o2.xyzw
-dcl_temps 6
+dcl_temps 5
 //
 // Initial variable locations:
 //   v0.x <- position.x; v0.y <- position.y; v0.z <- position.z; v0.w <- position.w; 
@@ -94,103 +92,55 @@ dcl_temps 6
 //   o1.x <- <main return value>.texcoord.x; o1.y <- <main return value>.texcoord.y; 
 //   o0.x <- <main return value>.position.x; o0.y <- <main return value>.position.y; o0.z <- <main return value>.position.z; o0.w <- <main return value>.position.w
 //
-#line 14 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\LambertVS.hlsl"
+#line 14 "C:\Users\2210131\Desktop\個人製作\シェーダープログラミングⅠ\シェーダープログラミングⅠ\学生E"
 itof r0.xyz, l(0, 0, 0, 0)  // r0.x <- p.x; r0.y <- p.y; r0.z <- p.z
-
-#line 15
-itof r1.xyz, l(0, 0, 0, 0)  // r1.x <- n.x; r1.y <- n.y; r1.z <- n.z
 
 #line 16
 mov r0.w, l(0)  // r0.w <- i
-mov r2.xyz, r1.xyzx  // r2.x <- n.x; r2.y <- n.y; r2.z <- n.z
-mov r3.x, r0.x  // r3.x <- p.x
-mov r3.y, r0.y  // r3.y <- p.y
-mov r3.z, r0.z  // r3.z <- p.z
+mov r1.xyz, r0.xyzx  // r1.x <- p.x; r1.y <- p.y; r1.z <- p.z
 mov r1.w, r0.w  // r1.w <- i
 loop 
-  ilt r2.w, r1.w, l(4)
-  breakc_z r2.w
+  ilt r2.x, r1.w, l(4)
+  breakc_z r2.x
 
 #line 18
-  dp4 r2.w, v5.xyzw, icb[r1.w + 0].xyzw
-  and r4.xyzw, v6.xyzw, icb[r1.w + 4].xyzw
-  or r4.xy, r4.ywyy, r4.xzxx
-  or r3.w, r4.y, r4.x
-  imul null, r3.w, r3.w, l(4)
-  mul r4.xyz, v0.xxxx, cb1[r3.w + 0].xyzx
-  mul r5.xyz, v0.yyyy, cb1[r3.w + 1].xyzx
-  add r4.xyz, r4.xyzx, r5.xyzx
-  mul r5.xyz, v0.zzzz, cb1[r3.w + 2].xyzx
-  add r4.xyz, r4.xyzx, r5.xyzx
-  mul r5.xyz, v0.wwww, cb1[r3.w + 3].xyzx
-  add r4.xyz, r4.xyzx, r5.xyzx
-  mul r4.xyz, r2.wwww, r4.xyzx
-  add r3.xyz, r4.xyzx, r3.xyzx
-
-#line 19
-  dp4 r2.w, v5.xyzw, icb[r1.w + 0].xyzw
-  itof r3.w, l(0)
-  and r4.xyzw, v6.xyzw, icb[r1.w + 4].xyzw
-  or r4.xy, r4.ywyy, r4.xzxx
-  or r4.x, r4.y, r4.x
-  imul null, r4.x, r4.x, l(4)
-  mul r4.yzw, v1.xxxx, cb1[r4.x + 0].xxyz
-  mul r5.xyz, v1.yyyy, cb1[r4.x + 1].xyzx
-  add r4.yzw, r4.yyzw, r5.xxyz
-  mul r5.xyz, v1.zzzz, cb1[r4.x + 2].xyzx
-  add r4.yzw, r4.yyzw, r5.xxyz
-  mul r5.xyz, r3.wwww, cb1[r4.x + 3].xyzx
-  add r4.xyz, r4.yzwy, r5.xyzx
-  mul r4.xyz, r2.wwww, r4.xyzx
-  add r2.xyz, r2.xyzx, r4.xyzx
+  dp4 r2.x, v5.xyzw, icb[r1.w + 0].xyzw
+  and r3.xyzw, v6.xyzw, icb[r1.w + 4].xyzw
+  or r2.yz, r3.yywy, r3.xxzx
+  or r2.y, r2.z, r2.y
+  imul null, r2.y, r2.y, l(4)
+  mul r3.xyz, v0.xxxx, cb1[r2.y + 0].xyzx
+  mul r4.xyz, v0.yyyy, cb1[r2.y + 1].xyzx
+  add r3.xyz, r3.xyzx, r4.xyzx
+  mul r4.xyz, v0.zzzz, cb1[r2.y + 2].xyzx
+  add r3.xyz, r3.xyzx, r4.xyzx
+  mul r2.yzw, v0.wwww, cb1[r2.y + 3].xxyz
+  add r2.yzw, r2.yyzw, r3.xxyz
+  mul r2.xyz, r2.yzwy, r2.xxxx
+  add r1.xyz, r1.xyzx, r2.xyzx
 
 #line 20
   iadd r1.w, r1.w, l(1)
 endloop 
 
 #line 23
-mul r0.xyzw, r3.xxxx, cb0[0].xyzw
-mul r1.xyzw, r3.yyyy, cb0[1].xyzw
-add r0.xyzw, r0.xyzw, r1.xyzw
-mul r1.xyzw, r3.zzzz, cb0[2].xyzw
+mul r0.xyzw, r1.xxxx, cb0[0].xyzw
+mul r2.xyzw, r1.yyyy, cb0[1].xyzw
+add r0.xyzw, r0.xyzw, r2.xyzw
+mul r1.xyzw, r1.zzzz, cb0[2].xyzw
 add r0.xyzw, r0.xyzw, r1.xyzw
 mul r1.xyzw, cb0[3].xyzw, l(1.000000, 1.000000, 1.000000, 1.000000)
 add r0.xyzw, r0.xyzw, r1.xyzw  // r0.x <- vout.position.x; r0.y <- vout.position.y; r0.z <- vout.position.z; r0.w <- vout.position.w
 
+#line 24
+mul r1.xyzw, v4.xyzw, cb2[0].xyzw  // r1.x <- vout.color.x; r1.y <- vout.color.y; r1.z <- vout.color.z; r1.w <- vout.color.w
+
 #line 25
-dp3 r1.x, r2.xyzx, r2.xyzx
-rsq r1.x, r1.x
-mul r1.xyz, r1.xxxx, r2.xyzx  // r1.x <- N.x; r1.y <- N.y; r1.z <- N.z
-
-#line 26
-mov r2.xyz, -cb0[4].xyzx
-dp3 r1.w, r2.xyzx, r2.xyzx
-rsq r1.w, r1.w
-mul r2.xyz, r1.wwww, r2.xyzx  // r2.x <- L.x; r2.y <- L.y; r2.z <- L.z
-
-#line 27
-dp3 r1.x, r2.xyzx, r1.xyzx  // r1.x <- d
-
-#line 28
-itof r1.y, l(0)
-max r1.x, r1.x, r1.y
-mul r1.x, r1.x, l(0.500000)
-add r1.x, r1.x, l(0.500000)  // r1.x <- power
-
-#line 29
-mul r1.yzw, v4.xxyz, cb2[0].xxyz
-mul r1.xyz, r1.xxxx, r1.yzwy  // r1.x <- vout.color.x; r1.y <- vout.color.y; r1.z <- vout.color.z
-
-#line 30
-mul r1.w, v4.w, cb2[0].w  // r1.w <- vout.color.w
-
-#line 31
 mov r2.xy, v3.xyxx  // r2.x <- vout.texcoord.x; r2.y <- vout.texcoord.y
 
-#line 33
+#line 26
 mov o0.xyzw, r0.xyzw
-mov o2.xyz, r1.xyzx
-mov o2.w, r1.w
+mov o2.xyzw, r1.xyzw
 mov o1.xy, r2.xyxx
 ret 
-// Approximately 70 instruction slots used
+// Approximately 36 instruction slots used

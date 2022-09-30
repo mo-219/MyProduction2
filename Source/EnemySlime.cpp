@@ -39,6 +39,11 @@ void EnemySlime::Render(ID3D11DeviceContext* dc, Shader* shader)    // ID3D11Dev
     shader->Draw(dc, model);
 }
 
+void EnemySlime::Render(const RenderContext& rc, ModelShader* shader)    // ID3D11DeviceContextがdcになってる　エラー出たらcontextに変更
+{
+    shader->Draw(rc, model);
+}
+
 // 死亡処理
 void EnemySlime::OnDead()
 {
