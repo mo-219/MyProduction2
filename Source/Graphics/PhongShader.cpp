@@ -5,24 +5,24 @@ PhongShader::PhongShader(ID3D11Device* device)
 {
 	// 頂点シェーダー
 	{
-		// ファイルを開く
-		FILE* fp = nullptr;
-		fopen_s(&fp, "Shader\\PhongVS.cso", "rb");
-		_ASSERT_EXPR_A(fp, "CSO File not found");
+		//// ファイルを開く
+		//FILE* fp = nullptr;
+		//fopen_s(&fp, "Shader\\PhongVS.cso", "rb");
+		//_ASSERT_EXPR_A(fp, "CSO File not found");
 
-		// ファイルのサイズを求める
-		fseek(fp, 0, SEEK_END);
-		long csoSize = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
+		//// ファイルのサイズを求める
+		//fseek(fp, 0, SEEK_END);
+		//long csoSize = ftell(fp);
+		//fseek(fp, 0, SEEK_SET);
 
-		// メモリ上に頂点シェーダーデータを格納する領域を用意する
-		std::unique_ptr<u_char[]> csoData = std::make_unique<u_char[]>(csoSize);
-		fread(csoData.get(), csoSize, 1, fp);
-		fclose(fp);
+		//// メモリ上に頂点シェーダーデータを格納する領域を用意する
+		//std::unique_ptr<u_char[]> csoData = std::make_unique<u_char[]>(csoSize);
+		//fread(csoData.get(), csoSize, 1, fp);
+		//fclose(fp);
 
-		// 頂点シェーダー生成
-		HRESULT hr = device->CreateVertexShader(csoData.get(), csoSize, nullptr, vertexShader.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+		//// 頂点シェーダー生成
+		//HRESULT hr = device->CreateVertexShader(csoData.get(), csoSize, nullptr, vertexShader.GetAddressOf());
+		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
 		// 入力レイアウト
 		D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
@@ -35,30 +35,41 @@ PhongShader::PhongShader(ID3D11Device* device)
 			{ "WEIGHTS",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "BONES",    0, DXGI_FORMAT_R32G32B32A32_UINT,  0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
-		hr = device->CreateInputLayout(inputElementDesc, ARRAYSIZE(inputElementDesc), csoData.get(), csoSize, inputLayout.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+		//hr = device->CreateInputLayout(inputElementDesc, ARRAYSIZE(inputElementDesc), csoData.get(), csoSize, inputLayout.GetAddressOf());
+		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+	
+		// 頂点シェーダー生成
+		create_vs_from_cso(device, "Shader\\PhongVS.cso",
+			vertexShader.GetAddressOf(),
+			inputLayout.GetAddressOf(),
+			inputElementDesc, ARRAYSIZE(inputElementDesc));
+
 	}
 
 	// ピクセルシェーダー
 	{
-		// ファイルを開く
-		FILE* fp = nullptr;
-		fopen_s(&fp, "Shader\\PhongPS.cso", "rb");
-		_ASSERT_EXPR_A(fp, "CSO File not found");
+		//// ファイルを開く
+		//FILE* fp = nullptr;
+		//fopen_s(&fp, "Shader\\PhongPS.cso", "rb");
+		//_ASSERT_EXPR_A(fp, "CSO File not found");
 
-		// ファイルのサイズを求める
-		fseek(fp, 0, SEEK_END);
-		long csoSize = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
+		//// ファイルのサイズを求める
+		//fseek(fp, 0, SEEK_END);
+		//long csoSize = ftell(fp);
+		//fseek(fp, 0, SEEK_SET);
 
-		// メモリ上に頂点シェーダーデータを格納する領域を用意する
-		std::unique_ptr<u_char[]> csoData = std::make_unique<u_char[]>(csoSize);
-		fread(csoData.get(), csoSize, 1, fp);
-		fclose(fp);
+		//// メモリ上に頂点シェーダーデータを格納する領域を用意する
+		//std::unique_ptr<u_char[]> csoData = std::make_unique<u_char[]>(csoSize);
+		//fread(csoData.get(), csoSize, 1, fp);
+		//fclose(fp);
 
-		// ピクセルシェーダー生成
-		HRESULT hr = device->CreatePixelShader(csoData.get(), csoSize, nullptr, pixelShader.GetAddressOf());
-		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+		//// ピクセルシェーダー生成
+		//HRESULT hr = device->CreatePixelShader(csoData.get(), csoSize, nullptr, pixelShader.GetAddressOf());
+		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+
+			// ピクセルシェーダー生成
+		create_ps_from_cso(device, "Shader\\PhongPS.cso", pixelShader.GetAddressOf());
+
 	}
 
 	// 定数バッファ

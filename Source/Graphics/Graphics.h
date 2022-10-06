@@ -16,6 +16,8 @@ enum class ModelShaderId
 	Default,
 	Phong,
 
+	ShadowmapCaster,
+
 	Max
 };
 
@@ -24,6 +26,7 @@ enum class SpriteShaderId
 	Default,
 	UVScroll,
 	Mask,
+	GaussianBlur,
 
 	Max
 };

@@ -9,6 +9,7 @@
 //
 //   row_major float4x4 viewProjection; // Offset:    0 Size:    64
 //   float4 lightDirection;             // Offset:   64 Size:    16
+//   row_major float4x4 world;          // Offset:   80 Size:    64 [unused]
 //
 // }
 //

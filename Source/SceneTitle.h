@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Graphics/Sprite.h"
+#include "Graphics/Texture.h"
 #include "Scene.h"
 
 // タイトルシーン
@@ -17,7 +18,8 @@ public:
     void Render() override;                      // 描画処理
 
 private:
-    Sprite* sprite = nullptr;
+    std::unique_ptr<Texture>	texture;
+    std::unique_ptr<Sprite>		sprite;
 
 
 };

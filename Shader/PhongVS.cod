@@ -18,6 +18,7 @@
 //       float4 color;                  // Offset:  112
 //
 //   } directionalLightData;            // Offset:   96 Size:    32 [unused]
+//   row_major float4x4 world;          // Offset:  128 Size:    64 [unused]
 //
 // }
 //
@@ -68,6 +69,7 @@
 // NORMAL                   0   xyz         2     NONE   float   xyz 
 // TEXCOORD                 0   xy          3     NONE   float   xy  
 // COLOR                    0   xyzw        4     NONE   float   xyzw
+// TEXCOORD                 1   xyz         5     NONE   float       
 //
 vs_5_0
 dcl_globalFlags refactoringAllowed | skipOptimization
@@ -103,6 +105,7 @@ dcl_temps 6
 //   v4.x <- color.x; v4.y <- color.y; v4.z <- color.z; v4.w <- color.w; 
 //   v5.x <- boneWeights.x; v5.y <- boneWeights.y; v5.z <- boneWeights.z; v5.w <- boneWeights.w; 
 //   v6.x <- boneIndices.x; v6.y <- boneIndices.y; v6.z <- boneIndices.z; v6.w <- boneIndices.w; 
+//   o5.x <- <main return value>.shadow_texcoord.x; o5.y <- <main return value>.shadow_texcoord.y; o5.z <- <main return value>.shadow_texcoord.z; 
 //   o4.x <- <main return value>.color.x; o4.y <- <main return value>.color.y; o4.z <- <main return value>.color.z; o4.w <- <main return value>.color.w; 
 //   o3.x <- <main return value>.texcoord.x; o3.y <- <main return value>.texcoord.y; 
 //   o2.x <- <main return value>.normal.x; o2.y <- <main return value>.normal.y; o2.z <- <main return value>.normal.z; 

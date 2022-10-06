@@ -9,25 +9,35 @@
 // 初期化
 void SceneTitle::Initialize()
 {
-    // スプライト初期化
-    sprite = new Sprite("Data/Sprite/Title.png");
+    texture = std::make_unique<Texture>("Data/Texture/Title.png");
+    sprite = std::make_unique<Sprite>();
+
+    sprite->SetShaderResourceView(texture->GetShaderResourceView(), texture->GetWidth(), texture->GetHeight());
 }
 
 // 終了化
 void SceneTitle::Finalize()
 {
-    // スプライト終了化
-    if (sprite != nullptr)
-    {
-        delete sprite;
-        sprite = nullptr;
-    }
+    //// スプライト終了化
+    //if (sprite != nullptr)
+    //{
+    //    delete sprite;
+    //    sprite = nullptr;
+    //}
 }
 
 // 更新処理
 void SceneTitle::Update(float elapsedTime)
 {
     GamePad& gamePad = Input::Instance().GetGamePad();
+
+    sprite->Update(0.0f, 0.0f,
+        Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight(),
+        0.0f, 0.0f,
+        static_cast<float>(texture->GetWidth()), static_cast<float>(texture->GetHeight()),
+        0.0f,
+        1.0f, 1.0f, 1.0f, 1.0f);
+
 
     // 何かボタンを押したらゲームシーンへ切り替え
     const GamePadButton anyButton = GamePad::BTN_UP
@@ -67,18 +77,21 @@ void SceneTitle::Render()
     dc->ClearDepthStencilView(dsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
     dc->OMSetRenderTargets(1, &rtv, dsv);
 
+    RenderContext rc;
+    rc.deviceContext = dc;
+
     // 2Dスプライト描画
     {
-        float screenWidth = static_cast<float>(graphics.GetScreenWidth());
-        float screenHeight = static_cast<float>(graphics.GetScreenHeight());
-        float textureWidth = static_cast<float>(sprite->GetTextureWidth());
-        float textureHeight = static_cast<float>(sprite->GetTextureHeight());
+        SpriteShader* shader = graphics.GetShader(SpriteShaderId::Default);
 
-        // タイトルスプライト描画
-        sprite->Render(dc,
-                       0, 0, screenWidth, screenHeight,
-                       0, 0, textureWidth, textureHeight,
-                       0, 
-                       1, 1, 1, 1);
+        // 描画開始
+        shader->Begin(rc);
+
+        // 描画
+        shader->Draw(rc, sprite.get());
+
+        // 描画終了
+        shader->End(rc);
     }
+
 }
