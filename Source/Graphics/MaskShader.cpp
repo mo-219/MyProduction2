@@ -192,7 +192,7 @@ void MaskShader::Draw(const RenderContext& rc, const Sprite* sprite)
 	ID3D11ShaderResourceView* srvs[] =
 	{
 		sprite->GetShaderResourceView().Get(),
-		rc.maskData.maskTexture,
+		/*rc.maskData.maskTexture,*/
 	};
 	rc.deviceContext->PSSetShaderResources(0, ARRAYSIZE(srvs), srvs);
 

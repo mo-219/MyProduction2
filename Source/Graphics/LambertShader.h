@@ -21,6 +21,8 @@ private:
 	{
 		DirectX::XMFLOAT4X4	viewProjection;
 		DirectX::XMFLOAT4	lightDirection;
+		DirectX::XMFLOAT4X4	world;
+
 	};
 
 	struct CbMesh
@@ -47,4 +49,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState>	depthStencilState;
 
 	Microsoft::WRL::ComPtr<ID3D11SamplerState>		samplerState;
+
+
 };

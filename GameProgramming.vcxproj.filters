@@ -49,6 +49,9 @@
     <Filter Include="Source\Character\Projectile">
       <UniqueIdentifier>{28054b87-e3e0-4211-be0d-3e96e6b7dcd8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="HLSL\SelfMade">
+      <UniqueIdentifier>{278121be-bb64-4ed8-816f-61bed4c60d07}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\imgui\imconfig.h">
@@ -210,7 +213,21 @@
     <ClInclude Include="Source\Light.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Graphics\Texture.h" />
+    <ClInclude Include="Source\Graphics\ShadowmapCasterShader.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\DepthStencil.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\GaussianBlurShader.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\RenderTarget.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Texture.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\imgui\imgui.cpp">
@@ -357,6 +374,21 @@
     <ClCompile Include="Source\Graphics\Texture.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Shader.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\ShadowmapCasterShader.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\DepthStencil.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\GaussianBlurShader.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\RenderTarget.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\Debug.hlsli">
@@ -384,6 +416,27 @@
       <Filter>HLSL</Filter>
     </None>
     <None Include="HLSL\Light.hlsli">
+      <Filter>HLSL</Filter>
+    </None>
+    <None Include="HLSL\color_filter.hlsli">
+      <Filter>HLSL\SelfMade</Filter>
+    </None>
+    <None Include="HLSL\filter_functions.hlsli">
+      <Filter>HLSL\SelfMade</Filter>
+    </None>
+    <None Include="HLSL\lights.hlsli">
+      <Filter>HLSL\SelfMade</Filter>
+    </None>
+    <None Include="HLSL\phong_shader.hlsli">
+      <Filter>HLSL\SelfMade</Filter>
+    </None>
+    <None Include="HLSL\shading_functions.hlsli">
+      <Filter>HLSL\SelfMade</Filter>
+    </None>
+    <None Include="HLSL\ShadowmapCaster.hlsli">
+      <Filter>HLSL</Filter>
+    </None>
+    <None Include="HLSL\GaussianBlur.hlsli">
       <Filter>HLSL</Filter>
     </None>
   </ItemGroup>
@@ -434,6 +487,27 @@
       <Filter>HLSL</Filter>
     </FxCompile>
     <FxCompile Include="HLSL\UVScrollVS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\color_filter_ps.hlsl">
+      <Filter>HLSL\SelfMade</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\color_filter_vs.hlsl">
+      <Filter>HLSL\SelfMade</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\phong_shader_ps.hlsl">
+      <Filter>HLSL\SelfMade</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\phong_shader_vs.hlsl">
+      <Filter>HLSL\SelfMade</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\ShadowmapCasterVS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\GaussianBlurPS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\GaussianBlurVS.hlsl">
       <Filter>HLSL</Filter>
     </FxCompile>
   </ItemGroup>

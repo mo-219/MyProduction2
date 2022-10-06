@@ -18,6 +18,7 @@
 //       float4 color;                  // Offset:  112
 //
 //   } directionalLightData;            // Offset:   96 Size:    32
+//   row_major float4x4 world;          // Offset:  128 Size:    64 [unused]
 //
 // }
 //
@@ -41,6 +42,7 @@
 // NORMAL                   0   xyz         2     NONE   float   xyz 
 // TEXCOORD                 0   xy          3     NONE   float   xy  
 // COLOR                    0   xyzw        4     NONE   float   xyzw
+// TEXCOORD                 1   xyz         5     NONE   float       
 //
 //
 // Output signature:
@@ -59,7 +61,7 @@ dcl_input_ps linear v2.xyz
 dcl_input_ps linear v3.xy
 dcl_input_ps linear v4.xyzw
 dcl_output o0.xyzw
-dcl_temps 9
+dcl_temps 8
 //
 // Initial variable locations:
 //   v0.x <- pin.position.x; v0.y <- pin.position.y; v0.z <- pin.position.z; v0.w <- pin.position.w; 
@@ -67,110 +69,106 @@ dcl_temps 9
 //   v2.x <- pin.normal.x; v2.y <- pin.normal.y; v2.z <- pin.normal.z; 
 //   v3.x <- pin.texcoord.x; v3.y <- pin.texcoord.y; 
 //   v4.x <- pin.color.x; v4.y <- pin.color.y; v4.z <- pin.color.z; v4.w <- pin.color.w; 
+//   v5.x <- pin.shadow_texcoord.x; v5.y <- pin.shadow_texcoord.y; v5.z <- pin.shadow_texcoord.z; 
 //   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
 //
-#line 8 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\PhongPS.hlsl"
+#line 13 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\PhongPS.hlsl"
 sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v3.xyxx, t0.xyzw, s0
 mul r0.xyzw, r0.xyzw, v4.xyzw  // r0.x <- diffuseColor.x; r0.y <- diffuseColor.y; r0.z <- diffuseColor.z; r0.w <- diffuseColor.w
 
-#line 10
+#line 15
 dp3 r1.x, v2.xyzx, v2.xyzx
 rsq r1.x, r1.x
 mul r1.xyz, r1.xxxx, v2.xyzx  // r1.x <- N.x; r1.y <- N.y; r1.z <- N.z
 
-#line 11
+#line 16
 dp3 r1.w, cb0[6].xyzx, cb0[6].xyzx
 rsq r1.w, r1.w
 mul r2.xyz, r1.wwww, cb0[6].xyzx  // r2.x <- L.x; r2.y <- L.y; r2.z <- L.z
 
-#line 12
+#line 17
 mov r3.xyz, -v1.xyzx
 add r3.xyz, r3.xyzx, cb0[0].xyzx
 dp3 r1.w, r3.xyzx, r3.xyzx
 rsq r1.w, r1.w
 mul r3.xyz, r1.wwww, r3.xyzx  // r3.x <- E.x; r3.y <- E.y; r3.z <- E.z
 
-#line 15
+#line 20
 itof r4.xyz, l(1, 1, 1, 0)  // r4.x <- ka.x; r4.y <- ka.y; r4.z <- ka.z
 
-#line 16
+#line 21
 itof r5.xyz, l(1, 1, 1, 0)  // r5.x <- kd.x; r5.y <- kd.y; r5.z <- kd.z
 
-#line 17
-itof r6.xyz, l(1, 1, 1, 0)  // r6.x <- ks.x; r6.y <- ks.y; r6.z <- ks.z
-
-#line 18
-itof r1.w, l(128)  // r1.w <- shiness
-
-#line 21
+#line 26
 mul r4.xyz, r4.xyzx, cb0[5].xyzx  // r4.x <- ambient.x; r4.y <- ambient.y; r4.z <- ambient.z
 
-#line 24
+#line 29
 nop 
 mov r1.xyz, r1.xyzx
 mov r2.xyz, r2.xyzx
+mov r6.xyz, cb0[7].xyzx
+mov r5.xyz, r5.xyzx
+
+#line 25 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\shading_functions.hlsli"
+mov r7.xyz, -r2.xyzx
+dp3 r1.w, r1.xyzx, r7.xyzx
+max r1.w, r1.w, l(0.000000)
+min r1.w, r1.w, l(1.000000)  // r1.w <- power
+
+#line 26
+mul r6.xyz, r1.wwww, r6.xyzx
+mul r6.xyz, r5.xyzx, r6.xyzx  // r6.x <- <CalcLambert return value>.x; r6.y <- <CalcLambert return value>.y; r6.z <- <CalcLambert return value>.z
+
+#line 29 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\PhongPS.hlsl"
+mov r6.xyz, r6.xyzx  // r6.x <- directionalDiffuse.x; r6.y <- directionalDiffuse.y; r6.z <- directionalDiffuse.z
+
+#line 30
+nop 
+mov r1.xyz, r1.xyzx
+mov r2.xyz, r2.xyzx
+mov r3.xyz, -r3.xyzx
 mov r7.xyz, cb0[7].xyzx
 mov r5.xyz, r5.xyzx
 
-#line 22 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\Light.hlsli"
-mov r8.xyz, -r2.xyzx
-dp3 r2.w, r1.xyzx, r8.xyzx
-max r2.w, r2.w, l(0.000000)
-min r2.w, r2.w, l(1.000000)  // r2.w <- d
-
-#line 25
-mul r7.xyz, r2.wwww, r7.xyzx
-mul r5.xyz, r5.xyzx, r7.xyzx  // r5.x <- <CalcLambertDiffuse return value>.x; r5.y <- <CalcLambertDiffuse return value>.y; r5.z <- <CalcLambertDiffuse return value>.z
-
-#line 24 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\PhongPS.hlsl"
-mov r5.xyz, r5.xyzx  // r5.x <- directionalDiffuse.x; r5.y <- directionalDiffuse.y; r5.z <- directionalDiffuse.z
-
-#line 25
-nop 
-mov r1.xyz, r1.xyzx
-mov r2.xyz, r2.xyzx
-mov r7.xyz, cb0[7].xyzx
-mov r3.xyz, r3.xyzx
-mov r1.w, r1.w
-mov r6.xyz, r6.xyzx
-
-#line 41 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\Light.hlsli"
-dp3 r2.w, r2.xyzx, r1.xyzx
-add r2.w, r2.w, r2.w
-mov r2.w, -r2.w
-mul r1.xyz, r1.xyzx, r2.wwww
+#line 41 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\shading_functions.hlsli"
+dp3 r1.w, r2.xyzx, r1.xyzx
+add r1.w, r1.w, r1.w
+mov r1.w, -r1.w
+mul r1.xyz, r1.wwww, r1.xyzx
 add r1.xyz, r2.xyzx, r1.xyzx  // r1.x <- R.x; r1.y <- R.y; r1.z <- R.z
 
-#line 45
-dp3 r1.x, r3.xyzx, r1.xyzx
+#line 42
+mov r2.xyz, -r3.xyzx
+dp3 r1.x, r2.xyzx, r1.xyzx
 itof r1.y, l(0)
-max r1.x, r1.y, r1.x  // r1.x <- d
+max r1.x, r1.y, r1.x  // r1.x <- power
 
-#line 51
+#line 43
+itof r1.y, l(128)
 log r1.x, r1.x
-mul r1.x, r1.x, r1.w
-exp r1.x, r1.x  // r1.x <- d
+mul r1.x, r1.x, r1.y
+exp r1.x, r1.x  // r1.x <- power
 
-#line 54
+#line 45
 mul r1.xyz, r1.xxxx, r7.xyzx
-mul r1.xyz, r6.xyzx, r1.xyzx  // r1.x <- <CalcPhongSpecular return value>.x; r1.y <- <CalcPhongSpecular return value>.y; r1.z <- <CalcPhongSpecular return value>.z
+mul r1.xyz, r5.xyzx, r1.xyzx  // r1.x <- <CalcPhongSpeculer return value>.x; r1.y <- <CalcPhongSpeculer return value>.y; r1.z <- <CalcPhongSpeculer return value>.z
 
-#line 25 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\PhongPS.hlsl"
+#line 30 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\PhongPS.hlsl"
 mov r1.xyz, r1.xyzx  // r1.x <- directionalSpecular.x; r1.y <- directionalSpecular.y; r1.z <- directionalSpecular.z
 
-#line 27
+#line 32
 mov r4.xyz, r4.xyzx  // r4.x <- color.x; r4.y <- color.y; r4.z <- color.z
 mov r0.w, r0.w  // r0.w <- color.w
 
-#line 28
-mul r0.xyz, r0.xyzx, r5.xyzx
+#line 33
+mul r0.xyz, r0.xyzx, r6.xyzx
 add r0.xyz, r0.xyzx, r4.xyzx  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
 
-#line 29
+#line 34
 add r0.xyz, r1.xyzx, r0.xyzx
 
-#line 31
+#line 38
 mov o0.xyz, r0.xyzx
 mov o0.w, r0.w
 ret 
-// Approximately 59 instruction slots used
+// Approximately 58 instruction slots used

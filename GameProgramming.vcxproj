@@ -221,6 +221,8 @@
     <ClInclude Include="Source\Graphics\DebugRenderer.h" />
     <ClInclude Include="Source\Graphics\DefaultModelShader.h" />
     <ClInclude Include="Source\Graphics\DefaultSpriteShader.h" />
+    <ClInclude Include="Source\Graphics\DepthStencil.h" />
+    <ClInclude Include="Source\Graphics\GaussianBlurShader.h" />
     <ClInclude Include="Source\Graphics\Graphics.h" />
     <ClInclude Include="Source\Graphics\ImGuiRenderer.h" />
     <ClInclude Include="Source\Graphics\LambertShader.h" />
@@ -230,7 +232,9 @@
     <ClInclude Include="Source\Graphics\ModelResource.h" />
     <ClInclude Include="Source\Graphics\PhongShader.h" />
     <ClInclude Include="Source\Graphics\RenderContext.h" />
+    <ClInclude Include="Source\Graphics\RenderTarget.h" />
     <ClInclude Include="Source\Graphics\Shader.h" />
+    <ClInclude Include="Source\Graphics\ShadowmapCasterShader.h" />
     <ClInclude Include="Source\Graphics\Sprite.h" />
     <ClInclude Include="Source\Graphics\Texture.h" />
     <ClInclude Include="Source\Graphics\UVScrollShader.h" />
@@ -275,6 +279,8 @@
     <ClCompile Include="Source\Graphics\DebugRenderer.cpp" />
     <ClCompile Include="Source\Graphics\DefaultModelShader.cpp" />
     <ClCompile Include="Source\Graphics\DefaultSpriteShader.cpp" />
+    <ClCompile Include="Source\Graphics\DepthStencil.cpp" />
+    <ClCompile Include="Source\Graphics\GaussianBlurShader.cpp" />
     <ClCompile Include="Source\Graphics\Graphics.cpp" />
     <ClCompile Include="Source\Graphics\ImGuiRenderer.cpp" />
     <ClCompile Include="Source\Graphics\LambertShader.cpp" />
@@ -283,6 +289,9 @@
     <ClCompile Include="Source\Graphics\Model.cpp" />
     <ClCompile Include="Source\Graphics\ModelResource.cpp" />
     <ClCompile Include="Source\Graphics\PhongShader.cpp" />
+    <ClCompile Include="Source\Graphics\RenderTarget.cpp" />
+    <ClCompile Include="Source\Graphics\Shader.cpp" />
+    <ClCompile Include="Source\Graphics\ShadowmapCasterShader.cpp" />
     <ClCompile Include="Source\Graphics\Sprite.cpp" />
     <ClCompile Include="Source\Graphics\Texture.cpp" />
     <ClCompile Include="Source\Graphics\UVScrollShader.cpp" />
@@ -304,17 +313,30 @@
     <ClCompile Include="Source\Stage.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="HLSL\color_filter.hlsli" />
     <None Include="HLSL\Debug.hlsli" />
+    <None Include="HLSL\filter_functions.hlsli" />
+    <None Include="HLSL\GaussianBlur.hlsli" />
     <None Include="HLSL\ImGui.hlsli" />
     <None Include="HLSL\Lambert.hlsli" />
     <None Include="HLSL\Light.hlsli" />
+    <None Include="HLSL\lights.hlsli" />
     <None Include="HLSL\Line.hlsli" />
     <None Include="HLSL\Mask.hlsli" />
     <None Include="HLSL\Phong.hlsli" />
+    <None Include="HLSL\phong_shader.hlsli" />
+    <None Include="HLSL\shading_functions.hlsli" />
+    <None Include="HLSL\ShadowmapCaster.hlsli" />
     <None Include="HLSL\Sprite.hlsli" />
     <None Include="HLSL\UVScroll.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="HLSL\color_filter_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="HLSL\color_filter_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+    </FxCompile>
     <FxCompile Include="HLSL\DebugPS.hlsl">
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Shader\%(Filename).cso</ObjectFileOutput>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AssemblyCode</AssemblerOutput>
@@ -358,6 +380,18 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Shader\%(Filename).cso</ObjectFileOutput>
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AssemblyCode</AssemblerOutput>
       <AssemblerOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Shader\%(Filename).cod</AssemblerOutputFile>
+    </FxCompile>
+    <FxCompile Include="HLSL\GaussianBlurPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="HLSL\GaussianBlurVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="HLSL\ImGuiPS.hlsl">
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Shader\%(Filename).cso</ObjectFileOutput>
@@ -502,6 +536,18 @@
     </FxCompile>
     <FxCompile Include="HLSL\PhongVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="HLSL\phong_shader_ps.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="HLSL\phong_shader_vs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="HLSL\ShadowmapCasterVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="HLSL\SpritePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

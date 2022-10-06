@@ -7,6 +7,7 @@
 #include "Light.h"
 
 #include "Graphics/Texture.h"
+#include "Graphics/RenderTarget.h"
 
 
 // ゲームシーン
@@ -27,6 +28,9 @@ public:
 
 	// 描画処理
 	void Render()override;
+
+	// 3D空間の描画
+	void Render3DScene();
 
 private:
 	Stage* stage = nullptr;
@@ -49,7 +53,15 @@ private:
 	float						edgeThreshold; 	// 縁の閾値
 	DirectX::XMFLOAT4			edgeColor;		// 縁の色
 
-	std::unique_ptr<Sprite>	sprite;
-	std::unique_ptr<Texture> texture;
+	std::unique_ptr<Sprite>		sprite;
+	std::unique_ptr<Texture>	texture;
 
+	// ガウスフィルターデータ
+	GaussianFilterData			gaussianFilterData;
+	std::unique_ptr<Texture>	gaussianBlurTexture;
+	std::unique_ptr<Sprite>		gaussianBlurSprite;
+
+	
+	// オフスクリーンレンダリング用描画バッファ
+	std::unique_ptr<RenderTarget> renderTarget;
 };

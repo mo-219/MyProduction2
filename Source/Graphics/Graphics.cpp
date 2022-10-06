@@ -3,11 +3,18 @@
 #include "Graphics/Graphics.h"
 
 // シェーダー用へっだーいんくるーど
+// モデルシェーダーヘッダー
 #include "Graphics/DefaultModelShader.h"
+#include "Graphics/PhongShader.h"
+
+#include "Graphics/ShadowmapCasterShader.h"
+
+// スプライトシェーダーヘッダー
 #include "Graphics/DefaultSpriteShader.h"
 #include "Graphics/UVScrollShader.h"
 #include "Graphics/MaskShader.h"
-#include "Graphics/PhongShader.h"
+#include "Graphics/GaussianBlurShader.h"
+
 
 Graphics* Graphics::instance = nullptr;
 
@@ -145,12 +152,14 @@ Graphics::Graphics(HWND hWnd)
 	{
 		modelShaders[static_cast<int>(ModelShaderId::Default)] = std::make_unique<DefaultModelShader>(device.Get());
 		modelShaders[static_cast<int>(ModelShaderId::Phong)] = std::make_unique<PhongShader>(device.Get());
+		modelShaders[static_cast<int>(ModelShaderId::ShadowmapCaster)] = std::make_unique<ShadowmapCasterShader>(device.Get());
 	}
 	// スプライトシェーダー
 	{
 		spriteShaders[static_cast<int>(SpriteShaderId::Default)] = std::make_unique<DefaultSpriteShader>(device.Get());
 		spriteShaders[static_cast<int>(SpriteShaderId::UVScroll)] = std::make_unique<UVScrollShader>(device.Get());
 		spriteShaders[static_cast<int>(SpriteShaderId::Mask)] = std::make_unique<MaskShader>(device.Get());
+		spriteShaders[static_cast<int>(SpriteShaderId::GaussianBlur)] = std::make_unique<GaussianBlurShader>(device.Get());
 	}
 
 

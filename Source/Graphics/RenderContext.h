@@ -25,6 +25,17 @@ struct MaskData
 	DirectX::XMFLOAT4			edgeColor;		// 縁の色
 };
 
+
+// ガウスフィルター計算情報
+struct GaussianFilterData
+{
+	int				  kernelSize = 8;		// カーネルサイズ
+	float			  deviation = 10.0f;	// 標準偏差
+	DirectX::XMFLOAT2 textureSize;			// ぼかすテクスチャのサイズ 
+};
+static const int MaxKernelSize = 16;
+
+
 // レンダーコンテキスト
 struct RenderContext
 {
@@ -44,6 +55,9 @@ struct RenderContext
 	//	ライト情報
 	DirectX::XMFLOAT4		ambientLightColor;
 	DirectionalLightData	directionalLightData;
+
+	// ガウスフィルター情報
+	GaussianFilterData		gaussianFilterData;
 };
 
 //// レンダーコンテキスト
