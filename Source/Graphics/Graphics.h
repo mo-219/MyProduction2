@@ -26,7 +26,9 @@ enum class SpriteShaderId
 	Default,
 	UVScroll,
 	Mask,
+	LuminanceExtraction,
 	GaussianBlur,
+	Finalpass,
 
 	Max
 };

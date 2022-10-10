@@ -14,6 +14,8 @@
 #include "Graphics/UVScrollShader.h"
 #include "Graphics/MaskShader.h"
 #include "Graphics/GaussianBlurShader.h"
+#include "Graphics/LuminanceExtractionShader.h"
+#include "Graphics/FinalpassShader.h"
 
 
 Graphics* Graphics::instance = nullptr;
@@ -159,7 +161,9 @@ Graphics::Graphics(HWND hWnd)
 		spriteShaders[static_cast<int>(SpriteShaderId::Default)] = std::make_unique<DefaultSpriteShader>(device.Get());
 		spriteShaders[static_cast<int>(SpriteShaderId::UVScroll)] = std::make_unique<UVScrollShader>(device.Get());
 		spriteShaders[static_cast<int>(SpriteShaderId::Mask)] = std::make_unique<MaskShader>(device.Get());
+		spriteShaders[static_cast<int>(SpriteShaderId::LuminanceExtraction)] = std::make_unique<LuminanceExtractionShader>(device.Get());
 		spriteShaders[static_cast<int>(SpriteShaderId::GaussianBlur)] = std::make_unique<GaussianBlurShader>(device.Get());
+		spriteShaders[static_cast<int>(SpriteShaderId::Finalpass)] = std::make_unique<FinalpassShader>(device.Get());
 	}
 
 

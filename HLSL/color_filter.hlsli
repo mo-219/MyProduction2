@@ -12,5 +12,3 @@ cbuffer COLOR_FILTER : register(b4)
     float brightness;   // Ц╛УxТ▓Ро
     float dummy;
 };
-
-#include "filter_functions.hlsli"

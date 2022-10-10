@@ -35,6 +35,23 @@ struct GaussianFilterData
 };
 static const int MaxKernelSize = 16;
 
+// 高輝度出力用情報
+struct LuminanceExtractionData
+{
+	float			  threshold = 0.5f;		// 閾値
+	float			  intensity = 1.0f;		// ブルームの強度
+	DirectX::XMFLOAT2 dummy2;
+
+};
+
+// ポストエフェクト用の最終パス用情報
+struct FinalpassData
+{
+	// ブルームテクスチャ
+	ID3D11ShaderResourceView* bloomTexture;
+};
+
+
 
 // レンダーコンテキスト
 struct RenderContext
@@ -58,6 +75,12 @@ struct RenderContext
 
 	// ガウスフィルター情報
 	GaussianFilterData		gaussianFilterData;
+
+	// 高輝度抽出用情報
+	LuminanceExtractionData luminanceExtractionData;
+
+	// 最終パス情報
+	FinalpassData			finalpassData;
 };
 
 //// レンダーコンテキスト
