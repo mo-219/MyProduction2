@@ -6,6 +6,7 @@
 #include "CameraController.h"
 #include "Light.h"
 
+#include "Graphics/PostprocessingRenderer.h"
 #include "Graphics/Texture.h"
 #include "Graphics/RenderTarget.h"
 
@@ -56,12 +57,18 @@ private:
 	std::unique_ptr<Sprite>		sprite;
 	std::unique_ptr<Texture>	texture;
 
-	// ガウスフィルターデータ
-	GaussianFilterData			gaussianFilterData;
-	std::unique_ptr<Texture>	gaussianBlurTexture;
-	std::unique_ptr<Sprite>		gaussianBlurSprite;
+	//// ガウスフィルターデータ
+	//GaussianFilterData			gaussianFilterData;
+	//std::unique_ptr<Texture>	gaussianBlurTexture;
+	//std::unique_ptr<Sprite>		gaussianBlurSprite;
 
+	//// ブルームデータ
+	//LuminanceExtractionData luminanceExtractionData;
 	
+
 	// オフスクリーンレンダリング用描画バッファ
 	std::unique_ptr<RenderTarget> renderTarget;
+
+	// ポストプロセス
+	std::unique_ptr<PostprocessingRenderer> postprocessingRenderer;
 };

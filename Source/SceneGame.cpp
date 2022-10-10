@@ -50,26 +50,43 @@ void SceneGame::Initialize()
 														  static_cast<UINT>(graphics.GetScreenHeight()),
 														  DXGI_FORMAT_R8G8B8A8_UNORM);
 
-			// spriteで描画するものをシーンの描画結果に変える
-			sprite = std::make_unique<Sprite>();
-			sprite->SetShaderResourceView(renderTarget->GetShaderResourceView(),
-										  renderTarget->GetWidth(), 
-										  renderTarget->GetHeight());
+			//// spriteで描画するものをシーンの描画結果に変える
+			//sprite = std::make_unique<Sprite>();
+			//sprite->SetShaderResourceView(renderTarget->GetShaderResourceView(),
+			//							  renderTarget->GetWidth(), 
+			//							  renderTarget->GetHeight());
 		}
 
 
-		// ガウスブラー用スプライト生成
-		{
-			// テクスチャを読み込む
-			gaussianBlurTexture = std::make_unique<Texture>("Data/Texture/1920px-Equirectangular-projection.jpg");
-			gaussianBlurSprite = std::make_unique<Sprite>();
-			gaussianBlurSprite->SetShaderResourceView(gaussianBlurTexture->GetShaderResourceView(), gaussianBlurTexture->GetWidth(),
-				gaussianBlurTexture->GetHeight());
-		}
+		//// ガウスブラー用スプライト生成
+		//{
+		//	// テクスチャを読み込む
+		//	gaussianBlurTexture = std::make_unique<Texture>("Data/Texture/1920px-Equirectangular-projection.jpg");
+		//	gaussianBlurSprite = std::make_unique<Sprite>();
+		//	gaussianBlurSprite->SetShaderResourceView(gaussianBlurTexture->GetShaderResourceView(), gaussianBlurTexture->GetWidth(),
+		//		gaussianBlurTexture->GetHeight());
+		//}
+		
+
 		// 平行光源を追加
 		directional_light = std::make_unique<Light>(LightType::Directional);
 		ambientLightColor = { 0.2f, 0.2f, 0.2f, 0.2f };
 	}
+
+
+	// ポストプロセス描画クラス生成
+	{
+		postprocessingRenderer = std::make_unique<PostprocessingRenderer>();
+
+		// シーンテクスチャ設定
+		ShaderResourceViewData srvData;
+
+		srvData.srv = renderTarget->GetShaderResourceView();
+		srvData.width = renderTarget->GetWidth();
+		srvData.height = renderTarget->GetHeight();
+		postprocessingRenderer->SetSceneData(srvData);
+	}
+
 
 	// カメラコントローラー初期化
 	cameraController = new CameraController();
@@ -139,19 +156,19 @@ void SceneGame::Update(float elapsedTime)
 	Graphics& graphics = Graphics::Instance();
 	ID3D11DeviceContext* dc = graphics.GetDeviceContext();
 
-	gaussianBlurSprite->Update(0.0f, 0.0f,
-		Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight(),
-		0.0f, 0.0f,
-		static_cast<float>(gaussianBlurTexture->GetWidth()), static_cast<float>(gaussianBlurTexture->GetHeight()),
-		0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f);
+	//gaussianBlurSprite->Update(0.0f, 0.0f,
+	//	Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight(),
+	//	0.0f, 0.0f,
+	//	static_cast<float>(gaussianBlurTexture->GetWidth()), static_cast<float>(gaussianBlurTexture->GetHeight()),
+	//	0.0f,
+	//	1.0f, 1.0f, 1.0f, 1.0f);
 
-	sprite->Update(0.0f, 0.0f,
-		Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight(),
-		0.0f, 0.0f,
-		static_cast<float>(renderTarget->GetWidth()), static_cast<float>(renderTarget->GetHeight()),
-		0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f);
+	//sprite->Update(0.0f, 0.0f,
+	//	Graphics::Instance().GetScreenWidth(), Graphics::Instance().GetScreenHeight(),
+	//	0.0f, 0.0f,
+	//	static_cast<float>(renderTarget->GetWidth()), static_cast<float>(renderTarget->GetHeight()),
+	//	0.0f,
+	//	1.0f, 1.0f, 1.0f, 1.0f);
 
 
 }
@@ -304,6 +321,7 @@ void SceneGame::Render()
 
 	// 描き込み先をバックバッファに変えてオフスクリーンレンダリングの結果を描画する
 	{
+#if 0
 		ID3D11RenderTargetView* rtv = graphics.GetRenderTargetView();
 		ID3D11DepthStencilView* dsv = graphics.GetDepthStencilView();
 
@@ -317,7 +335,7 @@ void SceneGame::Render()
 		SpriteShader* shader = graphics.GetShader(SpriteShaderId::Default);
 		RenderContext rc;
 
-		//rc.deviceContext = dc;
+		rc.deviceContext = dc;
 		//rc.gaussianFilterData = gaussianFilterData;
 		//rc.gaussianFilterData.textureSize.x = gaussianBlurTexture->GetWidth();
 		//rc.gaussianFilterData.textureSize.y = gaussianBlurTexture->GetHeight();
@@ -328,7 +346,18 @@ void SceneGame::Render()
 		shader->Draw(rc, sprite.get());
 
 		shader->End(rc);
+#endif
+		ID3D11RenderTargetView* rtv = graphics.GetRenderTargetView();
+		ID3D11DepthStencilView* dsv = graphics.GetDepthStencilView();
 
+		// 画面クリア＆レンダーターゲット設定
+		FLOAT color[] = { 0.0f, 0.0f, 0.5f, 1.0f }; // RGBA(0.0～1.0)
+		dc->ClearRenderTargetView(rtv, color);
+		dc->ClearDepthStencilView(dsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		dc->OMSetRenderTargets(1, &rtv, dsv);
+
+		// ポストプロセス処理
+		postprocessingRenderer->Render(dc);
 	}
 
 
@@ -344,29 +373,28 @@ void SceneGame::Render()
 			ImGui::TreePop();
 		}
 		ImGui::Separator();
-		if (ImGui::TreeNode("GaussianFilter"))
-		{
-			ImGui::SliderInt("kernelSize", &gaussianFilterData.kernelSize, 1, MaxKernelSize - 1);
-			ImGui::SliderFloat("deviation", &gaussianFilterData.deviation, 1.0f, 10.0f);
-			ImGui::TreePop();
-		}
+
 
 	}
 
 	// 2Dスプライト描画
 	{
-		//SpriteShader* shader = graphics.GetShader(SpriteShaderId::GaussianBlur);
-		//RenderContext rc;
+#if 0
+		SpriteShader* shader = graphics.GetShader(SpriteShaderId::LuminanceExtraction);
+		RenderContext rc;
 
-		//rc.deviceContext = dc;
-		//rc.gaussianFilterData = gaussianFilterData;
-		//rc.gaussianFilterData.textureSize.x = gaussianBlurTexture->GetWidth();
-		//rc.gaussianFilterData.textureSize.y = gaussianBlurTexture->GetHeight();
-		//rc.gaussianFilterData.kernelSize = gaussianFilterData.kernelSize;
+		rc.deviceContext = dc;
+		rc.gaussianFilterData = gaussianFilterData;
+		rc.gaussianFilterData.textureSize.x = gaussianBlurTexture->GetWidth();
+		rc.gaussianFilterData.textureSize.y = gaussianBlurTexture->GetHeight();
+		rc.gaussianFilterData.kernelSize = gaussianFilterData.kernelSize;
+		rc.luminanceExtractionData = luminanceExtractionData;
 
-		//shader->Begin(rc);
-		//shader->Draw(rc, gaussianBlurSprite.get());
-		//shader->End(rc);
+		shader->Begin(rc);
+		shader->Draw(rc, gaussianBlurSprite.get());
+		shader->End(rc);
+#endif
+
 	}
 
 	// 2DデバッグGUI描画
@@ -374,6 +402,7 @@ void SceneGame::Render()
 		// プレイヤーデバッグ描画
 		player->DrawDebugGUI();
 		cameraController->DrawDebugGUI();
+		postprocessingRenderer->DrawDebugGUI();
 	}
 }
 
