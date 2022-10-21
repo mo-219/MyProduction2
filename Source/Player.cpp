@@ -15,7 +15,7 @@
 // コンストラクタ
 Player::Player()
 {
-    model = new Model("Data/Model/Mr.Incredible/Mr.Incredible.mdl");
+    model = new Model("Data/Model/DogPolyart/DogPolyart.mdl");
 
     hitEffect = new Effect("Data/Effect/Hit.efk");
 
@@ -115,7 +115,31 @@ void Player::Render(ID3D11DeviceContext* dc, Shader* shader)
 
 void Player::Render(const RenderContext& rc, ModelShader* shader)
 {
-    shader->Draw(rc, model);
+    // 送るデータ挿入
+    RenderContext prc = rc;
+    prc.cubicColorData.shaderFlag    = CUBIC_CUSTOMIZE;
+    prc.cubicColorData.rightVec      = DirectX::XMFLOAT4{ transform._11, transform._12, transform._13, transform._14 };
+    prc.cubicColorData.topVec        = DirectX::XMFLOAT4{ transform._21, transform._22, transform._23, transform._24 };
+    prc.cubicColorData.frontVec      = DirectX::XMFLOAT4{ transform._31, transform._32, transform._33, transform._34 };
+
+    prc.cubicColorData.colorTop1     = colorTop1;
+    prc.cubicColorData.colorBottom1  = colorBottom1;
+    prc.cubicColorData.colorRight1   = colorRight1;
+    prc.cubicColorData.colorLeft1    = colorLeft1;
+    prc.cubicColorData.colorBack1    = colorBack1;
+    prc.cubicColorData.colorFront1   = colorFront1;
+
+    prc.cubicColorData.colorTop2     = colorTop2;
+    prc.cubicColorData.colorBottom2  = colorBottom2;
+    prc.cubicColorData.colorRight2   = colorRight2;
+    prc.cubicColorData.colorLeft2    = colorLeft2;
+    prc.cubicColorData.colorBack2    = colorBack2;
+    prc.cubicColorData.colorFront2   = colorFront2;
+
+    prc.cubicColorData.colorAlpha    = colorAlpha;
+
+
+    shader->Draw(prc, model);
 }
 
 // デバッグ用GUI描画
@@ -145,6 +169,49 @@ void Player::DrawDebugGUI()
             ImGui::InputFloat3("velocity", &velocity.x);
             // スケール
             ImGui::InputFloat3("Scale", &scale.x);
+            ImGui::Separator();
+            ImGui::Text("CubicColor");
+
+            if (ImGui::TreeNode("colorTop"))
+            {
+                ImGui::ColorPicker3("colorTop", &colorTop1.x);  
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNode("colorBottom"))
+            {
+                ImGui::ColorPicker3("colorBottom", &colorBottom1.x);
+                ImGui::TreePop();
+
+            }
+            if (ImGui::TreeNode("colorRight"))
+            {
+                ImGui::ColorPicker3("colorRight", &colorRight1.x);
+                ImGui::TreePop();
+
+            }
+            if (ImGui::TreeNode("colorLeft"))
+            {
+                ImGui::ColorPicker3("colorLeft", &colorLeft1.x);
+                ImGui::TreePop();
+
+            }
+            if (ImGui::TreeNode("colorBack"))
+            {
+                ImGui::ColorPicker3("colorBack", &colorBack1.x);
+                ImGui::TreePop();
+
+            }
+            if (ImGui::TreeNode("colorFront"))
+            {
+                ImGui::ColorPicker3("colorFront", &colorFront1.x);
+                ImGui::TreePop();
+
+            }
+
+            ImGui::SliderFloat("Alpha", &colorAlpha.w, 0.0f, +1.0f);
+
+
+
         }
     }
     ImGui::End();

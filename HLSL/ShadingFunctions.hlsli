@@ -71,7 +71,7 @@ float3 CalcHalfLambert(float3 N, float3 L, float3 C, float3 K)
 //  C: ライト色
 //　RimPower: リムライトの強さ
 //-----------------------------------------------
-float3 CalcRimLight(float3 N,float3 E,float3 L, float3 C, float3 RimPower = 3.0f)
+float3 CalcRimLight(float3 N, float3 E, float3 L, float3 C, float3 RimPower = 3.0f)
 {
     float rim = 1.0f - saturate(dot(N, -E));
     
@@ -166,25 +166,25 @@ float4 CalcFog(in float4 color, float4 fog_color, float2 fog_range, float eye_le
 // 
 //--------------------------------------------
 
-float3 CubicColor(float3 color, float3 N, 
+float3 CubicColor(float3 color, float3 N,
                   float3 colorTop, float3 colorBottom, float3 colorRight,
                   float3 colorLeft, float3 colorBack, float3 colorFront)
 {
     // 方向ベクトル作る
-    float3 vecTop    = {  0,  1,  0 };
-    float3 vecBottom = {  0, -1,  0 };
-    float3 vecRight  = {  1,  0,  0 };
-    float3 vecLeft   = { -1,  0,  0 };
-    float3 vecBack   = {  0,  0,  1 };
-    float3 vecFront  = {  0,  0, -1 };
+    float3 vecTop = { 0, 1, 0 };
+    float3 vecBottom = { 0, -1, 0 };
+    float3 vecRight = { 1, 0, 0 };
+    float3 vecLeft = { -1, 0, 0 };
+    float3 vecBack = { 0, 0, 1 };
+    float3 vecFront = { 0, 0, -1 };
     
     // 方向ベクトルとNの計算
-    float dirTop    = max(0, dot(N, vecTop));
+    float dirTop = max(0, dot(N, vecTop));
     float dirBottom = max(0, dot(N, vecBottom));
-    float dirRight  = max(0, dot(N, vecRight));
-    float dirLeft   = max(0, dot(N, vecLeft));
-    float dirBack   = max(0, dot(N, vecBack));
-    float dirFront  = max(0, dot(N, vecFront));
+    float dirRight = max(0, dot(N, vecRight));
+    float dirLeft = max(0, dot(N, vecLeft));
+    float dirBack = max(0, dot(N, vecBack));
+    float dirFront = max(0, dot(N, vecFront));
     
     float3 newColor;
     float3 white = { 1, 1, 1 };
@@ -229,9 +229,9 @@ float4 CubicColor(float4 color, float3 N,
 
 float4 CubicColor(float4 color, float3 N,
                   float4 colorTop1, float4 colorBottom1, float4 colorRight1,
-                  float4 colorLeft1, float4 colorBack1, float4 colorFront1, 
+                  float4 colorLeft1, float4 colorBack1, float4 colorFront1,
                   float4 colorTop2, float4 colorBottom2, float4 colorRight2,
-                  float4 colorLeft2, float4 colorBack2, float4 colorFront2, 
+                  float4 colorLeft2, float4 colorBack2, float4 colorFront2,
                   float colorAlpha)
 {
     // 方向ベクトル作る
@@ -284,23 +284,32 @@ float4 CubicColor(float4 color, float3 N,
 
 float4 CubicColor(float4 color, float3 N,
                   HexColor color1, HexColor color2,
-                  float colorAlpha)
+                  float colorAlpha, float4 rightVec, float4 topVec, float4 frontVec)
 {
     // 方向ベクトル作る
-    float3 vecTop = { 0, 1, 0 };
-    float3 vecBottom = { 0, -1, 0 };
-    float3 vecRight = { 1, 0, 0 };
-    float3 vecLeft = { -1, 0, 0 };
-    float3 vecBack = { 0, 0, 1 };
-    float3 vecFront = { 0, 0, -1 };
+    float3 vecRight     = { rightVec.x, rightVec.y, rightVec.z };
+    float3 vecTop       = { topVec.x, topVec.y, topVec.z };
+    float3 vecFront     = { frontVec.x, frontVec.y, frontVec.z };
+    
+    float3 vecLeft      = vecRight.xyz * (-1);
+    float3 vecBottom    = vecTop.xyz * (-1);
+    float3 vecBack      = vecFront.xyz * (-1);
+    
+    // 一応すべてをノーマライズ
+    vecRight    = normalize(vecRight);
+    vecTop      = normalize(vecTop);
+    vecFront    = normalize(vecFront);
+    vecLeft     = normalize(vecLeft);
+    vecBottom   = normalize(vecBottom);
+    vecBack     = normalize(vecBack);
     
     // 方向ベクトルとNの計算
-    float dirTop = max(0, dot(N, vecTop));
+    float dirTop    = max(0, dot(N, vecTop));
     float dirBottom = max(0, dot(N, vecBottom));
-    float dirRight = max(0, dot(N, vecRight));
-    float dirLeft = max(0, dot(N, vecLeft));
-    float dirBack = max(0, dot(N, vecBack));
-    float dirFront = max(0, dot(N, vecFront));
+    float dirRight  = max(0, dot(N, vecRight));
+    float dirLeft   = max(0, dot(N, vecLeft));
+    float dirBack   = max(0, dot(N, vecBack));
+    float dirFront  = max(0, dot(N, vecFront));
     
     
     // 6方向の色作成

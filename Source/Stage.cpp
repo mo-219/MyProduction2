@@ -40,6 +40,8 @@ void Stage::Render(ID3D11DeviceContext* dc, Shader* shader)
 
 void Stage::Render(const RenderContext& rc, ModelShader* shader)
 {
+    RenderContext prc = rc;
+    prc.cubicColorData.shaderFlag = CUBIC_DEFAULT;
     shader->Draw(rc, model);
 }
 

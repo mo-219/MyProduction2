@@ -1,7 +1,8 @@
 #include "Misc.h"
-#include "Graphics/PhongShader.h"
+#include "Graphics/CubicShader.h"
 
-PhongShader::PhongShader(ID3D11Device* device)
+#include <imgui.h>
+CubicShader::CubicShader(ID3D11Device* device)
 {
 	// 頂点シェーダー
 	{
@@ -37,40 +38,18 @@ PhongShader::PhongShader(ID3D11Device* device)
 		};
 		//hr = device->CreateInputLayout(inputElementDesc, ARRAYSIZE(inputElementDesc), csoData.get(), csoSize, inputLayout.GetAddressOf());
 		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-	
+
 		// 頂点シェーダー生成
-		create_vs_from_cso(device, "Shader\\PhongVS.cso",
+		create_vs_from_cso(device, "Shader\\CubicColorVS.cso",
 			vertexShader.GetAddressOf(),
 			inputLayout.GetAddressOf(),
 			inputElementDesc, ARRAYSIZE(inputElementDesc));
 
 	}
 
-	// ピクセルシェーダー
-	{
-		//// ファイルを開く
-		//FILE* fp = nullptr;
-		//fopen_s(&fp, "Shader\\PhongPS.cso", "rb");
-		//_ASSERT_EXPR_A(fp, "CSO File not found");
+	// ピクセルシェーダー生成
+	create_ps_from_cso(device, "Shader\\CubicColorPS.cso", pixelShader.GetAddressOf());
 
-		//// ファイルのサイズを求める
-		//fseek(fp, 0, SEEK_END);
-		//long csoSize = ftell(fp);
-		//fseek(fp, 0, SEEK_SET);
-
-		//// メモリ上に頂点シェーダーデータを格納する領域を用意する
-		//std::unique_ptr<u_char[]> csoData = std::make_unique<u_char[]>(csoSize);
-		//fread(csoData.get(), csoSize, 1, fp);
-		//fclose(fp);
-
-		//// ピクセルシェーダー生成
-		//HRESULT hr = device->CreatePixelShader(csoData.get(), csoSize, nullptr, pixelShader.GetAddressOf());
-		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-
-			// ピクセルシェーダー生成
-		create_ps_from_cso(device, "Shader\\PhongPS.cso", pixelShader.GetAddressOf());
-
-	}
 
 	// 定数バッファ
 	{
@@ -104,6 +83,16 @@ PhongShader::PhongShader(ID3D11Device* device)
 		desc.ByteWidth = sizeof(CbShadowMap);
 		hr = device->CreateBuffer(&desc, 0, shadowmapConstantBuffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+
+		// フォグ用
+		desc.ByteWidth = sizeof(CbFog);
+		hr = device->CreateBuffer(&desc, 0, fogConstantBuffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+
+		desc.ByteWidth = sizeof(CbCubic);
+		hr = device->CreateBuffer(&desc, 0, cubicConstantBuffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+
 
 	}
 
@@ -175,6 +164,7 @@ PhongShader::PhongShader(ID3D11Device* device)
 		desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 		desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 
+
 		HRESULT hr = device->CreateSamplerState(&desc, samplerState.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
@@ -196,7 +186,7 @@ PhongShader::PhongShader(ID3D11Device* device)
 }
 
 // 描画開始
-void PhongShader::Begin(const RenderContext& rc)
+void CubicShader::Begin(const RenderContext& rc)
 {
 	rc.deviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
 	rc.deviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
@@ -207,7 +197,9 @@ void PhongShader::Begin(const RenderContext& rc)
 		sceneConstantBuffer.Get(),
 		meshConstantBuffer.Get(),
 		subsetConstantBuffer.Get(),
-		shadowmapConstantBuffer.Get()
+		shadowmapConstantBuffer.Get(),
+		fogConstantBuffer.Get(),
+		cubicConstantBuffer.Get(),
 	};
 	rc.deviceContext->VSSetConstantBuffers(0, ARRAYSIZE(constantBuffers), constantBuffers);
 	rc.deviceContext->PSSetConstantBuffers(0, ARRAYSIZE(constantBuffers), constantBuffers);
@@ -242,16 +234,76 @@ void PhongShader::Begin(const RenderContext& rc)
 	cbShadowmap.shadowBias = rc.shadowmapData.shadowBias;
 	cbShadowmap.lightViewProjection = rc.shadowmapData.lightViewProjection;
 	rc.deviceContext->UpdateSubresource(shadowmapConstantBuffer.Get(), 0, 0, &cbShadowmap, 0, 0);
-	
+
 	// シャドウマップ設定
 	rc.deviceContext->PSSetShaderResources(2, 1, &rc.shadowmapData.shadowMap);
 }
 
 // 描画
-void PhongShader::Draw(const RenderContext& rc, const Model* model)
+void CubicShader::Draw(const RenderContext& rc, const Model* model)
 {
 	const ModelResource* resource = model->GetResource();
 	const std::vector<Model::Node>& nodes = model->GetNodes();
+
+	// フォグコンスタントバッファ更新
+	CbFog cbFog;
+	cbFog.fogColor = fogColor;
+	cbFog.fogRange = fogRange;
+	rc.deviceContext->UpdateSubresource(fogConstantBuffer.Get(), 0, 0, &cbFog, 0, 0);
+
+	// キュービックカラーコンスタントバッファ更新
+	CbCubic cbCubic;
+	switch (rc.cubicColorData.shaderFlag)
+	{
+	case CUBIC_DEFAULT:
+		// デフォルト設定の場合
+		cbCubic.rightVec		= rightVec;
+		cbCubic.topVec			= topVec;
+		cbCubic.frontVec		= frontVec;
+
+		cbCubic.colorTop1		= colorTop1;
+		cbCubic.colorBottom1	= colorBottom1;
+		cbCubic.colorRight1		= colorRight1;
+		cbCubic.colorLeft1		= colorLeft1;
+		cbCubic.colorBack1		= colorBack1;
+		cbCubic.colorFront1		= colorFront1;
+
+		cbCubic.colorTop2		= colorTop2;
+		cbCubic.colorBottom2	= colorBottom2;
+		cbCubic.colorRight2		= colorRight2;
+		cbCubic.colorLeft2		= colorLeft2;
+		cbCubic.colorBack2		= colorBack2;
+		cbCubic.colorFront2		= colorFront2;
+
+		cbCubic.colorAlpha = colorAlpha;
+		break;
+
+	case CUBIC_CUSTOMIZE:
+		// カスタマイズしている場合
+		cbCubic.rightVec		= rc.cubicColorData.rightVec;
+		cbCubic.topVec			= rc.cubicColorData.topVec;
+		cbCubic.frontVec		= rc.cubicColorData.frontVec;
+
+		cbCubic.colorTop1		= rc.cubicColorData.colorTop1;
+		cbCubic.colorBottom1	= rc.cubicColorData.colorBottom1;
+		cbCubic.colorRight1		= rc.cubicColorData.colorRight1;
+		cbCubic.colorLeft1		= rc.cubicColorData.colorLeft1;
+		cbCubic.colorBack1		= rc.cubicColorData.colorBack1;
+		cbCubic.colorFront1		= rc.cubicColorData.colorFront1;
+
+		cbCubic.colorTop2		= rc.cubicColorData.colorTop2;
+		cbCubic.colorBottom2	= rc.cubicColorData.colorBottom2;
+		cbCubic.colorRight2		= rc.cubicColorData.colorRight2;
+		cbCubic.colorLeft2		= rc.cubicColorData.colorLeft2;
+		cbCubic.colorBack2		= rc.cubicColorData.colorBack2;
+		cbCubic.colorFront2		= rc.cubicColorData.colorFront2;
+
+		cbCubic.colorAlpha		= rc.cubicColorData.colorAlpha;
+		break;
+	};
+
+	rc.deviceContext->UpdateSubresource(cubicConstantBuffer.Get(), 0, 0, &cbCubic, 0, 0);
+
 
 	for (const ModelResource::Mesh& mesh : resource->GetMeshes())
 	{
@@ -293,7 +345,7 @@ void PhongShader::Draw(const RenderContext& rc, const Model* model)
 }
 
 // 描画終了
-void PhongShader::End(const RenderContext& rc)
+void CubicShader::End(const RenderContext& rc)
 {
 	rc.deviceContext->VSSetShader(nullptr, nullptr, 0);
 	rc.deviceContext->PSSetShader(nullptr, nullptr, 0);
@@ -302,3 +354,66 @@ void PhongShader::End(const RenderContext& rc)
 	ID3D11ShaderResourceView* srvs[] = { nullptr, nullptr, nullptr };
 	rc.deviceContext->PSSetShaderResources(0, ARRAYSIZE(srvs), srvs);
 }
+
+void CubicShader::DebugGUI()
+{
+
+
+	if (ImGui::Begin("Cubic", nullptr, ImGuiWindowFlags_None))
+	{
+
+		//ImGui::Text("Color1");
+		//{
+		//	ImGui::ColorEdit3("colorTop", &colorTop1.x);
+		//	ImGui::ColorEdit3("colorBottom", &colorBottom1.x);
+		//	ImGui::ColorEdit3("colorRight", &colorRight1.x);
+		//	ImGui::ColorEdit3("colorLeft", &colorLeft1.x);
+		//	ImGui::ColorEdit3("colorBack", &colorBack1.x);
+		//	ImGui::ColorEdit3("colorFront", &colorFront1.x);
+		//	ImGui::SliderFloat("Alpha", &colorAlpha.w, 0.0f, +1.0f);
+		//	//if (ImGui::TreeNode("ColorValue"))
+		//	//{
+		//	//	ImGui::SliderFloat3("colorTop", &colorTop1.x, 0, 1);
+		//	//	ImGui::SliderFloat3("colorBottom", &colorBottom1.x, 0, 1);
+		//	//	ImGui::SliderFloat3("colorRight", &colorRight1.x, 0, 1);
+		//	//	ImGui::SliderFloat3("colorLeft", &colorLeft1.x, 0, 1);
+		//	//	ImGui::SliderFloat3("colorBack", &colorBack1.x, 0, 1);
+		//	//	ImGui::SliderFloat3("colorFront", &colorFront1.x, 0, 1);
+		//	//	ImGui::TreePop();
+		//	//}
+		//	//ImGui::TreePop();
+		//}
+
+
+		//ImGui::Text("Color2");
+		//{
+		//	ImGui::ColorEdit3("colorTop", &colorTop2.x);
+		//	ImGui::ColorEdit3("colorBottom", &colorBottom2.x);
+		//	ImGui::ColorEdit3("colorRight", &colorRight2.x);
+		//	ImGui::ColorEdit3("colorLeft", &colorLeft2.x);
+		//	ImGui::ColorEdit3("colorBack", &colorBack2.x);
+		//	ImGui::ColorEdit3("colorFront", &colorFront2.x);
+		//	ImGui::SliderFloat("Alpha", &colorAlpha.w, 0.0f, +1.0f);
+		//	//if (ImGui::TreeNode("ColorValue"))
+		//	//{
+		//	//	ImGui::SliderFloat3("colorTop", &colorTop2.x, 0, 1);
+		//	//	ImGui::SliderFloat3("colorBottom", &colorBottom2.x, 0, 1);
+		//	//	ImGui::SliderFloat3("colorRight", &colorRight2.x, 0, 1);
+		//	//	ImGui::SliderFloat3("colorLeft", &colorLeft2.x, 0, 1);
+		//	//	ImGui::SliderFloat3("colorBack", &colorBack2.x, 0, 1);
+		//	//	ImGui::SliderFloat3("colorFront", &colorFront2.x, 0, 1);
+		//	//	ImGui::TreePop();
+		//	//}
+		//	//ImGui::TreePop();
+		//}
+		ImGui::Separator();
+		ImGui::ColorEdit3("fog_color", &fogColor.x);
+		ImGui::SliderFloat("fog_near", &fogRange.x, 0.1f, +100.0f);
+		ImGui::SliderFloat("fog_far", &fogRange.y, 0.1f, +100.0f);
+
+
+	}
+
+	ImGui::End();
+}
+

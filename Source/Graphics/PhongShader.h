@@ -62,21 +62,21 @@ private:
 	//----------------------------------------------------------
 
 	// シャドウマップ用
-	struct shadowmap_constants
+	struct CbShadowMap
 	{
-		DirectX::XMFLOAT4X4 light_view_projection; // ライトの位置から見た射影行列
-		DirectX::XMFLOAT3 shadow_color; // 影色
-		float shadow_bias; // 深度バイアス
+		DirectX::XMFLOAT4X4 lightViewProjection;	// ライトの位置から見た射影行列
+		DirectX::XMFLOAT3 shadowColor;				// 影色
+		float shadowBias;							// 深度バイアス
 	};
 
-	Microsoft::WRL::ComPtr<ID3D11Buffer> shadowmapConstantBuffer;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>shadowmapDepthStencilView;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowmapShaderResourceView;	//
-	Microsoft::WRL::ComPtr<ID3D11SamplerState> shadowmapSamplerState;					//
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> shadowmapCasterVertexShader;			//
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> shadowmapCasterInputLayout;			//
+	Microsoft::WRL::ComPtr<ID3D11Buffer>				shadowmapConstantBuffer;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState>			shadowmapSamplerState;					//
+	//Microsoft::WRL::ComPtr<ID3D11DepthStencilView>		shadowmapDepthStencilView;
+	//Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>	shadowmapShaderResourceView;	//
+	//Microsoft::WRL::ComPtr<ID3D11VertexShader>			shadowmapCasterVertexShader;			//
+	//Microsoft::WRL::ComPtr<ID3D11InputLayout>			shadowmapCasterInputLayout;			//
 
-	DirectX::XMFLOAT4X4 light_view_projection;
+	DirectX::XMFLOAT4X4 lightViewProjection;
 	float shadow_bias{ 0.008f };
 	DirectX::XMFLOAT3 shadow_color{ 0.3f, 0.3f, 0.3f };
 

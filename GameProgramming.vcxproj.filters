@@ -49,9 +49,6 @@
     <Filter Include="Source\Character\Projectile">
       <UniqueIdentifier>{28054b87-e3e0-4211-be0d-3e96e6b7dcd8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="HLSL\SelfMade">
-      <UniqueIdentifier>{278121be-bb64-4ed8-816f-61bed4c60d07}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\imgui\imconfig.h">
@@ -210,9 +207,6 @@
     <ClInclude Include="Source\Graphics\UVScrollShader.h">
       <Filter>Source\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Light.h">
-      <Filter>Source</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Graphics\ShadowmapCasterShader.h">
       <Filter>Source\Graphics</Filter>
     </ClInclude>
@@ -235,6 +229,15 @@
       <Filter>Source\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Graphics\FinalpassShader.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\Light.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LightManager.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\CubicShader.h">
       <Filter>Source\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
@@ -377,9 +380,6 @@
     <ClCompile Include="Source\Graphics\UVScrollShader.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Light.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Graphics\Texture.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
@@ -405,6 +405,15 @@
       <Filter>Source\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Source\Graphics\FinalpassShader.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\Light.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LightManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\CubicShader.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
@@ -436,18 +445,6 @@
     <None Include="HLSL\Light.hlsli">
       <Filter>HLSL</Filter>
     </None>
-    <None Include="HLSL\color_filter.hlsli">
-      <Filter>HLSL\SelfMade</Filter>
-    </None>
-    <None Include="HLSL\lights.hlsli">
-      <Filter>HLSL\SelfMade</Filter>
-    </None>
-    <None Include="HLSL\phong_shader.hlsli">
-      <Filter>HLSL\SelfMade</Filter>
-    </None>
-    <None Include="HLSL\shading_functions.hlsli">
-      <Filter>HLSL\SelfMade</Filter>
-    </None>
     <None Include="HLSL\ShadowmapCaster.hlsli">
       <Filter>HLSL</Filter>
     </None>
@@ -461,6 +458,15 @@
       <Filter>HLSL</Filter>
     </None>
     <None Include="HLSL\Finalpass.hlsli">
+      <Filter>HLSL</Filter>
+    </None>
+    <None Include="HLSL\CubicColor.hlsli">
+      <Filter>HLSL</Filter>
+    </None>
+    <None Include="HLSL\ShadowmapFunctions.hlsli">
+      <Filter>HLSL</Filter>
+    </None>
+    <None Include="HLSL\ShadingFunctions.hlsli">
       <Filter>HLSL</Filter>
     </None>
   </ItemGroup>
@@ -513,18 +519,6 @@
     <FxCompile Include="HLSL\UVScrollVS.hlsl">
       <Filter>HLSL</Filter>
     </FxCompile>
-    <FxCompile Include="HLSL\color_filter_ps.hlsl">
-      <Filter>HLSL\SelfMade</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\color_filter_vs.hlsl">
-      <Filter>HLSL\SelfMade</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\phong_shader_ps.hlsl">
-      <Filter>HLSL\SelfMade</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\phong_shader_vs.hlsl">
-      <Filter>HLSL\SelfMade</Filter>
-    </FxCompile>
     <FxCompile Include="HLSL\ShadowmapCasterVS.hlsl">
       <Filter>HLSL</Filter>
     </FxCompile>
@@ -544,6 +538,12 @@
       <Filter>HLSL</Filter>
     </FxCompile>
     <FxCompile Include="HLSL\FinalpassVS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\CubicColorPS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\CubicColorVS.hlsl">
       <Filter>HLSL</Filter>
     </FxCompile>
   </ItemGroup>

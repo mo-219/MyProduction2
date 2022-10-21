@@ -20,9 +20,12 @@ VS_OUT main(
 
 	VS_OUT vout;
 	vout.position = mul(float4(p, 1.0f), viewProjection);
-	vout.world_position = p;
+    vout.worldPosition = p;
 	vout.normal = normalize(n);
 	vout.color = color * materialColor;
 	vout.texcoord = texcoord;
+	
+	// シャドウマップで使用する情報を算出
+    vout.shadowTexcoord = CalcShadowTexcoord(p, lightViewProjection);
 	return vout;
 }

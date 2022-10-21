@@ -36,6 +36,15 @@
 //
 // }
 //
+// cbuffer SHADOWMAP_CONSTANT_BUFFER
+// {
+//
+//   row_major float4x4 lightViewProjection;// Offset:    0 Size:    64
+//   float3 shadowColor;                // Offset:   64 Size:    12 [unused]
+//   float shadowBias;                  // Offset:   76 Size:     4 [unused]
+//
+// }
+//
 //
 // Resource Bindings:
 //
@@ -44,6 +53,7 @@
 // CbScene                           cbuffer      NA          NA            cb0      1 
 // CbMesh                            cbuffer      NA          NA            cb1      1 
 // CbSubset                          cbuffer      NA          NA            cb2      1 
+// SHADOWMAP_CONSTANT_BUFFER         cbuffer      NA          NA            cb3      1 
 //
 //
 //
@@ -69,7 +79,7 @@
 // NORMAL                   0   xyz         2     NONE   float   xyz 
 // TEXCOORD                 0   xy          3     NONE   float   xy  
 // COLOR                    0   xyzw        4     NONE   float   xyzw
-// TEXCOORD                 1   xyz         5     NONE   float       
+// TEXCOORD                 1   xyz         5     NONE   float   xyz 
 //
 vs_5_0
 dcl_globalFlags refactoringAllowed | skipOptimization
@@ -84,6 +94,7 @@ dcl_immediateConstantBuffer { { 1.000000, 0, 0, 0},
 dcl_constantbuffer CB0[5], immediateIndexed
 dcl_constantbuffer CB1[512], dynamicIndexed
 dcl_constantbuffer CB2[1], immediateIndexed
+dcl_constantbuffer CB3[4], immediateIndexed
 dcl_input v0.xyzw
 dcl_input v1.xyz
 dcl_input v3.xy
@@ -95,7 +106,8 @@ dcl_output o1.xyz
 dcl_output o2.xyz
 dcl_output o3.xy
 dcl_output o4.xyzw
-dcl_temps 6
+dcl_output o5.xyz
+dcl_temps 10
 //
 // Initial variable locations:
 //   v0.x <- position.x; v0.y <- position.y; v0.z <- position.z; v0.w <- position.w; 
@@ -105,11 +117,11 @@ dcl_temps 6
 //   v4.x <- color.x; v4.y <- color.y; v4.z <- color.z; v4.w <- color.w; 
 //   v5.x <- boneWeights.x; v5.y <- boneWeights.y; v5.z <- boneWeights.z; v5.w <- boneWeights.w; 
 //   v6.x <- boneIndices.x; v6.y <- boneIndices.y; v6.z <- boneIndices.z; v6.w <- boneIndices.w; 
-//   o5.x <- <main return value>.shadow_texcoord.x; o5.y <- <main return value>.shadow_texcoord.y; o5.z <- <main return value>.shadow_texcoord.z; 
+//   o5.x <- <main return value>.shadowTexcoord.x; o5.y <- <main return value>.shadowTexcoord.y; o5.z <- <main return value>.shadowTexcoord.z; 
 //   o4.x <- <main return value>.color.x; o4.y <- <main return value>.color.y; o4.z <- <main return value>.color.z; o4.w <- <main return value>.color.w; 
 //   o3.x <- <main return value>.texcoord.x; o3.y <- <main return value>.texcoord.y; 
 //   o2.x <- <main return value>.normal.x; o2.y <- <main return value>.normal.y; o2.z <- <main return value>.normal.z; 
-//   o1.x <- <main return value>.world_position.x; o1.y <- <main return value>.world_position.y; o1.z <- <main return value>.world_position.z; 
+//   o1.x <- <main return value>.worldPosition.x; o1.y <- <main return value>.worldPosition.y; o1.z <- <main return value>.worldPosition.z; 
 //   o0.x <- <main return value>.position.x; o0.y <- <main return value>.position.y; o0.z <- <main return value>.position.z; o0.w <- <main return value>.position.w
 //
 #line 13 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\PhongVS.hlsl"
@@ -133,32 +145,32 @@ loop
   dp4 r2.w, v5.xyzw, icb[r1.w + 0].xyzw
   and r4.xyzw, v6.xyzw, icb[r1.w + 4].xyzw
   or r4.xy, r4.ywyy, r4.xzxx
-  or r3.w, r4.y, r4.x
-  imul null, r3.w, r3.w, l(4)
-  mul r4.xyz, v0.xxxx, cb1[r3.w + 0].xyzx
-  mul r5.xyz, v0.yyyy, cb1[r3.w + 1].xyzx
-  add r4.xyz, r4.xyzx, r5.xyzx
-  mul r5.xyz, v0.zzzz, cb1[r3.w + 2].xyzx
-  add r4.xyz, r4.xyzx, r5.xyzx
-  mul r5.xyz, v0.wwww, cb1[r3.w + 3].xyzx
-  add r4.xyz, r4.xyzx, r5.xyzx
+  or r4.x, r4.y, r4.x
+  imul null, r4.x, r4.x, l(4)
+  mul r4.yzw, v0.xxxx, cb1[r4.x + 0].xxyz
+  mul r5.xyz, v0.yyyy, cb1[r4.x + 1].xyzx
+  add r4.yzw, r4.yyzw, r5.xxyz
+  mul r5.xyz, v0.zzzz, cb1[r4.x + 2].xyzx
+  add r4.yzw, r4.yyzw, r5.xxyz
+  mul r5.xyz, v0.wwww, cb1[r4.x + 3].xyzx
+  add r4.xyz, r4.yzwy, r5.xyzx
   mul r4.xyz, r2.wwww, r4.xyzx
   add r3.xyz, r4.xyzx, r3.xyzx
 
 #line 18
   dp4 r2.w, v5.xyzw, icb[r1.w + 0].xyzw
-  itof r3.w, l(0)
-  and r4.xyzw, v6.xyzw, icb[r1.w + 4].xyzw
-  or r4.xy, r4.ywyy, r4.xzxx
-  or r4.x, r4.y, r4.x
-  imul null, r4.x, r4.x, l(4)
-  mul r4.yzw, v1.xxxx, cb1[r4.x + 0].xxyz
-  mul r5.xyz, v1.yyyy, cb1[r4.x + 1].xyzx
-  add r4.yzw, r4.yyzw, r5.xxyz
-  mul r5.xyz, v1.zzzz, cb1[r4.x + 2].xyzx
-  add r4.yzw, r4.yyzw, r5.xxyz
-  mul r5.xyz, r3.wwww, cb1[r4.x + 3].xyzx
-  add r4.xyz, r4.yzwy, r5.xyzx
+  itof r4.x, l(0)
+  and r5.xyzw, v6.xyzw, icb[r1.w + 4].xyzw
+  or r4.yz, r5.yywy, r5.xxzx
+  or r4.y, r4.z, r4.y
+  imul null, r4.y, r4.y, l(4)
+  mul r5.xyz, v1.xxxx, cb1[r4.y + 0].xyzx
+  mul r6.xyz, v1.yyyy, cb1[r4.y + 1].xyzx
+  add r5.xyz, r5.xyzx, r6.xyzx
+  mul r6.xyz, v1.zzzz, cb1[r4.y + 2].xyzx
+  add r5.xyz, r5.xyzx, r6.xyzx
+  mul r4.xyz, r4.xxxx, cb1[r4.y + 3].xyzx
+  add r4.xyz, r4.xyzx, r5.xyzx
   mul r4.xyz, r2.wwww, r4.xyzx
   add r2.xyz, r2.xyzx, r4.xyzx
 
@@ -176,9 +188,9 @@ mul r1.xyzw, cb0[4].xyzw, l(1.000000, 1.000000, 1.000000, 1.000000)
 add r0.xyzw, r0.xyzw, r1.xyzw  // r0.x <- vout.position.x; r0.y <- vout.position.y; r0.z <- vout.position.z; r0.w <- vout.position.w
 
 #line 23
-mov r3.x, r3.x  // r3.x <- vout.world_position.x
-mov r3.y, r3.y  // r3.y <- vout.world_position.y
-mov r3.z, r3.z  // r3.z <- vout.world_position.z
+mov r3.x, r3.x  // r3.x <- vout.worldPosition.x
+mov r3.y, r3.y  // r3.y <- vout.worldPosition.y
+mov r3.z, r3.z  // r3.z <- vout.worldPosition.z
 
 #line 24
 dp3 r1.x, r2.xyzx, r2.xyzx
@@ -191,11 +203,59 @@ mul r2.xyzw, v4.xyzw, cb2[0].xyzw  // r2.x <- vout.color.x; r2.y <- vout.color.y
 #line 26
 mov r4.xy, v3.xyxx  // r4.x <- vout.texcoord.x; r4.y <- vout.texcoord.y
 
-#line 27
+#line 29
+nop 
+mov r3.x, r3.x
+mov r3.y, r3.y
+mov r3.z, r3.z
+mov r5.x, cb3[0].x
+mov r6.x, cb3[0].y
+mov r7.x, cb3[0].z
+mov r8.x, cb3[0].w
+mov r5.y, cb3[1].x
+mov r6.y, cb3[1].y
+mov r7.y, cb3[1].z
+mov r8.y, cb3[1].w
+mov r5.z, cb3[2].x
+mov r6.z, cb3[2].y
+mov r7.z, cb3[2].z
+mov r8.z, cb3[2].w
+mov r9.xyzw, cb3[3].xyzw
+
+#line 13 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadowmapFunctions.hlsli"
+mov r3.w, l(1.000000)
+mov r5.w, r9.x
+dp4 r5.x, r3.xyzw, r5.xyzw  // r5.x <- worldViewProjectionPosition.x
+mov r6.w, r9.y
+dp4 r5.y, r3.xyzw, r6.xyzw  // r5.y <- worldViewProjectionPosition.y
+mov r7.w, r9.z
+dp4 r5.z, r3.xyzw, r7.xyzw  // r5.z <- worldViewProjectionPosition.z
+mov r8.w, r9.w
+dp4 r1.w, r3.xyzw, r8.xyzw  // r1.w <- worldViewProjectionPosition.w
+
+#line 16
+div r5.xyz, r5.xyzx, r1.wwww
+
+#line 20
+mov r5.w, -r5.y  // r5.w <- worldViewProjectionPosition.y
+
+#line 21
+mul r4.zw, r5.xxxw, l(0.000000, 0.000000, 0.500000, 0.500000)
+add r5.xy, r4.zwzz, l(0.500000, 0.500000, 0.000000, 0.000000)  // r5.y <- worldViewProjectionPosition.y
+
+#line 23
+mov r5.xy, r5.xyxx  // r5.x <- <CalcShadowTexcoord return value>.x; r5.y <- <CalcShadowTexcoord return value>.y
+mov r5.z, r5.z  // r5.z <- <CalcShadowTexcoord return value>.z
+
+#line 29 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\PhongVS.hlsl"
+mov r5.xyz, r5.xyzx  // r5.x <- vout.shadowTexcoord.x; r5.y <- vout.shadowTexcoord.y; r5.z <- vout.shadowTexcoord.z
+
+#line 30
 mov o0.xyzw, r0.xyzw
 mov o4.xyzw, r2.xyzw
 mov o1.xyz, r3.xyzx
 mov o2.xyz, r1.xyzx
+mov o5.xyz, r5.xyzx
 mov o3.xy, r4.xyxx
 ret 
-// Approximately 63 instruction slots used
+// Approximately 97 instruction slots used
