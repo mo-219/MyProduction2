@@ -3,6 +3,9 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 
+#define CUBIC_DEFAULT 0
+#define CUBIC_CUSTOMIZE  1
+
 //	UVスクロール情報
 struct UVScrollData
 {
@@ -38,7 +41,7 @@ static const int MaxKernelSize = 16;
 // 高輝度出力用情報
 struct LuminanceExtractionData
 {
-	float			  threshold = 0.5f;		// 閾値
+	float			  threshold = 0.7f;		// 閾値
 	float			  intensity = 1.0f;		// ブルームの強度
 	DirectX::XMFLOAT2 dummy2;
 
@@ -51,6 +54,40 @@ struct FinalpassData
 	ID3D11ShaderResourceView* bloomTexture;
 };
 
+
+// シャドウマップ用情報
+struct ShadoeMapData
+{
+	ID3D11ShaderResourceView*	shadowMap;				// シャドウマップテクスチャ
+	DirectX::XMFLOAT4X4			lightViewProjection;	// ライトビュープロジェクション行列
+	DirectX::XMFLOAT3			shadowColor;			// 影の色
+	float						shadowBias;				// 深度皮革用のオフセット値
+};
+
+// キュービックカラー用
+struct CubicColorData
+{
+	int				  shaderFlag = CUBIC_DEFAULT;		// CUBIC_DEFAULT: default	CUBIC_CUSTOMIZE: 個々で色変え
+	DirectX::XMFLOAT4 rightVec;							// 右ベクトル	w: dummy
+	DirectX::XMFLOAT4 topVec;							// 上ベクトル	w: dummy
+	DirectX::XMFLOAT4 frontVec;							// 前ベクトル	w: dummy
+
+	DirectX::XMFLOAT4 colorTop1;
+	DirectX::XMFLOAT4 colorBottom1;
+	DirectX::XMFLOAT4 colorRight1;
+	DirectX::XMFLOAT4 colorLeft1;
+	DirectX::XMFLOAT4 colorBack1;
+	DirectX::XMFLOAT4 colorFront1;
+
+	DirectX::XMFLOAT4 colorTop2;
+	DirectX::XMFLOAT4 colorBottom2;
+	DirectX::XMFLOAT4 colorRight2;
+	DirectX::XMFLOAT4 colorLeft2;
+	DirectX::XMFLOAT4 colorBack2;
+	DirectX::XMFLOAT4 colorFront2;
+
+	DirectX::XMFLOAT4 colorAlpha;	// a:　ほんとに使うアルファ値		rgb: dummy
+};
 
 
 // レンダーコンテキスト
@@ -81,12 +118,11 @@ struct RenderContext
 
 	// 最終パス情報
 	FinalpassData			finalpassData;
+
+	// シャドウマップ情報
+	ShadoeMapData			shadowmapData;
+
+	// キュービックカラー情報
+	CubicColorData			cubicColorData;
 };
 
-//// レンダーコンテキスト
-//struct RenderContext
-//{
-//	DirectX::XMFLOAT4X4		view;
-//	DirectX::XMFLOAT4X4		projection;
-//	DirectX::XMFLOAT4		lightDirection;
-//};

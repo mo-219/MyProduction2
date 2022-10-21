@@ -6,6 +6,12 @@
 #include "EffectManager.h"
 #include "EnemySlime.h"
 
+#include "LightManager.h"
+#include "Graphics/Light.h"
+
+// シャドウマップのサイズ
+static const UINT SHADOWMAP_SIZE = 4096;
+
 // 初期化
 void SceneGame::Initialize()
 {
@@ -69,10 +75,22 @@ void SceneGame::Initialize()
 		
 
 		// 平行光源を追加
-		directional_light = std::make_unique<Light>(LightType::Directional);
-		ambientLightColor = { 0.2f, 0.2f, 0.2f, 0.2f };
+		//directional_light = std::make_unique<Light>(LightType::Directional);
+		//ambientLightColor = { 0.2f, 0.2f, 0.2f, 0.2f };
+		//LightManager::Instance().Register(new Light(LightType::Directional));
+
+		mainDirectionalLight = new Light(LightType::Directional);
+		mainDirectionalLight->SetDirection(DirectX::XMFLOAT3(1, -1, -1));
+		LightManager::Instance().Register(mainDirectionalLight);
+
 	}
 
+
+	// シャドウマップ用に深度ステンシルの生成
+	{
+		Graphics& graphics = Graphics::Instance();
+		shadowmapDepthStencil = std::make_unique<DepthStencil>(SHADOWMAP_SIZE, SHADOWMAP_SIZE);
+	}
 
 	// ポストプロセス描画クラス生成
 	{
@@ -315,6 +333,9 @@ void SceneGame::Render()
 	Graphics& graphics = Graphics::Instance();
 	ID3D11DeviceContext* dc = graphics.GetDeviceContext();
 
+	// シャドウマップの描画
+	RenderShadowmap();
+
 	// 3D空間の描画を別バッファに対して行う
 	Render3DScene();
 
@@ -354,7 +375,16 @@ void SceneGame::Render()
 		FLOAT color[] = { 0.0f, 0.0f, 0.5f, 1.0f }; // RGBA(0.0～1.0)
 		dc->ClearRenderTargetView(rtv, color);
 		dc->ClearDepthStencilView(dsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
 		dc->OMSetRenderTargets(1, &rtv, dsv);
+
+		// ビューポートの設定
+		D3D11_VIEWPORT	vp = {};
+		vp.Width = graphics.GetScreenWidth();
+		vp.Height = graphics.GetScreenHeight();
+		vp.MinDepth = 0.0f;
+		vp.MaxDepth = 1.0f;
+		dc->RSSetViewports(1, &vp);
 
 		// ポストプロセス処理
 		postprocessingRenderer->Render(dc);
@@ -374,6 +404,28 @@ void SceneGame::Render()
 		}
 		ImGui::Separator();
 
+		if (ImGui::TreeNode("Shadowmap"))
+		{
+			ImGui::SliderFloat("DrawRect", &shadowDrawRect, 1.0f, 2048.0f);
+			ImGui::ColorEdit3("Color", &shadowColor.x);
+			ImGui::SliderFloat("Bias", &shadowBias, 0.0f, 0.001f);
+			ImGui::Text("texture");
+			ImGui::Image(shadowmapDepthStencil->GetShaderResourceView().Get(), { 256, 256 }, { 0, 0 }, { 1, 1 },
+				{ 1, 1, 1, 1 });
+			ImGui::TreePop();
+		}
+		ImGui::Separator();
+
+		if (ImGui::Button("Phong"))
+		{
+			id = ModelShaderId::Phong;
+		}
+		if (ImGui::Button("Cubic"))
+		{
+			id = ModelShaderId::Cubic;
+		}
+		ImGui::Separator();
+		LightManager::Instance().DrawDebugGUI();
 
 	}
 
@@ -401,8 +453,10 @@ void SceneGame::Render()
 	{
 		// プレイヤーデバッグ描画
 		player->DrawDebugGUI();
-		cameraController->DrawDebugGUI();
+		//cameraController->DrawDebugGUI();
 		postprocessingRenderer->DrawDebugGUI();
+		ModelShader* shader = graphics.GetShader(ModelShaderId::Cubic);
+		shader->DebugGUI();
 	}
 }
 
@@ -435,13 +489,20 @@ void SceneGame::Render3DScene()
 	rc.deviceContext = dc;
 
 	// ライトの情報を詰め込む
-	//LightManager::Instance().PushRenderContext(rc);
-	rc.ambientLightColor = ambientLightColor;
-	rc.directionalLightData.direction.x = directional_light->GetDirection().x;
-	rc.directionalLightData.direction.y = directional_light->GetDirection().y;
-	rc.directionalLightData.direction.z = directional_light->GetDirection().z;
-	rc.directionalLightData.direction.w = 0;
-	rc.directionalLightData.color = directional_light->GetColor();
+	LightManager::Instance().PushRenderContext(rc);
+	//rc.ambientLightColor = ambientLightColor;
+	//rc.directionalLightData.direction.x = directional_light->GetDirection().x;
+	//rc.directionalLightData.direction.y = directional_light->GetDirection().y;
+	//rc.directionalLightData.direction.z = directional_light->GetDirection().z;
+	//rc.directionalLightData.direction.w = 0;
+	//rc.directionalLightData.color = directional_light->GetColor();
+
+	// シャドウマップの設定
+	rc.shadowmapData.shadowMap = shadowmapDepthStencil->GetShaderResourceView().Get();
+	rc.shadowmapData.lightViewProjection = lightViewProjection;
+	rc.shadowmapData.shadowColor = shadowColor;
+	rc.shadowmapData.shadowBias = shadowBias;
+
 
 	// カメラパラメータ
 	Camera& camera = Camera::Instance();
@@ -456,7 +517,7 @@ void SceneGame::Render3DScene()
 
 	// 3Dモデル描画
 	{
-		ModelShader* shader = graphics.GetShader(ModelShaderId::Phong);
+		ModelShader* shader = graphics.GetShader(id);
 
 		shader->Begin(rc);
 
@@ -485,6 +546,65 @@ void SceneGame::Render3DScene()
 		graphics.GetLineRenderer()->Render(dc, rc.view, rc.projection);
 		// デバッグレンダラ描画実行
 		graphics.GetDebugRenderer()->Render(dc, rc.view, rc.projection);
+
+	}
+
+}
+
+void SceneGame::RenderShadowmap()
+{
+	Graphics& graphics = Graphics::Instance();
+	ID3D11DeviceContext* dc = graphics.GetDeviceContext();
+	ID3D11RenderTargetView* rtv = nullptr;
+	ID3D11DepthStencilView* dsv = shadowmapDepthStencil->GetDepthStencilView().Get();
+
+	// 画面クリア
+	dc->ClearDepthStencilView(dsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	if (!mainDirectionalLight)	return;
+
+	// レンダーターゲット設定
+	dc->OMSetRenderTargets(0, &rtv, dsv);
+
+	// ビューポートの設定
+	D3D11_VIEWPORT vp = {};
+	vp.Width = static_cast<float>(shadowmapDepthStencil->GetWidth());
+	vp.Height = static_cast<float>(shadowmapDepthStencil->GetHeight());
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	dc->RSSetViewports(1, &vp);
+
+	// 描画処理
+	RenderContext rc;
+	rc.deviceContext = dc;
+
+	// カメラパラメータ設定
+	{
+		// 平行光源からカメラ位置を作成、原点の位置を見るように視線行列を生成
+		DirectX::XMVECTOR LightPosition = DirectX::XMLoadFloat3(&mainDirectionalLight->GetDirection());
+		LightPosition = DirectX::XMVectorScale(LightPosition, -250.0f);
+		DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(LightPosition,
+			DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f),
+			DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+
+		// シャドウマップに描画したい範囲の射影行列を生成
+		DirectX::XMMATRIX P = DirectX::XMMatrixOrthographicLH(shadowDrawRect, shadowDrawRect, 0.1f, 1000.0f);
+		DirectX::XMStoreFloat4x4(&rc.view, V);
+		DirectX::XMStoreFloat4x4(&rc.projection, P);
+		DirectX::XMStoreFloat4x4(&lightViewProjection, V* P);
+	
+	}
+
+	// 3Dモデル描画
+	{
+		ModelShader* shader = graphics.GetShader(ModelShaderId::ShadowmapCaster);
+
+		shader->Begin(rc);
+
+		stage->Render(rc, shader);
+		player->Render(rc, shader);
+		EnemyManager::Instance().Render(rc, shader);
+		shader->End(rc);
 	}
 
 }

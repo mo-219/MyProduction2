@@ -44,6 +44,8 @@ public:
 
 	// •`‰æI—¹
 	virtual void End(const RenderContext& rc) = 0;
+
+	virtual 	void DebugGUI() {};
 };
 
 class SpriteShader

@@ -218,6 +218,7 @@
     <ClInclude Include="Source\EnemyManager.h" />
     <ClInclude Include="Source\EnemySlime.h" />
     <ClInclude Include="Source\Framework.h" />
+    <ClInclude Include="Source\Graphics\CubicShader.h" />
     <ClInclude Include="Source\Graphics\DebugRenderer.h" />
     <ClInclude Include="Source\Graphics\DefaultModelShader.h" />
     <ClInclude Include="Source\Graphics\DefaultSpriteShader.h" />
@@ -227,6 +228,7 @@
     <ClInclude Include="Source\Graphics\Graphics.h" />
     <ClInclude Include="Source\Graphics\ImGuiRenderer.h" />
     <ClInclude Include="Source\Graphics\LambertShader.h" />
+    <ClInclude Include="Source\Graphics\Light.h" />
     <ClInclude Include="Source\Graphics\LineRenderer.h" />
     <ClInclude Include="Source\Graphics\LuminanceExtractionShader.h" />
     <ClInclude Include="Source\Graphics\MaskShader.h" />
@@ -245,7 +247,7 @@
     <ClInclude Include="Source\Input\GamePad.h" />
     <ClInclude Include="Source\Input\Input.h" />
     <ClInclude Include="Source\Input\Mouse.h" />
-    <ClInclude Include="Source\Light.h" />
+    <ClInclude Include="Source\LightManager.h" />
     <ClInclude Include="Source\Logger.h" />
     <ClInclude Include="Source\Misc.h" />
     <ClInclude Include="Source\Player.h" />
@@ -279,6 +281,7 @@
     <ClCompile Include="Source\EnemyManager.cpp" />
     <ClCompile Include="Source\EnemySlime.cpp" />
     <ClCompile Include="Source\Framework.cpp" />
+    <ClCompile Include="Source\Graphics\CubicShader.cpp" />
     <ClCompile Include="Source\Graphics\DebugRenderer.cpp" />
     <ClCompile Include="Source\Graphics\DefaultModelShader.cpp" />
     <ClCompile Include="Source\Graphics\DefaultSpriteShader.cpp" />
@@ -288,6 +291,7 @@
     <ClCompile Include="Source\Graphics\Graphics.cpp" />
     <ClCompile Include="Source\Graphics\ImGuiRenderer.cpp" />
     <ClCompile Include="Source\Graphics\LambertShader.cpp" />
+    <ClCompile Include="Source\Graphics\Light.cpp" />
     <ClCompile Include="Source\Graphics\LineRenderer.cpp" />
     <ClCompile Include="Source\Graphics\LuminanceExtractionShader.cpp" />
     <ClCompile Include="Source\Graphics\MaskShader.cpp" />
@@ -304,7 +308,7 @@
     <ClCompile Include="Source\Input\GamePad.cpp" />
     <ClCompile Include="Source\Input\Input.cpp" />
     <ClCompile Include="Source\Input\Mouse.cpp" />
-    <ClCompile Include="Source\Light.cpp" />
+    <ClCompile Include="Source\LightManager.cpp" />
     <ClCompile Include="Source\Loading.cpp" />
     <ClCompile Include="Source\Logger.cpp" />
     <ClCompile Include="Source\Main.cpp" />
@@ -319,7 +323,7 @@
     <ClCompile Include="Source\Stage.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="HLSL\color_filter.hlsli" />
+    <None Include="HLSL\CubicColor.hlsli" />
     <None Include="HLSL\Debug.hlsli" />
     <None Include="HLSL\FilterFunctions.hlsli" />
     <None Include="HLSL\Finalpass.hlsli" />
@@ -327,23 +331,28 @@
     <None Include="HLSL\ImGui.hlsli" />
     <None Include="HLSL\Lambert.hlsli" />
     <None Include="HLSL\Light.hlsli" />
-    <None Include="HLSL\lights.hlsli" />
     <None Include="HLSL\Line.hlsli" />
     <None Include="HLSL\LuminanceExtraction.hlsli" />
     <None Include="HLSL\Mask.hlsli" />
     <None Include="HLSL\Phong.hlsli" />
-    <None Include="HLSL\phong_shader.hlsli" />
-    <None Include="HLSL\shading_functions.hlsli" />
+    <None Include="HLSL\ShadingFunctions.hlsli" />
     <None Include="HLSL\ShadowmapCaster.hlsli" />
+    <None Include="HLSL\ShadowmapFunctions.hlsli" />
     <None Include="HLSL\Sprite.hlsli" />
     <None Include="HLSL\UVScroll.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="HLSL\color_filter_ps.hlsl">
+    <FxCompile Include="HLSL\CubicColorPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="HLSL\color_filter_vs.hlsl">
+    <FxCompile Include="HLSL\CubicColorVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="HLSL\DebugPS.hlsl">
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Shader\%(Filename).cso</ObjectFileOutput>
@@ -567,12 +576,6 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="HLSL\PhongVS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-    </FxCompile>
-    <FxCompile Include="HLSL\phong_shader_ps.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="HLSL\phong_shader_vs.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="HLSL\ShadowmapCasterVS.hlsl">

@@ -25,7 +25,7 @@ public:
     
     inline int GetHeight() const { return texture2dDesc.Height; }
 private:
-    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shaderResourceView;
-    Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
-    D3D11_TEXTURE2D_DESC texture2dDesc;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>    shaderResourceView;
+    Microsoft::WRL::ComPtr<ID3D11DepthStencilView>      depthStencilView;
+    D3D11_TEXTURE2D_DESC                                texture2dDesc;
 };

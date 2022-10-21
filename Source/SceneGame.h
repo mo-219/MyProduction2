@@ -4,11 +4,13 @@
 #include "Stage.h"
 #include "Player.h"
 #include "CameraController.h"
-#include "Light.h"
+#include "Graphics/Light.h"
 
 #include "Graphics/PostprocessingRenderer.h"
 #include "Graphics/Texture.h"
 #include "Graphics/RenderTarget.h"
+#include "Graphics/DepthStencil.h"
+
 
 
 // ゲームシーン
@@ -33,6 +35,9 @@ public:
 	// 3D空間の描画
 	void Render3DScene();
 
+	// シャドウ用情報
+	void RenderShadowmap();
+
 private:
 	Stage* stage = nullptr;
 	Player* player = nullptr;
@@ -45,7 +50,7 @@ private:
 
 
 	// 2Dデータ用変数
-		// UVスクロールデータ
+	// UVスクロールデータ
 	UVScrollData			uvScrollData;
 
 	// マスク画像
@@ -64,11 +69,24 @@ private:
 
 	//// ブルームデータ
 	//LuminanceExtractionData luminanceExtractionData;
+
 	
+	// シャドウ用情報
+	Light* mainDirectionalLight = nullptr;
+	float shadowDrawRect = 500.0f;
+
+	DirectX::XMFLOAT4X4 lightViewProjection;			  // ライトビュープロジェクション行列
+	DirectX::XMFLOAT3 shadowColor = { 0.1f, 0.1f, 0.1f}; // 影の色
+	float shadowBias = 0.0003f;
+
+	std::unique_ptr<DepthStencil>	shadowmapDepthStencil;	// シャドウ用深度ステンシル
 
 	// オフスクリーンレンダリング用描画バッファ
 	std::unique_ptr<RenderTarget> renderTarget;
 
+
 	// ポストプロセス
 	std::unique_ptr<PostprocessingRenderer> postprocessingRenderer;
+
+	ModelShaderId id = ModelShaderId::Cubic;
 };

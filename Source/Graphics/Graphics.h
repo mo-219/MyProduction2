@@ -15,8 +15,8 @@ enum class ModelShaderId
 {
 	Default,
 	Phong,
-
 	ShadowmapCaster,
+	Cubic,
 
 	Max
 };
