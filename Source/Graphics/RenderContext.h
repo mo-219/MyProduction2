@@ -41,7 +41,7 @@ static const int MaxKernelSize = 16;
 // 高輝度出力用情報
 struct LuminanceExtractionData
 {
-	float			  threshold = 0.7f;		// 閾値
+	float			  threshold = 0.95f;		// 閾値
 	float			  intensity = 1.0f;		// ブルームの強度
 	DirectX::XMFLOAT2 dummy2;
 
@@ -56,7 +56,7 @@ struct FinalpassData
 
 
 // シャドウマップ用情報
-struct ShadoeMapData
+struct ShadowMapData
 {
 	ID3D11ShaderResourceView*	shadowMap;				// シャドウマップテクスチャ
 	DirectX::XMFLOAT4X4			lightViewProjection;	// ライトビュープロジェクション行列
@@ -120,9 +120,12 @@ struct RenderContext
 	FinalpassData			finalpassData;
 
 	// シャドウマップ情報
-	ShadoeMapData			shadowmapData;
+	ShadowMapData			shadowmapData;
 
 	// キュービックカラー情報
 	CubicColorData			cubicColorData;
+
+	// シャドウぼかし
+	GaussianFilterData		shadowBlurData;
 };
 

@@ -18,6 +18,8 @@ public:
 
 	void DebugGUI() override;
 
+
+
 private:
 
 	Microsoft::WRL::ComPtr<ID3D11VertexShader>		vertexShader;
@@ -129,5 +131,19 @@ private:
 	DirectX::XMFLOAT4 colorFront2	= { 1.0f, 0.0f, 0.0f, 1.0f };
 
 	DirectX::XMFLOAT4 colorAlpha	= { 1,1,1,1 };
+
+	// シャドウぼかし用
+	struct CBShadowBlur
+	{
+		DirectX::XMFLOAT4 weights[MaxKernelSize * MaxKernelSize];
+		float kernelSize;
+		DirectX::XMFLOAT2 texcel;
+		float dummy;
+	};
+	Microsoft::WRL::ComPtr<ID3D11Buffer> ShadowBlurConstantBuffer;
+
+	// ぼかし用関数
+	void CalcGaussianFilter(CBShadowBlur& cbFilter, const GaussianFilterData& gaussianFilterData);
+
 
 };

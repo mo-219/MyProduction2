@@ -5,7 +5,7 @@ SamplerState sampler0 : register(s0);
 float4 main(VS_OUT pin) : SV_TARGET
 {
     float4 color = (float4) 0;
-    color.a = 1;
+    color.a = pin.color.a;
 	
     for (int i = 0; i < kernelSize * kernelSize; i++)
     {

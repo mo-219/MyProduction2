@@ -17,14 +17,15 @@ public:
     // 描画処理
     virtual void Render(ID3D11DeviceContext* dc, Shader* shader) = 0;
     virtual void Render(const RenderContext& rc, ModelShader* shader) = 0;
+
     // 破棄処理
     void Destroy();
 
-    // デバッグプリミティブ描画
- 
 
-    // 継承先での実装し忘れを防止するために純粋仮想関数にしておく
-    // 継承を用いるときはここをしっかり組んでおくこと
+    // デバッグプリミティブ描画
+    virtual void DrawDebugPrimitive() {};
+
+    virtual void DrawDebugImGui() {};
 
 protected:
 };

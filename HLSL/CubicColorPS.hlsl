@@ -16,10 +16,8 @@ float4 main(VS_OUT pin) : SV_TARGET
     float3 N = normalize(pin.normal);
     
     float3x3 mat = { normalize(pin.tangent), normalize(pin.binormal), normalize(pin.normal) };
-    
-    // ノーマルテクスチャ法線をワールドへ変換
-    //N = normalize(mul(N * 2.0f - 1.0f, mat));
-    
+   
+   
     
 	// マテリアル定数
     float3 ka = float3(1, 1, 1);
@@ -32,11 +30,13 @@ float4 main(VS_OUT pin) : SV_TARGET
 
 	// 平行光源のライティング計算
     float3 directionalDiffuse = CalcHalfLambert(N, L, directionalLightData.color.rgb, kd);
+    directionalDiffuse = max(directionalDiffuse, float3(0.7f, 0.7f, 0.7f));
     float3 directionalSpecular = CalcPhongSpeculer(N, L, -E, directionalLightData.color.rgb, kd.rgb);
 
     float3 shadow = CalcShadowColor(shadowMap, shadowMapSamplerState, pin.shadowTexcoord, shadowColor, shadowBias);
-    directionalDiffuse *= shadow;
-    directionalSpecular *= shadow;
+
+
+    
     
     // CubicColor
     // グラデーション用(color1とcolor2でグラデーション)
@@ -58,13 +58,13 @@ float4 main(VS_OUT pin) : SV_TARGET
 
     float4 color = float4(ambient, diffuse_color.a);
 
-    color.rgb += diffuse_color.rgb * directionalDiffuse;
-    color.rgb += directionalSpecular;
+    color.rgb += diffuse_color.rgb * directionalDiffuse * shadow;
+    color.rgb += directionalSpecular * shadow;
+    
+    //color *= float4(shadow,1.0f);
 
     color = CubicColor(color, N, color1, color2, colorAlpha.a, rightVec,topVec,frontVec);
     color = CalcFog(color, fogColor, fogRange.xy, length(pin.worldPosition.xyz - viewPosition.xyz));
-    
-    
     
     
     return color;

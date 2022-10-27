@@ -111,6 +111,11 @@ void ProjectileHoming::Render(ID3D11DeviceContext* dc, Shader* shader)
     shader->Draw(dc, model);
 }
 
+void ProjectileHoming::Render(const RenderContext& rc, ModelShader* shader)
+{
+    shader->Draw(rc, model);
+}
+
 void ProjectileHoming::Launch(const DirectX::XMFLOAT3& direction,
                               const DirectX::XMFLOAT3& position,
                               const DirectX::XMFLOAT3& target)

@@ -50,6 +50,8 @@ private:
     // ’eŠÛ‚Æ“G‚ÌÕ“Ëˆ—
     void CollisionProjectilesVsEnemies();
 
+    void CollisionPlayerVsStage();
+
     // ’eŠÛ“ü—Íˆ—
     void InputProjectile();
 

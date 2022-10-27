@@ -54,6 +54,16 @@ void ProjectileManager::Render(ID3D11DeviceContext* dc, Shader* shader)
     }
 }
 
+void ProjectileManager::Render(const RenderContext& rc, ModelShader* shader)
+{
+    for (Projectile* projectile : projectiles)
+    {
+
+        projectile->Render(rc, shader);
+        DebugPrimitive();
+    }
+}
+
 //デバッグプリミティブ描画
 void ProjectileManager::DebugPrimitive()
 {

@@ -15,6 +15,7 @@ public:
 
     // •`‰æˆ—
     void Render(ID3D11DeviceContext* dc, Shader* shader);
+    void Render(const RenderContext& dc, ModelShader* shader);
 
     // ”­Ë
     void Launch(const DirectX::XMFLOAT3& direction, const DirectX::XMFLOAT3& position);

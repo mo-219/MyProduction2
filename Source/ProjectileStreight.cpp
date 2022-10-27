@@ -51,6 +51,11 @@ void ProjectileStraight::Render(ID3D11DeviceContext* dc, Shader* shader)
     shader->Draw(dc, model);
 }
 
+void ProjectileStraight::Render(const RenderContext& rc, ModelShader* shader)
+{
+    shader->Draw(rc, model);
+}
+
 
 // ”­ŽË
 void ProjectileStraight::Launch(const DirectX::XMFLOAT3& direction,

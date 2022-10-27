@@ -249,18 +249,24 @@
     <ClInclude Include="Source\Input\Mouse.h" />
     <ClInclude Include="Source\LightManager.h" />
     <ClInclude Include="Source\Logger.h" />
+    <ClInclude Include="Source\Mathf.h" />
     <ClInclude Include="Source\Misc.h" />
     <ClInclude Include="Source\Player.h" />
     <ClInclude Include="Source\Projectile.h" />
     <ClInclude Include="Source\ProjectileHoming.h" />
     <ClInclude Include="Source\ProjectileManager.h" />
     <ClInclude Include="Source\ProjectileStraight.h" />
+    <ClInclude Include="Source\ResourceManager.h" />
     <ClInclude Include="Source\Scene.h" />
     <ClInclude Include="Source\SceneGame.h" />
     <ClInclude Include="Source\SceneLoading.h" />
     <ClInclude Include="Source\SceneManager.h" />
     <ClInclude Include="Source\SceneTitle.h" />
     <ClInclude Include="Source\Stage.h" />
+    <ClInclude Include="Source\StageDoor.h" />
+    <ClInclude Include="Source\StageMain.h" />
+    <ClInclude Include="Source\StageManager.h" />
+    <ClInclude Include="Source\StageMoveFloor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\DirectXTex\WICTextureLoader.cpp" />
@@ -312,15 +318,21 @@
     <ClCompile Include="Source\Loading.cpp" />
     <ClCompile Include="Source\Logger.cpp" />
     <ClCompile Include="Source\Main.cpp" />
+    <ClCompile Include="Source\Mathf.cpp" />
     <ClCompile Include="Source\Player.cpp" />
     <ClCompile Include="Source\Projectile.cpp" />
     <ClCompile Include="Source\ProjectileHoming.cpp" />
     <ClCompile Include="Source\ProjectileManager.cpp" />
     <ClCompile Include="Source\ProjectileStreight.cpp" />
+    <ClCompile Include="Source\ResourceManager.cpp" />
     <ClCompile Include="Source\SceneGame.cpp" />
     <ClCompile Include="Source\SceneManager.cpp" />
     <ClCompile Include="Source\SceneTitle.cpp" />
     <ClCompile Include="Source\Stage.cpp" />
+    <ClCompile Include="Source\StageDoor.cpp" />
+    <ClCompile Include="Source\StageMain.cpp" />
+    <ClCompile Include="Source\StageManager.cpp" />
+    <ClCompile Include="Source\StageMoveFloor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\CubicColor.hlsli" />
