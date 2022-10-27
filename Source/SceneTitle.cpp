@@ -82,7 +82,13 @@ void SceneTitle::Render()
 
     // 2Dスプライト描画
     {
-        SpriteShader* shader = graphics.GetShader(SpriteShaderId::Default);
+        SpriteShader* shader = graphics.GetShader(SpriteShaderId::GaussianBlur);
+        GaussianFilterData          gaussianFilterData;
+
+        rc.gaussianFilterData.deviation = gaussianFilterData.deviation;
+        rc.gaussianFilterData.kernelSize = gaussianFilterData.kernelSize;
+        rc.gaussianFilterData.textureSize.x = texture->GetWidth();
+        rc.gaussianFilterData.textureSize.y = texture->GetHeight();
 
         // 描画開始
         shader->Begin(rc);
@@ -93,5 +99,16 @@ void SceneTitle::Render()
         // 描画終了
         shader->End(rc);
     }
+
+    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_FirstUseEver);
+
+    if (ImGui::Begin(" ", nullptr, ImGuiWindowFlags_None))
+    {
+        ImGui::Image(texture->GetShaderResourceView().Get(), { 256, 256 }, { 0, 0 }, { 1, 1 },
+            { 1, 1, 1, 1 });
+
+    }
+    ImGui::End();
 
 }

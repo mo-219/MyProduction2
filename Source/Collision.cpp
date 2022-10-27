@@ -276,3 +276,55 @@ bool Collision::IntersectRayVsModel(
     
     return hit;
 }
+
+bool Collision::InstersectCubeVsCylinder(const DirectX::XMFLOAT3& cubePosition, float width, float height, float depth, const DirectX::XMFLOAT3& cylinderPosition, float cylinderRadius, float cylinderHeight, DirectX::XMFLOAT3& outCylinderPosition)
+{
+    float cubeTop = cubePosition.y + height;
+    float cubeBottom = cubePosition.y;
+
+    float cylinderTop = cylinderPosition.y + cylinderHeight;
+    float cylinderBottom = cylinderPosition.y;
+
+    // Aの足元がBの頭より上なら当たっていない
+    if (cubeBottom > cylinderTop)     return false;
+
+    // Aの頭がBの足元より下なら当たっていない
+    if (cubeTop < cylinderBottom)     return false;
+
+    float cubeLeft = cubePosition.x - width / 2;
+    float cubeRight = cubePosition.x + width / 2;
+
+    float cubeBack = cubePosition.z + depth / 2;
+    float cubeFront = cubePosition.z - depth / 2;
+
+    // XZ平面での範囲チェック
+    DirectX::XMFLOAT3 NearestPoint = cylinderPosition;  // 立方と球の最近点
+
+    if (NearestPoint.x <= cubeLeft)  NearestPoint.x = cubeLeft;
+    else if (NearestPoint.x >= cubeRight)  NearestPoint.x = cubeRight;
+    else NearestPoint.x = NearestPoint.x;                               // 変化させない
+
+    if (NearestPoint.z <= cubeFront)  NearestPoint.z = cubeFront;
+    else if (NearestPoint.z >= cubeBack)  NearestPoint.z = cubeBack;
+
+    if (NearestPoint.y <= cubeBottom)  NearestPoint.y = cubeBottom;
+    else if (NearestPoint.y >= cubeTop)  NearestPoint.y = cubeTop;
+
+    DirectX::XMFLOAT3 vec = { cylinderPosition.x - NearestPoint.x, cylinderPosition.y - NearestPoint.y, cylinderPosition.z - NearestPoint.z };
+    float dis = sqrtf(vec.x * vec.x +
+        vec.y * vec.y +
+        vec.z * vec.z);
+
+    if (cylinderRadius < dis)    return false;
+
+
+    float len = cylinderRadius - dis;
+    if (len < 0)    len *= (-1);
+
+    outCylinderPosition.x = cylinderPosition.x + (vec.x / dis * len);
+    outCylinderPosition.y = cylinderPosition.y;
+    outCylinderPosition.z = cylinderPosition.z + (vec.z / dis * len);
+
+
+    return true;
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Graphics/Shader.h"
+#include "Graphics/RenderContext.h"
 
 // 前方宣言
 class ProjectileManager;
@@ -17,6 +18,7 @@ public:
 
     // 描画処理
     virtual void Render(ID3D11DeviceContext* dc, Shader* shader) = 0;
+    virtual void Render(const RenderContext& rc, ModelShader* shader) = 0;
 
     // デバッグプリミティブ描画
     virtual void DrawDebugPrimitive();

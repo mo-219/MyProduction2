@@ -93,6 +93,10 @@ CubicShader::CubicShader(ID3D11Device* device)
 		hr = device->CreateBuffer(&desc, 0, cubicConstantBuffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
+		desc.ByteWidth = sizeof(CBShadowBlur);
+		hr = device->CreateBuffer(&desc, 0, ShadowBlurConstantBuffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+
 
 	}
 
@@ -200,6 +204,7 @@ void CubicShader::Begin(const RenderContext& rc)
 		shadowmapConstantBuffer.Get(),
 		fogConstantBuffer.Get(),
 		cubicConstantBuffer.Get(),
+		ShadowBlurConstantBuffer.Get(),
 	};
 	rc.deviceContext->VSSetConstantBuffers(0, ARRAYSIZE(constantBuffers), constantBuffers);
 	rc.deviceContext->PSSetConstantBuffers(0, ARRAYSIZE(constantBuffers), constantBuffers);
@@ -304,6 +309,10 @@ void CubicShader::Draw(const RenderContext& rc, const Model* model)
 
 	rc.deviceContext->UpdateSubresource(cubicConstantBuffer.Get(), 0, 0, &cbCubic, 0, 0);
 
+	CBShadowBlur cbShadowBlur;
+	CalcGaussianFilter(cbShadowBlur, rc.shadowBlurData);
+	
+	rc.deviceContext->UpdateSubresource(ShadowBlurConstantBuffer.Get(), 0, 0, &cbShadowBlur, 0, 0);
 
 	for (const ModelResource::Mesh& mesh : resource->GetMeshes())
 	{
@@ -361,59 +370,48 @@ void CubicShader::DebugGUI()
 
 	if (ImGui::Begin("Cubic", nullptr, ImGuiWindowFlags_None))
 	{
-
-		//ImGui::Text("Color1");
-		//{
-		//	ImGui::ColorEdit3("colorTop", &colorTop1.x);
-		//	ImGui::ColorEdit3("colorBottom", &colorBottom1.x);
-		//	ImGui::ColorEdit3("colorRight", &colorRight1.x);
-		//	ImGui::ColorEdit3("colorLeft", &colorLeft1.x);
-		//	ImGui::ColorEdit3("colorBack", &colorBack1.x);
-		//	ImGui::ColorEdit3("colorFront", &colorFront1.x);
-		//	ImGui::SliderFloat("Alpha", &colorAlpha.w, 0.0f, +1.0f);
-		//	//if (ImGui::TreeNode("ColorValue"))
-		//	//{
-		//	//	ImGui::SliderFloat3("colorTop", &colorTop1.x, 0, 1);
-		//	//	ImGui::SliderFloat3("colorBottom", &colorBottom1.x, 0, 1);
-		//	//	ImGui::SliderFloat3("colorRight", &colorRight1.x, 0, 1);
-		//	//	ImGui::SliderFloat3("colorLeft", &colorLeft1.x, 0, 1);
-		//	//	ImGui::SliderFloat3("colorBack", &colorBack1.x, 0, 1);
-		//	//	ImGui::SliderFloat3("colorFront", &colorFront1.x, 0, 1);
-		//	//	ImGui::TreePop();
-		//	//}
-		//	//ImGui::TreePop();
-		//}
-
-
-		//ImGui::Text("Color2");
-		//{
-		//	ImGui::ColorEdit3("colorTop", &colorTop2.x);
-		//	ImGui::ColorEdit3("colorBottom", &colorBottom2.x);
-		//	ImGui::ColorEdit3("colorRight", &colorRight2.x);
-		//	ImGui::ColorEdit3("colorLeft", &colorLeft2.x);
-		//	ImGui::ColorEdit3("colorBack", &colorBack2.x);
-		//	ImGui::ColorEdit3("colorFront", &colorFront2.x);
-		//	ImGui::SliderFloat("Alpha", &colorAlpha.w, 0.0f, +1.0f);
-		//	//if (ImGui::TreeNode("ColorValue"))
-		//	//{
-		//	//	ImGui::SliderFloat3("colorTop", &colorTop2.x, 0, 1);
-		//	//	ImGui::SliderFloat3("colorBottom", &colorBottom2.x, 0, 1);
-		//	//	ImGui::SliderFloat3("colorRight", &colorRight2.x, 0, 1);
-		//	//	ImGui::SliderFloat3("colorLeft", &colorLeft2.x, 0, 1);
-		//	//	ImGui::SliderFloat3("colorBack", &colorBack2.x, 0, 1);
-		//	//	ImGui::SliderFloat3("colorFront", &colorFront2.x, 0, 1);
-		//	//	ImGui::TreePop();
-		//	//}
-		//	//ImGui::TreePop();
-		//}
 		ImGui::Separator();
 		ImGui::ColorEdit3("fog_color", &fogColor.x);
 		ImGui::SliderFloat("fog_near", &fogRange.x, 0.1f, +100.0f);
 		ImGui::SliderFloat("fog_far", &fogRange.y, 0.1f, +100.0f);
-
-
 	}
 
 	ImGui::End();
+}
+
+void CubicShader::CalcGaussianFilter(CBShadowBlur& cbBlur, const GaussianFilterData& shadowBlurData)
+{
+	int kernelSize = shadowBlurData.kernelSize;
+
+	// ãÙêîÇÃèÍçáÇÕäÔêîÇ…íºÇ∑
+	if (kernelSize % 2 == 0)    kernelSize++;
+
+	kernelSize = max(1, min(MaxKernelSize - 1, MaxKernelSize));
+	cbBlur.kernelSize = kernelSize;
+	cbBlur.texcel.x = 1.0f / shadowBlurData.textureSize.x;
+	cbBlur.texcel.y = 1.0f / shadowBlurData.textureSize.y;
+
+	float deviationPow2 = 2.0f * shadowBlurData.deviation * shadowBlurData.deviation;
+	float sum = 0.0f;
+	int id = 0;
+
+	for (int y = -kernelSize / 2; y <= kernelSize / 2; y++)
+	{
+		for (int x = -kernelSize / 2; x <= kernelSize / 2; x++)
+		{
+			cbBlur.weights[id].x = (float)x;
+			cbBlur.weights[id].y = (float)y;
+			cbBlur.weights[id].z =
+				1 / (DirectX::XM_PI * deviationPow2) * expf(-((cbBlur.weights[id].x * cbBlur.weights[id].x + cbBlur.weights[id].y * cbBlur.weights[id].y) / deviationPow2));
+
+			sum += cbBlur.weights[id].z;
+			id++;
+		}
+	}
+	for (int i = 0; i < cbBlur.kernelSize * cbBlur.kernelSize; i++)
+	{
+		cbBlur.weights[i].z /= sum;
+	}
+	cbBlur.weights[0].w = shadowBlurData.deviation;
 }
 

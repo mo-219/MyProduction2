@@ -74,4 +74,12 @@ cbuffer CbCubicColor : register(b5)
     float4 colorAlpha;
 };
 
+#define KERNEL_MAX 16
+cbuffer CBFilter : register(b6)
+{
+    float4 weights[KERNEL_MAX * KERNEL_MAX];
+    float kernelSize;
+    float2 texcel;
+    float dummy;
+};
 

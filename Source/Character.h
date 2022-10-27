@@ -69,6 +69,10 @@ public:
     // ÕŒ‚‚ğ—^‚¦‚é
     void AddImpulse(const DirectX::XMFLOAT3& impulse);
 
+    int GetHealth() const { return health; }            // Œ’Nó‘Ô‚ğæ“¾
+    int GetMaxHealth() const { return maxHealth; }      // Å‘åŒ’Nó‘Ô‚ğæ“¾
+
+
 protected:
 
     //void Move(float elapsedTime, float vx, float vz, float speed);    // ˆÚ“®ˆ—
@@ -107,6 +111,7 @@ protected:
     float               height = 2.0f;
 
     int                 health = 5;
+    int                 maxHealth = 5;
 
     float               invincibleTimer = 0.0f;
     float               friction = 0.5f;    
@@ -138,7 +143,7 @@ protected:
     DirectX::XMFLOAT4 colorBack2    = { 0.2f, 0.1f, 1.0f, 1.0f };
     DirectX::XMFLOAT4 colorFront2   = { 1.0f, 0.0f, 0.0f, 1.0f };
 
-    DirectX::XMFLOAT4 colorAlpha    = { 1,1,1,1 };
+    DirectX::XMFLOAT4 colorAlpha    = { 1,1,1,0.5f };
 };
 
 //‹•”•¡‘f”‚Ì‹­‚¢”Ô

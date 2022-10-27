@@ -60,7 +60,7 @@ dcl_temps 4
 itof r0.xyz, l(0, 0, 0, 0)  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
 
 #line 8
-itof r1.w, l(1)  // r1.w <- color.w
+mov r1.w, v1.w  // r1.w <- color.w
 
 #line 10
 mov r0.w, l(0)  // r0.w <- i

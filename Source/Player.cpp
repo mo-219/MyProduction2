@@ -6,6 +6,7 @@
 
 #include "Graphics/Graphics.h"
 
+#include "StageManager.h"
 #include "EnemyManager.h"
 #include "Collision.h"
 
@@ -96,7 +97,8 @@ void Player::Update(float elapsedTime)  //前回Updateしてから今やってる時までの時
 
     CollisionProjectilesVsEnemies();
 
-    
+    CollisionPlayerVsStage();
+
 
     //オブジェクト行列を更新
     UpdateTransform();
@@ -138,6 +140,7 @@ void Player::Render(const RenderContext& rc, ModelShader* shader)
 
     prc.cubicColorData.colorAlpha    = colorAlpha;
 
+    projectileManager.Render(rc, shader);
 
     shader->Draw(prc, model);
 }
@@ -422,6 +425,48 @@ void Player::CollisionProjectilesVsEnemies()
                 }
             }
         }
+    }
+
+}
+
+void Player::CollisionPlayerVsStage()
+{
+    StageManager& stageManager = StageManager::Instance();
+    int stageCount = stageManager.GetStageCount();
+
+    for (int i = 0; i < stageCount; i++)
+    {
+        DirectX::XMFLOAT3 outPosition{};
+        Stage* stage = stageManager.GetStage(i);
+        if (stage->GetStageNum() != StageNumber::Door) continue;
+        if (!stage->GetCollisionFlag()) continue;
+
+
+        if (Collision::InstersectCubeVsCylinder(stage->GetPosition(), stage->GetWidth(), stage->GetHeight(), stage->GetDepth(), position, radius, height, outPosition))
+        {
+
+            // 敵の真上付近に当たったかどうかを確認
+            DirectX::XMVECTOR Pvec = DirectX::XMLoadFloat3(&position);
+            DirectX::XMVECTOR Evec = DirectX::XMLoadFloat3(&stage->GetPosition());
+            DirectX::XMVECTOR vec = DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(Pvec, Evec));
+
+            DirectX::XMFLOAT3 normal;
+            DirectX::XMStoreFloat3(&normal, vec);
+
+            // 上を踏みつけていたら小ジャンプ(normalのy成分に値が入っていたら)
+            if (normal.y > 0.8f)
+            {
+                Jump(jumpSpeed * 0.3f);
+            }
+            else
+            {
+                // 押し出し後の位置設定
+                position = outPosition;
+
+            }
+
+        }
+
     }
 
 }

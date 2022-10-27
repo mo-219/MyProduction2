@@ -17,6 +17,7 @@ public:
 
     // •`‰æˆ—
     void Render(ID3D11DeviceContext* dc, Shader* shader) override;
+    void Render(const RenderContext& dc, ModelShader* shader) override;
 
     // ”­Ë
     void Launch(const DirectX::XMFLOAT3& direction, 

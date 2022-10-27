@@ -177,9 +177,8 @@ void PostprocessingRenderer::DrawDebugGUI()
 {
     if (ImGui::TreeNode("PostProcess"))
     {
-        if (ImGui::Checkbox("ON", &effectFlag))  effectFlag = true;
-        ImGui::SameLine();
-        if (ImGui::Checkbox("OFF", &effectFlag))  effectFlag = false;
+        if (ImGui::Button("ON"))effectFlag = true;
+        if (ImGui::Button("OFF"))effectFlag = false;
 
         if (ImGui::TreeNode("Bloom"))
         {

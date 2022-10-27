@@ -2,6 +2,7 @@
 #include <vector>
 #include <set>
 #include "Projectile.h"
+#include "Graphics/RenderContext.h"
 
 // 弾丸マネージャー
 class ProjectileManager
@@ -16,6 +17,7 @@ public:
 
     // 描画処理
     void Render(ID3D11DeviceContext* dc, Shader* shader);
+    void Render(const RenderContext& dc, ModelShader* shader);
 
     // デバッグプリミティブ
     void DebugPrimitive();

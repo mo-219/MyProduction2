@@ -35,7 +35,34 @@ public:
 	// リソース取得
 	const ModelResource* GetResource() const { return resource.get(); }
 
+//--------------------------------------------------------------
+//
+//			アニメーション
+//
+//--------------------------------------------------------------
+	void UpdateAnimation(float elapsedTime);							// 更新処理
+	void PlayAnimation(int index, bool loop, float blendSeconds = 0.2f);	// 再生
+	bool IsPlayAnimation() const;										// 再生中かどうか	
+	float GetCurrentAnimetionSeconds() const
+	{
+		return currentAnimationSeconds;
+	}								// 現在の再生時間取得
+
+// ノード検索
+	Node* FindNode(const char* name);
+
+
 private:
 	std::shared_ptr<ModelResource>	resource;
 	std::vector<Node>				nodes;
+
+
+	int		currentAnimationIndex = -1;
+	float	currentAnimationSeconds = 0.0f;
+
+	bool	animationLoopFlag = false;
+	bool	animationEndFlag = false;
+
+	float	animationBlendTime = 0.0f;
+	float	animationBlendSeconds = 0.0f;
 };

@@ -46,5 +46,24 @@ float3 CalcShadowColor(Texture2D tex, SamplerState samplerState, float3 shadowTe
     float shadow = step(shadowTexcoord.z - depth, shadowBias);
     
     return lerp(shadowColor, 1, shadow);
+}
+
+//------------------------------------------------
+//
+// シャドウマップからライト空間座標に変換とZ値比較
+//
+//------------------------------------------------
+
+float3 GetShadow(Texture2D tex, SamplerState samplerState, float3 shadowTexcoord, float3 shadowColor, float shadowBias)
+{
+    float2 depth = tex.Sample(samplerState, shadowTexcoord.xy).rg;
+    
+    float v = max(shadowBias, depth.y-depth.x*depth.x);
+    float e = shadowTexcoord.z - depth.x;
+    float s = saturate(v / (v+e*e));
+    
+    return shadowColor + (1.0f - shadowColor) * s;
 
 }
+
+

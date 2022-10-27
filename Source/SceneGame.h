@@ -38,9 +38,16 @@ public:
 	// シャドウ用情報
 	void RenderShadowmap();
 
+	// エネミーHPゲージの描画
+	void RenderEnemyGauge(
+		const RenderContext& rc,
+		const DirectX::XMFLOAT4X4& view,
+		const DirectX::XMFLOAT4X4& projection);
+
+
 private:
-	Stage* stage = nullptr;
 	Player* player = nullptr;
+	Sprite* guage = nullptr;
 
 	CameraController* cameraController = nullptr;
 
@@ -62,24 +69,24 @@ private:
 	std::unique_ptr<Sprite>		sprite;
 	std::unique_ptr<Texture>	texture;
 
-	//// ガウスフィルターデータ
-	//GaussianFilterData			gaussianFilterData;
-	//std::unique_ptr<Texture>	gaussianBlurTexture;
-	//std::unique_ptr<Sprite>		gaussianBlurSprite;
-
-	//// ブルームデータ
-	//LuminanceExtractionData luminanceExtractionData;
 
 	
 	// シャドウ用情報
 	Light* mainDirectionalLight = nullptr;
-	float shadowDrawRect = 500.0f;
+	float shadowDrawRect = 160.0f;
 
 	DirectX::XMFLOAT4X4 lightViewProjection;			  // ライトビュープロジェクション行列
-	DirectX::XMFLOAT3 shadowColor = { 0.1f, 0.1f, 0.1f}; // 影の色
-	float shadowBias = 0.0003f;
+	DirectX::XMFLOAT3 shadowColor = { 0.01f, 0.0f, 1.0f}; // 影の色
+	float shadowBias = 0.00045f;
 
+	//std::unique_ptr<RenderTarget>	shadowmapRenderTarget;	// シャドウ用深度ステンシル
+	std::unique_ptr<Sprite>         shadowSprite;
+	std::unique_ptr<RenderTarget>   shadowBlurTarget;
 	std::unique_ptr<DepthStencil>	shadowmapDepthStencil;	// シャドウ用深度ステンシル
+	int				  shadowKernelSize = 8;		// カーネルサイズ
+	float			  shadowDeviation = 10.0f;	// 標準偏差
+
+
 
 	// オフスクリーンレンダリング用描画バッファ
 	std::unique_ptr<RenderTarget> renderTarget;

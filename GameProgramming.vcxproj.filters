@@ -49,6 +49,9 @@
     <Filter Include="Source\Character\Projectile">
       <UniqueIdentifier>{28054b87-e3e0-4211-be0d-3e96e6b7dcd8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Scene\Stage">
+      <UniqueIdentifier>{a7716523-f2db-4811-a0d5-bb5786644f88}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\imgui\imconfig.h">
@@ -133,9 +136,6 @@
       <Filter>Source\Input</Filter>
     </ClInclude>
     <ClInclude Include="Source\SceneGame.h">
-      <Filter>Source\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Stage.h">
       <Filter>Source\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Source\Character.h">
@@ -240,6 +240,27 @@
     <ClInclude Include="Source\Graphics\CubicShader.h">
       <Filter>Source\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="Source\ResourceManager.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Stage.h">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\StageManager.h">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\StageMain.h">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\StageMoveFloor.h">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Mathf.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\StageDoor.h">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\imgui\imgui.cpp">
@@ -309,9 +330,6 @@
       <Filter>Source\Input</Filter>
     </ClCompile>
     <ClCompile Include="Source\SceneGame.cpp">
-      <Filter>Source\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Stage.cpp">
       <Filter>Source\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Source\Character.cpp">
@@ -415,6 +433,27 @@
     </ClCompile>
     <ClCompile Include="Source\Graphics\CubicShader.cpp">
       <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ResourceManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Stage.cpp">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\StageManager.cpp">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\StageMoveFloor.cpp">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\StageMain.cpp">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Mathf.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\StageDoor.cpp">
+      <Filter>Source\Scene\Stage</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
