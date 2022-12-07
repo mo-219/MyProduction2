@@ -1,6 +1,7 @@
 #pragma once
 
 #include<DirectXMATH.h>
+#include<Param.h>
 
 //キャラクター
 class Character
@@ -14,7 +15,7 @@ public:
     //bool ApplyDamage(int damage);
 
 protected:
-    DirectX::XMFLOAT3   position = { 0,0,0 };
+    //DirectX::XMFLOAT3   position = { 0,0,0 };
     DirectX::XMFLOAT3   angle = { 0,0,0 };
     DirectX::XMFLOAT3   scale = { 1,1,1 };
     DirectX::XMFLOAT4X4 transform = {
@@ -27,14 +28,24 @@ protected:
     //XMはdirectXのMathの意味かもねん
 
 public:
+
+    enum CharacterName
+    {
+        NONE = -1,
+        PLAYER = 0,
+        ENEMY_RED,
+        ENEMY_SLIME,
+        ENEMY_GOLEM
+    };
+
     //行列更新処理
     void UpdateTransform();
 
     // 位置習得
-    const DirectX::XMFLOAT3& GetPosition() const { return position; }
+    const DirectX::XMFLOAT3& GetPosition() const { return param.position; }
 
     // 位置設定
-    void setPosition(const DirectX::XMFLOAT3& position) { this->position = position; }
+    void setPosition(const DirectX::XMFLOAT3& position) { this->param.position = position; }
 
     // 回転取得
     const DirectX::XMFLOAT3& GetAngle() const { return angle; }
@@ -49,13 +60,18 @@ public:
     void SetScale(const DirectX::XMFLOAT3& scale) { this->scale = scale; }
 
     // 半径取得
-    float GetRadius() const { return radius; }
+    float GetRadius() const { return param.radius; }
 
     // 地面に接地しているか
     bool IsGround() const { return isGround; }
 
     // 高さ取得
-    float GetHeight() const { return height; }
+    float GetHeight() const { return param.height; }
+    float GetWidth() const { return param.width; }
+    float GetDepth() const { return param.depth; }
+
+    float GetRayCastRadius() const { return param.rayCastRadius; }
+    void  SetRayCastRadius(float rad) { param.rayCastRadius = rad; }
 
 
 
@@ -71,6 +87,8 @@ public:
 
     int GetHealth() const { return health; }            // 健康状態を取得
     int GetMaxHealth() const { return maxHealth; }      // 最大健康状態を取得
+
+    Param GetParam() { return param; }
 
 
 protected:
@@ -96,19 +114,24 @@ protected:
     void UpdateInvincibleTimer(float elapsedTime);    // 無敵時間更新
 
 
+
 private:
     void UpdateHorizontalVelocity(float elapsedFrame);  // 水平速力更新処理
 
     void UpdateHorizontalMove(float elapsedTime);       // 水平移動更新処理
 
 protected:
-    float               radius = 0.5f;
+    //float               radius = 0.5f;
+    //float               height = 2.0f;
+
+    CharacterName name = CharacterName::NONE;
+
+    Param param = { DirectX::XMFLOAT3(0,0,0), 0.5f, 0.0f,2.0f,0.0f,0.0f };
 
     float               gravity = -1.0f;          // 1フレームの重力
     DirectX::XMFLOAT3   velocity = { 0,0,0 };     // 速力
     bool                isGround = false;
 
-    float               height = 2.0f;
 
     int                 health = 5;
     int                 maxHealth = 5;
@@ -124,7 +147,7 @@ protected:
     float               airControl = 0.3f;      // -にしたいけどfrictionとaccelerationが-になったとき値が
                                                 // 思った通りにできないかもしれないので注意
 
-    float               stepOffset = 1.0f;
+    float               stepOffset = 1.1f;
     float               slopeRate = 1.0f;
 
     // シェーダー用
@@ -144,6 +167,31 @@ protected:
     DirectX::XMFLOAT4 colorFront2   = { 1.0f, 0.0f, 0.0f, 1.0f };
 
     DirectX::XMFLOAT4 colorAlpha    = { 1,1,1,0.5f };
+
+
+    // ディゾルブ
+    struct DissolveData
+    {
+        float				dissolveThreshold = 0.0f;
+        float				edgeThreshold = 0.01f;		    // 縁の閾値
+        float               maskFlag = 1;			        // 0:マスクしない   1:マスクする
+        DirectX::XMFLOAT4	edgeColor = {1,0,0,1};			// 縁の色
+    };
+    DissolveData    dissolveData;
+
+    float collisionRange = 10;
+
+public:
+    float GetDissolveThreshold() { return dissolveData.dissolveThreshold; }
+    float GetEdgeThreshold() { return dissolveData.edgeThreshold; }
+    float GetMaskFlag() { return dissolveData.maskFlag; }
+
+    void IncDissolveThreshold() { ++dissolveData.dissolveThreshold; }
+    void PlusDissolveThreshold(float n) { dissolveData.dissolveThreshold += n; }
+
+    void SetDissolveThreshold(float a) { dissolveData.dissolveThreshold = a; }
+    void SetMaskFlag(float a) { dissolveData.maskFlag = a; }
+
 };
 
 //虚数複素数の強い番

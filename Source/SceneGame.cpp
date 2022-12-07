@@ -5,6 +5,8 @@
 #include "EnemyManager.h"
 #include "EffectManager.h"
 #include "StageManager.h"
+#include "GameObjectManager.h" 
+#include "LoadObj.h"
 
 #include "EnemySlime.h"
 #include "StageMain.h"
@@ -12,10 +14,13 @@
 #include "StageDoor.h"
 
 
+
 #include "Input/Input.h"
 
 #include "LightManager.h"
 #include "Graphics/Light.h"
+
+#include "LevelManager.h"
 
 // シャドウマップのサイズ
 static const UINT SHADOWMAP_SIZE = 4096;
@@ -23,6 +28,11 @@ static const UINT SHADOWMAP_SIZE = 4096;
 // 初期化
 void SceneGame::Initialize()
 {
+
+	timer = 0;
+
+
+
 	// ステージ初期化
 	StageManager& stageManager = StageManager::Instance();
 	StageMain* stageMain = new StageMain();
@@ -36,13 +46,10 @@ void SceneGame::Initialize()
 	//stageMoveFloor->setStageNum(StageNumber::Movefloor);
 	//stageManager.Register(stageMoveFloor);
 
-	StageDoor* stageDoor = new StageDoor();
-	stageDoor->setPosition(13, 0, 1);
-	stageDoor->setWidth(2);
-	stageDoor->setHeight(3);
-	stageDoor->setDepth(3);
-	stageDoor->setStageNum(StageNumber::Door);
-	stageManager.Register(stageDoor);
+
+
+
+
 
 
 	// プレイヤー初期化
@@ -51,7 +58,18 @@ void SceneGame::Initialize()
 	// ゲージスプライト
 	guage = new Sprite();
 
-	shadowSprite = std::make_unique<Sprite>();
+	// 画面遷移用
+	fade.setSprite();
+	fade.pos = { 0,0 };
+	fade.size = { 1280,720 };
+	fade.color = { 0.0f,0.0f,0.0f,1.0f };
+
+
+
+	// レベルマネージャー初期化
+	LevelManager::Instance().Initialize(all_script);
+
+	//StageManager::Instance().GetStage(1)->GetCollisionFlag
 
 	// カメラ初期設定
 	Graphics& graphics = Graphics::Instance();
@@ -91,28 +109,10 @@ void SceneGame::Initialize()
 														  static_cast<UINT>(graphics.GetScreenHeight()),
 														  DXGI_FORMAT_R8G8B8A8_UNORM);
 
-			//// spriteで描画するものをシーンの描画結果に変える
-			//sprite = std::make_unique<Sprite>();
-			//sprite->SetShaderResourceView(renderTarget->GetShaderResourceView(),
-			//							  renderTarget->GetWidth(), 
-			//							  renderTarget->GetHeight());
+
 		}
 
 
-		//// ガウスブラー用スプライト生成
-		//{
-		//	// テクスチャを読み込む
-		//	gaussianBlurTexture = std::make_unique<Texture>("Data/Texture/1920px-Equirectangular-projection.jpg");
-		//	gaussianBlurSprite = std::make_unique<Sprite>();
-		//	gaussianBlurSprite->SetShaderResourceView(gaussianBlurTexture->GetShaderResourceView(), gaussianBlurTexture->GetWidth(),
-		//		gaussianBlurTexture->GetHeight());
-		//}
-		
-
-		// 平行光源を追加
-		//directional_light = std::make_unique<Light>(LightType::Directional);
-		//ambientLightColor = { 0.2f, 0.2f, 0.2f, 0.2f };
-		//LightManager::Instance().Register(new Light(LightType::Directional));
 
 		mainDirectionalLight = new Light(LightType::Directional);
 		mainDirectionalLight->SetDirection(DirectX::XMFLOAT3(1, -1, -1));
@@ -144,17 +144,10 @@ void SceneGame::Initialize()
 	// カメラコントローラー初期化
 	cameraController = new CameraController();
 
-	// エネミー初期化
-	//EnemyManager::Instance().Register(new EnemySlime());
-	EnemyManager& enemyManager = EnemyManager::Instance();	// 先を見据えるとこっちのほうが良い
-	Enemy* enemy = new EnemySlime();
-	enemy->setPosition(DirectX::XMFLOAT3{ 5, 0, 5 });
-	enemyManager.Register(enemy);
 
-	enemy = new EnemySlime();
-	enemy->setPosition(DirectX::XMFLOAT3{ 7, 0, 5 });
-	enemyManager.Register(enemy);
-
+	LoadObj load;
+	load.Load("Data/Stage/SimpleNaturePack/GameObjectData.json");
+	load.Create(stage1_mapData);
 
 }
 
@@ -193,23 +186,135 @@ void SceneGame::Finalize()
 // 更新処理
 void SceneGame::Update(float elapsedTime)
 {
-	StageManager::Instance().Update(elapsedTime);
+	LevelManager& levelManager = LevelManager::Instance();
+	EnemyManager& enemyManager = EnemyManager::Instance();
+	StageManager& stageManager = StageManager::Instance();
+	EffectManager& effctManager = EffectManager::Instance();
+	ObjectManager& objectManager = ObjectManager::Instance();
 
-	player->Update(elapsedTime);
+	DirectX::XMFLOAT3 target;
+	StageDoor* stageDoor;
+	switch (state)
+	{
+	case State::INITIALIZE:
+		// ステージの初期化
+		levelManager.Initialize(currentStageNum);
+		levelManager.update(elapsedTime);	// リスポン位置取得
+		player->Initialize(levelManager.GetRespawnPos());
 
-	// カメラコントローラー更新処理
-	DirectX::XMFLOAT3 target = player->GetPosition();
-	target.y += 0.5f;
-	cameraController->SetTarget(target);
-	cameraController->Update(elapsedTime);
+		timer = 0;
 
-	EnemyManager::Instance().Update(elapsedTime);
+		// ドア生成
+		stageDoor = new StageDoor();
+		stageDoor->setPosition(13, 0, 1);
+		stageDoor->setWidth(2);
+		stageDoor->setHeight(3);
+		stageDoor->setDepth(3);
+		stageDoor->setStageNum(StageNumber::Door);
+		stageManager.Register(stageDoor);
 
-	// エフェクト更新処理
-	EffectManager::Instance().Update(elapsedTime);
+		state = State::FADEOUT;
+
+		/*fallthrough*/
+	case State::FADEOUT:
+		// フェードアウト
+
+		if (fade.fadeOut(0.01f))
+		{
+			state = State::UPDATE;
+		}
+
+		stageManager.Update(elapsedTime);
+
+		player->UpdateOnlyTransform(elapsedTime);
+
+		// カメラコントローラー更新処理
+		target = player->GetPosition();
+		target.y += 0.5f;
+		cameraController->SetTarget(target);
+		cameraController->UpdateOnlyTransform(elapsedTime);
+
+		//
+		objectManager.Update(elapsedTime);
+		//
+
+		enemyManager.UpdateOnlyTransform(elapsedTime);
+
+		// エフェクト更新処理
+		effctManager.Update(elapsedTime);
+		break;
+
+	case State::UPDATE:
+		// 更新処理
+		if (player->GetStageClearFlag())
+		{
+			state = State::END;
+			stageManager.StageNumDelete(StageNumber::Door);
+
+			break;
+		}
+		stageManager.Update(elapsedTime);
+		levelManager.update(elapsedTime);
+
+		player->Update(elapsedTime);
+
+		// カメラコントローラー更新処理
+		target = player->GetPosition();
+		target.y += 0.5f;
+		cameraController->SetTarget(target);
+		cameraController->Update(elapsedTime);
+
+		enemyManager.Update(elapsedTime);
+		//
+		objectManager.Update(elapsedTime);
+		//
+
+		// エフェクト更新処理
+		effctManager.Update(elapsedTime);
+
+		break;
+
+	case State::FADEIN:
+		// フェードイン
+		if (fade.fadeIn(0.01f))
+		{
+			state = State::END;
+		}
+
+		stageManager.Update(elapsedTime);
+		//
+		objectManager.Update(elapsedTime);
+		//
+		player->UpdateOnlyTransform(elapsedTime);
+
+		// カメラコントローラー更新処理
+		target = player->GetPosition();
+		target.y += 0.5f;
+		cameraController->SetTarget(target);
+		cameraController->UpdateOnlyTransform(elapsedTime);
+
+
+		enemyManager.UpdateOnlyTransform(elapsedTime);
+
+		// エフェクト更新処理
+		effctManager.Update(elapsedTime);
+		break;
+
+	case State::END:
+		// ステージが終わった際
+		enemyManager.Clear();	//一応全部消しとく
+		
+
+		++currentStageNum;
+		if (currentStageNum > levelManager.GetStageMax())currentStageNum = 0;
+		state = State::INITIALIZE;
+		break;
+	}
 
 	Graphics& graphics = Graphics::Instance();
 	ID3D11DeviceContext* dc = graphics.GetDeviceContext();
+
+	timer++;
 }
 
 
@@ -274,8 +379,13 @@ void SceneGame::Render()
 		vp.MaxDepth = 1.0f;
 		dc->RSSetViewports(1, &vp);
 
+		RenderContext rc;
+		rc.deviceContext = dc;
+		rc.BlurCount = timer % 2;
+
 		// ポストプロセス処理
 		postprocessingRenderer->Render(dc);
+		//postprocessingRenderer->Render(&rc);
 	}
 
 
@@ -322,47 +432,48 @@ void SceneGame::Render()
 
 	// 2Dスプライト描画
 	{
-#if 0
-		SpriteShader* shader = graphics.GetShader(SpriteShaderId::LuminanceExtraction);
 		RenderContext rc;
-
 		rc.deviceContext = dc;
-		rc.gaussianFilterData = gaussianFilterData;
-		rc.gaussianFilterData.textureSize.x = gaussianBlurTexture->GetWidth();
-		rc.gaussianFilterData.textureSize.y = gaussianBlurTexture->GetHeight();
-		rc.gaussianFilterData.kernelSize = gaussianFilterData.kernelSize;
-		rc.luminanceExtractionData = luminanceExtractionData;
 
-		shader->Begin(rc);
-		shader->Draw(rc, gaussianBlurSprite.get());
-		shader->End(rc);
-#endif
-		//RenderContext rc;
-		//rc.deviceContext = dc;
+		// 画面遷移用
+		SpriteShader* shader = graphics.GetShader(SpriteShaderId::Default);
 
-		//Camera& camera = Camera::Instance();
-		//rc.viewPosition.x = camera.GetEye().x;
-		//rc.viewPosition.y = camera.GetEye().y;
-		//rc.viewPosition.z = camera.GetEye().z;
-		//rc.viewPosition.w = 1;
-		//rc.view = camera.GetView();
-		//rc.projection = camera.GetProjection();
+		fade.sprite->Update(
+			fade.pos.x, fade.pos.y,
+			fade.size.x, fade.size.y,
+			0, 0,
+			fade.size.x, fade.size.y,
+			0,
+			fade.color.x, fade.color.y,
+			fade.color.z, fade.color.w);
 
-		//RenderEnemyGauge(rc, rc.view, rc.projection);
+		// 描画開始
+        shader->Begin(rc);
+
+        // 描画
+        shader->Draw(rc, fade.sprite);
+
+        // 描画終了
+        shader->End(rc);
 
 	}
 
 	// 2DデバッグGUI描画
 	{
 		// プレイヤーデバッグ描画
-
+		
 
 		player->DrawDebugGUI();
 		StageManager::Instance().DrawDebugGUI();
-		//cameraController->DrawDebugGUI();
+		cameraController->DrawDebugGUI();
 		postprocessingRenderer->DrawDebugGUI();
 		ModelShader* shader = graphics.GetShader(ModelShaderId::Cubic);
+		EnemyManager::Instance().DrawDebugGUI();
 		shader->DebugGUI();
+
+		ObjectManager::Instance().setNearNum(
+			ObjectManager::Instance().findNear(player->GetPosition()));
+		ObjectManager::Instance().DrawDebugGUI();
 
 	}
 }
@@ -429,9 +540,10 @@ void SceneGame::Render3DScene()
 		shader->Begin(rc);
 
 		// ステージ描画
-		StageManager::Instance().Render(rc, shader);
+		//StageManager::Instance().Render(rc, shader);
 		player->Render(rc, shader);
 		EnemyManager::Instance().Render(rc, shader);
+		ObjectManager::Instance().Render(rc, shader);
 
 		shader->End(rc);
 	}
@@ -448,7 +560,9 @@ void SceneGame::Render3DScene()
 		// グリッド描画
 		player->DrawDebugPrimitive();
 		EnemyManager::Instance().DrawDebugPrimitive();
-		StageManager::Instance().DrawDebugPrimitive();
+		//StageManager::Instance().DrawDebugPrimitive();
+		ObjectManager::Instance().DrawDebugPrimitive();
+
 
 
 		// ラインレンダラ描画実行
@@ -511,9 +625,11 @@ void SceneGame::RenderShadowmap()
 
 			shader->Begin(rc);
 
-			StageManager::Instance().Render(rc, shader);
+			//StageManager::Instance().Render(rc, shader);
 			player->Render(rc, shader);
 			EnemyManager::Instance().Render(rc, shader);
+			ObjectManager::Instance().Render(rc, shader);
+
 			shader->End(rc);
 		}
 	}

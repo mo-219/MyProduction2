@@ -23,11 +23,12 @@ struct DirectionalLightData
 struct MaskData
 {
 	ID3D11ShaderResourceView* maskTexture;
-	float					dissolveThreshold;
-	float					edgeThreshold; 	// 縁の閾値
-	DirectX::XMFLOAT4			edgeColor;		// 縁の色
-};
+	float					  dissolveThreshold = 0.0f;
+	float				      edgeThreshold = 0.2f;			// 縁の閾値
+	DirectX::XMFLOAT4		  edgeColor = {1,0,0,1};		// 縁の色
 
+	float					  maskFlag = 1.0f;
+};
 
 // ガウスフィルター計算情報
 struct GaussianFilterData
@@ -127,5 +128,7 @@ struct RenderContext
 
 	// シャドウぼかし
 	GaussianFilterData		shadowBlurData;
+
+	int BlurCount = 0;
 };
 

@@ -17,4 +17,7 @@ public:
 
 private:
     bool ready = false;
+
+protected:
+    int timer = 0;
 };

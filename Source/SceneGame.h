@@ -2,14 +2,17 @@
 
 #include "Scene.h"
 #include "Stage.h"
-#include "Player.h"
 #include "CameraController.h"
 #include "Graphics/Light.h"
+#include "Player.h"
 
 #include "Graphics/PostprocessingRenderer.h"
 #include "Graphics/Texture.h"
 #include "Graphics/RenderTarget.h"
 #include "Graphics/DepthStencil.h"
+#include "Rect.h"
+
+#include "LevelScript.h"
 
 
 
@@ -46,8 +49,24 @@ public:
 
 
 private:
+
+	enum class State
+	{
+		Error = -1,
+		INITIALIZE = 0,
+		FADEOUT,
+		UPDATE,
+		FADEIN,
+		END,
+
+		MAX
+	};
+
+	Rect fade;		// 画面遷移用
 	Player* player = nullptr;
 	Sprite* guage = nullptr;
+	State state = State::INITIALIZE;
+	int currentStageNum = 0;
 
 	CameraController* cameraController = nullptr;
 
@@ -73,7 +92,7 @@ private:
 	
 	// シャドウ用情報
 	Light* mainDirectionalLight = nullptr;
-	float shadowDrawRect = 160.0f;
+	float shadowDrawRect = 80.0f;
 
 	DirectX::XMFLOAT4X4 lightViewProjection;			  // ライトビュープロジェクション行列
 	DirectX::XMFLOAT3 shadowColor = { 0.01f, 0.0f, 1.0f}; // 影の色

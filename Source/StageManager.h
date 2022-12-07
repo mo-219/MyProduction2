@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <set>
 #include "Stage.h"
 
 // ステージマネージャー
@@ -29,8 +30,14 @@ public:
     // ステージ登録
     void Register(Stage* stage);
 
+    // ステージ削除
+    void Remove(Stage* stage);
+
     // ステージ全削除
     void Clear();
+
+    // 特定ステージの全削除
+    void StageNumDelete(int type);
 
     // ステージ数ゲッター
     int GetStageCount() const { return static_cast<int>(stages.size()); }
@@ -45,7 +52,11 @@ public:
     void DrawDebugPrimitive();
 
 
+
 private:
     std::vector<Stage*> stages;
+    std::set<Stage*>    removes;
+
+
 
 };

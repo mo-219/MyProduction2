@@ -3,6 +3,7 @@
 #include <vector>
 #include <set>
 #include "Enemy.h"
+#include <DirectXMath.h>
 
 // エネミーマネージャー
 class EnemyManager
@@ -21,6 +22,7 @@ public:
 
     // 更新処理
     void Update(float elapsedTime);
+    void UpdateOnlyTransform(float elapsedTime);
 
     // 描画処理
     void Render(ID3D11DeviceContext* context, Shader* shader);
@@ -38,6 +40,8 @@ public:
     // デバッグプリミティブ描画
     void DrawDebugPrimitive();
 
+    void DrawDebugGUI();
+
     // エネミー数取得
     int GetEnemyCount() const { return static_cast<int>(enemies.size()); }
 
@@ -52,3 +56,43 @@ private:
     std::vector<Enemy*> enemies;
     std::set<Enemy*>    removes;
 };
+
+
+
+// エネミーアニメーション
+//
+//
+//
+//  Blue、Red
+// 
+//  Tpose,
+//  Attack1,
+//  Attack2,
+//  Die,
+//  Hit,
+//  Idle,
+//  Jump,
+//  Running,
+//  Walking,
+//
+//
+//
+//  Spider
+//  Tpose,
+//  Attack1,
+//  Attack2,
+//  Cast_Spell,
+//  Defend,
+//  Die,
+//  Idle,
+//  Jump,
+//  Run,
+//  Hit,
+//  Walk
+//
+//
+//
+//
+//
+//
+//

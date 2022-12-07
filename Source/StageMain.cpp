@@ -53,5 +53,5 @@ RenderContext StageMain::SetRenderContext(const RenderContext& rc)
 // レイキャスト
 bool StageMain::RayCast(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hit)
 {
-    return Collision::IntersectRayVsModel(start, end, model, hit);
+    return Collision::IntersectRayVsModel(start, end, model, 10.0f, hit);
 }

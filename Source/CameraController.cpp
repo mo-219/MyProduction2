@@ -23,7 +23,12 @@ void CameraController::Update(float elapsedTime)
     if (angle.y < DirectX::XM_PI)  angle.y += DirectX::XM_2PI;
 
 
+    UpdateOnlyTransform(elapsedTime);
 
+}
+
+void CameraController::UpdateOnlyTransform(float elapsedTime)
+{
     // ƒJƒƒ‰‚Ì‰ñ“]’l‚ð‰ñ“]s—ñ‚É•ÏŠ·
     DirectX::XMMATRIX Transform = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
 
@@ -48,6 +53,7 @@ void CameraController::Update(float elapsedTime)
     Camera::Instance().SetLookAt(eye, target, DirectX::XMFLOAT3(0, 1, 0));
 
 }
+
 void CameraController::DrawDebugGUI()
 {
     ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);

@@ -25,7 +25,6 @@ public:
     std::shared_ptr<ModelResource>LoadModelResource(const char* fileName);
 
 private:
-    // HACK ƒƒ‚ƒŠƒŠ[ƒN‚µ‚½‚ç‚±‚±•Ï‚¦‚éweak_ptr‚É
     using ModelMap = std::map<std::string, std::shared_ptr<ModelResource>>;
     ModelMap models;
 };

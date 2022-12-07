@@ -232,7 +232,7 @@ void DebugRenderer::Render(ID3D11DeviceContext* context, const DirectX::XMFLOAT4
 		context->UpdateSubresource(constantBuffer.Get(), 0, 0, &cbMesh, 0, 0);
 		context->Draw(cubeVertexCount, 0);
 	}
-	spheres.clear();
+	cubes.clear();
 
 }
 

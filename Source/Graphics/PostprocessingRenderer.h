@@ -31,6 +31,7 @@ public:
 
     // •`‰æ
     void Render(ID3D11DeviceContext* device);
+    void Render(const RenderContext* rc);
 
     // ƒV[ƒ“î•ñ‚Ìİ’è
     void SetSceneData(ShaderResourceViewData srvData);

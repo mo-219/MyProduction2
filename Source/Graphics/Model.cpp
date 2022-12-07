@@ -44,6 +44,7 @@ void Model::UpdateTransform(const DirectX::XMFLOAT4X4& transform)
 
 	for (Node& node : nodes)
 	{
+		node.name;
 		// ƒ[ƒJƒ‹s—ñZo
 		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(node.scale.x, node.scale.y, node.scale.z);
 		DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&node.rotate));
@@ -65,6 +66,8 @@ void Model::UpdateTransform(const DirectX::XMFLOAT4X4& transform)
 		// ŒvZŒ‹‰Ê‚ğŠi”[
 		DirectX::XMStoreFloat4x4(&node.localTransform, LocalTransform);
 		DirectX::XMStoreFloat4x4(&node.worldTransform, WorldTransform);
+
+		WorldTransform = LocalTransform * ParentTransform;
 	}
 }
 
@@ -201,7 +204,7 @@ void Model::UpdateAnimation(float elapsedTime)
 	}
 
 	// ŠÔŒo‰ß
-	currentAnimationSeconds += elapsedTime;
+	currentAnimationSeconds += elapsedTime * animationSpeed;
 
 	// Ä¶ŠÔ‚ªT’ZŠÔ‚ğ’´‚¦‚½‚ç
 	if (currentAnimationSeconds >= animation.secondsLength)
@@ -237,13 +240,14 @@ void Model::UpdateAnimation(float elapsedTime)
 //	animationEndFlag = false;
 //}
 
-void Model::PlayAnimation(int index, bool loop, float blendSeconds)
+void Model::PlayAnimation(int index, bool loop, float speed, float blendSeconds)
 {
 	currentAnimationIndex = index;
 	currentAnimationSeconds = 0.0f;
 	animationLoopFlag = loop;
 	animationEndFlag = false;
 
+	animationSpeed = speed;
 	animationBlendTime = 0.0f;
 	animationBlendSeconds = blendSeconds;
 }
@@ -263,10 +267,6 @@ Model::Node* Model::FindNode(const char* name)
 	// ‘S‚Ä‚Ìƒm[ƒh‚ğ‘“–‚½‚è‚Å–¼‘O‚ğ”äŠr‚·‚é
 	for (Node node : nodes)
 	{
-		//if (*node.name == *name)
-		//{
-		//	return &node;
-		//}
 		if (strcmp(node.name, name) == 0)	// •¶š—ñ(const char*)‚Ì”äŠr‚Í strcmp()‚ğg‚¤
 
 		{

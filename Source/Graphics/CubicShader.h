@@ -5,6 +5,7 @@
 #include <memory>
 #include <wrl.h>
 #include "Graphics/Shader.h"
+#include "Graphics/Texture.h"
 
 class CubicShader : public ModelShader
 {
@@ -132,6 +133,7 @@ private:
 
 	DirectX::XMFLOAT4 colorAlpha	= { 1,1,1,1 };
 
+
 	// シャドウぼかし用
 	struct CBShadowBlur
 	{
@@ -144,6 +146,22 @@ private:
 
 	// ぼかし用関数
 	void CalcGaussianFilter(CBShadowBlur& cbFilter, const GaussianFilterData& gaussianFilterData);
+
+
+	// ディゾルブ
+	struct CbDissolve
+	{
+		float				dissolveThreshold;
+		float				edgeThreshold;		// 縁の閾値
+		float               maskFlag;			// 0:マスクしない   1:マスクする
+		float               dummy;
+		DirectX::XMFLOAT4	edgeColor;			// 縁の色
+	};
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> dissolveConstantBuffer;
+
+	// ディゾルブ画像
+	std::unique_ptr<Texture>	dissolveTexture;		// マスク画像
 
 
 };

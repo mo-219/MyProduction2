@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCENE_TITLE_H
+#define SCENE_TITLE_H
 
 #include "Graphics/Sprite.h"
 #include "Graphics/Texture.h"
@@ -23,3 +24,5 @@ private:
 
 
 };
+
+#endif /* SCENE_TITLE_H */

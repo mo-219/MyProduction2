@@ -25,6 +25,12 @@ private:
     // フィルター値計算
     void CalcGaussianFilter(CBFilter& cbFilter, const GaussianFilterData& gaussianFilterData);
 
+    // フィルター横値計算
+    void CalcGaussianFilterX(CBFilter& cbFilter, const GaussianFilterData& gaussianFilterData);
+
+    // フィルター縦値計算
+    void CalcGaussianFilterY(CBFilter& cbFilter, const GaussianFilterData& gaussianFilterData);
+
 
 private:
 
@@ -32,6 +38,8 @@ private:
 
     Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader_2pass;
+
     Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
     
     Microsoft::WRL::ComPtr<ID3D11BlendState> blendState;

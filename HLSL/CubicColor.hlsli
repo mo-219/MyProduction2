@@ -83,3 +83,12 @@ cbuffer CBFilter : register(b6)
     float dummy;
 };
 
+cbuffer CbMask : register(b7)
+{
+    float dissolveThreshold; // ディゾルブ量
+    float edgeThreshold; // 縁の閾値
+    float maskFlag;
+    float dummy2;
+
+    float4 edgeColor; // 縁の色
+};

@@ -32,6 +32,14 @@ void EnemyManager::Update(float elapsedTime)
     CollisionEnemyVsEnemies();
 }
 
+void EnemyManager::UpdateOnlyTransform(float elapsedTime)
+{
+    for (Enemy* enemy : enemies)
+    {
+        enemy->UpdateOnlyTransform(elapsedTime);
+    }
+}
+
 // 描画処理
 void EnemyManager::Render(ID3D11DeviceContext* context, Shader* shader)
 {
@@ -44,7 +52,8 @@ void EnemyManager::Render(const RenderContext& rc, ModelShader* shader)
 {
     for (Enemy* enemy : enemies)
     {
-        enemy->Render(rc, shader);
+        RenderContext myRc = enemy->SetRenderContext(rc);
+        enemy->Render(myRc, shader);
     }
 }
 
@@ -72,17 +81,31 @@ void EnemyManager::DrawDebugPrimitive()
 {
     DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
 
-    //// 衝突判定用のデバッグ球を描画
-    //for (Enemy* enemy : enemies)
-    //{
-    //    debugRenderer->DrawSphere(enemy->GetPosition(), enemy->GetRadius(), DirectX::XMFLOAT4(1, 0, 0, 1));
-    //}
 
     // 衝突判定用のデバッグ円柱を描画
     for (Enemy* enemy : enemies)
     {
         debugRenderer->DrawCylinder(enemy->GetPosition(), enemy->GetRadius(),enemy->GetHeight(), DirectX::XMFLOAT4(1, 0, 0, 1));
+        enemy->DrawDebugPrimitive();
     }
+
+}
+
+void EnemyManager::DrawDebugGUI()
+{
+    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_FirstUseEver);
+
+    if (ImGui::Begin("Enemy", nullptr, ImGuiWindowFlags_None))
+    {
+        for (Enemy* enemy : enemies)
+        {
+            enemy->DrawDebugImGui();
+        }
+        int a = GetEnemyCount();
+        ImGui::InputInt("EnemyCount", &a);
+    }
+    ImGui::End();
 
 }
 
@@ -103,16 +126,6 @@ void EnemyManager::CollisionEnemyVsEnemies()
             DirectX::XMFLOAT3 outPosition{};
             Enemy* enemy2 = enemyManager.GetEnemy(i);
 
-            //if (Collision::InstersectSphereVsSphere(enemy1->GetPosition(), enemy1->GetRadius(),
-            //                                        enemy2->GetPosition(), enemy2->GetRadius(),
-            //                                        outPosition))
-            //{
-            //    // 押し出し後の位置設定
-            //    enemyManager.GetEnemy(i)->setPosition({ enemy2->GetPosition().x - outPosition.x,
-            //                                            enemy2->GetPosition().y - outPosition.y,
-            //                                            enemy2->GetPosition().z - outPosition.z });
-
-            //}
 
             if (Collision::InstersectCylinderVsCylinder(enemy1->GetPosition(), enemy1->GetRadius(),enemy1->GetHeight(),
                                                     enemy2->GetPosition(), enemy2->GetRadius(), enemy2->GetHeight(),
