@@ -3,6 +3,7 @@
 Texture2D colorMap : register(t0);
 Texture2D normalMap : register(t1);
 Texture2D shadowMap : register(t2);
+Texture2D dissolveTexture : register(t3);
 
 SamplerState colorSamplerState : register(s0);
 SamplerState shadowMapSamplerState : register(s1);
@@ -66,6 +67,12 @@ float4 main(VS_OUT pin) : SV_TARGET
     color = CubicColor(color, N, color1, color2, colorAlpha.a, rightVec,topVec,frontVec);
     color = CalcFog(color, fogColor, fogRange.xy, length(pin.worldPosition.xyz - viewPosition.xyz));
     
+    float4 dissolveValue = CulcDissolve(dissolveTexture, colorSamplerState, pin.texcoord, edgeColor, dissolveThreshold, edgeThreshold, maskFlag);
+
+    color.a *= dissolveValue.a;
+    clip(color.a - 0.01f);
+    
+
     
     return color;
 }

@@ -151,6 +151,8 @@ float4 CalcFog(in float4 color, float4 fog_color, float2 fog_range, float eye_le
     return lerp(color, fog_color, fogAlpha);
 }
 
+
+
 //--------------------------------------------
 //  cubic color
 //--------------------------------------------
@@ -342,3 +344,28 @@ float4 CubicColor(float4 color, float3 N,
     
     return lerp(color, newColor, colorAlpha);
 };
+
+
+// ディゾルブ用関数
+float4 CulcDissolve(Texture2D tex, SamplerState sample, float2 texcoord, float4 edgeColor,
+                    float dissolveThreshold, float edgeThreshold, float maskFlag)
+{
+    float4 color;
+    
+    // マスク画像から赤色を取得
+    float mask = tex.Sample(sample, texcoord).r;
+    
+    // step関数を用いてmaskの値とdissolveThresholdの値を比較して透過値を0 or 1にする
+    // maskflagによってディゾルブするか計算
+    float alpha = step(step(mask, dissolveThreshold), maskFlag);
+    
+    // 縁の処理
+    float edgeValue = step(mask - dissolveThreshold, dissolveThreshold) // 色みを変える(縁の色)
+                     * step(dissolveThreshold, mask) // 縁のみ色塗り
+                     * step(mask, dissolveThreshold + edgeThreshold); // 縁のおおきさ変え
+   
+    color.rgb = edgeColor.rgb * edgeValue;
+    color.a = saturate(alpha + edgeValue);
+    
+    return color;
+}

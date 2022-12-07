@@ -52,6 +52,9 @@
     <Filter Include="Source\Scene\Stage">
       <UniqueIdentifier>{a7716523-f2db-4811-a0d5-bb5786644f88}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Scene\StageData">
+      <UniqueIdentifier>{82e44346-c6d5-495d-89a5-2c6836ada502}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\imgui\imconfig.h">
@@ -261,6 +264,42 @@
     <ClInclude Include="Source\StageDoor.h">
       <Filter>Source\Scene\Stage</Filter>
     </ClInclude>
+    <ClInclude Include="Source\LevelScript.h">
+      <Filter>Source\Scene\StageData</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LevelManager.h">
+      <Filter>Source\Scene\StageData</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Sword.h">
+      <Filter>Source\Character\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\StageSample.h">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameObject.h">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rect.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\EnemyGolem.h">
+      <Filter>Source\Character\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\EnemyRed.h">
+      <Filter>Source\Character\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\LoadObj.h">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameObjectManager.h">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Work.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Param.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\imgui\imgui.cpp">
@@ -455,6 +494,36 @@
     <ClCompile Include="Source\StageDoor.cpp">
       <Filter>Source\Scene\Stage</Filter>
     </ClCompile>
+    <ClCompile Include="Source\LevelScript.cpp">
+      <Filter>Source\Scene\StageData</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LevelManager.cpp">
+      <Filter>Source\Scene\StageData</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Sword.cpp">
+      <Filter>Source\Character\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\StageSample.cpp">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameObject.cpp">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Rect.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EnemyGolem.cpp">
+      <Filter>Source\Character\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\EnemyRed.cpp">
+      <Filter>Source\Character\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\LoadObj.cpp">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameObjectManager.cpp">
+      <Filter>Source\Scene\Stage</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\Debug.hlsli">
@@ -583,6 +652,9 @@
       <Filter>HLSL</Filter>
     </FxCompile>
     <FxCompile Include="HLSL\CubicColorVS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\GaussianBlurPS_2Pass.hlsl">
       <Filter>HLSL</Filter>
     </FxCompile>
   </ItemGroup>

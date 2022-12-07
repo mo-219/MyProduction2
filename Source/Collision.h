@@ -54,11 +54,25 @@ public:
         const Model* model,
         HitResult& result);
 
+    static bool IntersectRayVsModel(
+        const DirectX::XMFLOAT3& start, 
+        const DirectX::XMFLOAT3& end, 
+        const Model* model, 
+        float judgeRadius, 
+        HitResult& result);
+
     static bool InstersectCubeVsCylinder(
         const DirectX::XMFLOAT3& cubePosition,
         float width, float height, float depth,
         const DirectX::XMFLOAT3& cylinderPosition,
         float cylinderRadius, float cylinderHeight,
+        DirectX::XMFLOAT3& outCylinderPosition);
+
+    static bool InstersectCubeVsSphere(
+        const DirectX::XMFLOAT3& cubePosition, 
+        float width, float height, float depth, 
+        const DirectX::XMFLOAT3& spherePosition,
+        float sphereRadius,
         DirectX::XMFLOAT3& outCylinderPosition);
 
 };

@@ -21,6 +21,7 @@ GaussianBlurShader::GaussianBlurShader(ID3D11Device* device)
 
         // ピクセルシェーダー生成
         create_ps_from_cso(device, "Shader\\GaussianBlurPS.cso", pixelShader.GetAddressOf());
+        create_ps_from_cso(device, "Shader\\GaussianBlurPS_2Pass.cso", pixelShader_2pass.GetAddressOf());
     }
     
 
@@ -130,7 +131,10 @@ GaussianBlurShader::GaussianBlurShader(ID3D11Device* device)
 void GaussianBlurShader::Begin(const RenderContext& rc)
 {
     rc.deviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
-    rc.deviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
+    
+    //rc.deviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
+    rc.deviceContext->PSSetShader(pixelShader_2pass.Get(), nullptr, 0);
+
     rc.deviceContext->IASetInputLayout(inputLayout.Get());
     rc.deviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
     rc.deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
@@ -157,7 +161,17 @@ void GaussianBlurShader::Draw(const RenderContext& rc, const Sprite* sprite)
 
     // ガウスフィルター値の計算
     CBFilter cbFilter;
-    
+    //switch (rc.BlurCount)
+    //{
+    //case 0:
+    //    // X方向にブラー
+    //    CalcGaussianFilterX(cbFilter, rc.gaussianFilterData);
+    //    break;
+    //case 1:
+    //    // Y方向にブラー
+    //    CalcGaussianFilterY(cbFilter, rc.gaussianFilterData);
+    //    break;
+    //}
     CalcGaussianFilter(cbFilter, rc.gaussianFilterData);
     rc.deviceContext->UpdateSubresource(filterConstantBuffer.Get(), 0, 0, &cbFilter, 0, 0);
     
@@ -211,4 +225,72 @@ void GaussianBlurShader::CalcGaussianFilter(CBFilter& cbFilter, const GaussianFi
         cbFilter.weights[i].z /= sum;
     }
 
-} 
+}
+void GaussianBlurShader::CalcGaussianFilterX(CBFilter& cbFilter, const GaussianFilterData& gaussianFilterData)
+{
+    int kernelSize = gaussianFilterData.kernelSize;
+
+    // 偶数の場合は奇数に直す
+    if (kernelSize % 2 == 0)    kernelSize++;
+
+    kernelSize = max(1, min(MaxKernelSize - 1, MaxKernelSize));
+    cbFilter.kernelSize = kernelSize;
+    cbFilter.texcel.x = 1.0f / gaussianFilterData.textureSize.x;
+    cbFilter.texcel.y = 1.0f / gaussianFilterData.textureSize.y;
+
+    float deviationPow2 = 2.0f * gaussianFilterData.deviation * gaussianFilterData.deviation;
+    float sum = 0.0f;
+    int id = 0;
+    int y = 0;
+
+    for (int x = -kernelSize / 2; x <= kernelSize / 2; x++)
+    {
+        cbFilter.weights[id].x = (float)x;
+        cbFilter.weights[id].y = (float)y;
+        cbFilter.weights[id].z = (float)expf(-((x * x + y * y) / deviationPow2) / (DirectX::XM_PI * deviationPow2));
+
+        sum += cbFilter.weights[id].z;
+        id++;
+    }
+    
+    for (int i = 0; i < cbFilter.kernelSize; i++)
+    {
+        cbFilter.weights[i].z /= sum;
+    }
+
+
+}
+
+void GaussianBlurShader::CalcGaussianFilterY(CBFilter& cbFilter, const GaussianFilterData& gaussianFilterData)
+{
+    int kernelSize = gaussianFilterData.kernelSize;
+
+    // 偶数の場合は奇数に直す
+    if (kernelSize % 2 == 0)    kernelSize++;
+
+    kernelSize = max(1, min(MaxKernelSize - 1, MaxKernelSize));
+    cbFilter.kernelSize = kernelSize;
+    cbFilter.texcel.x = 1.0f / gaussianFilterData.textureSize.x;
+    cbFilter.texcel.y = 1.0f / gaussianFilterData.textureSize.y;
+
+    float deviationPow2 = 2.0f * gaussianFilterData.deviation * gaussianFilterData.deviation;
+    float sum = 0.0f;
+    int id = 0;
+    int x = 0;
+
+    for (int y = -kernelSize / 2; y <= kernelSize / 2; y++)
+    {
+        cbFilter.weights[id].x = (float)x;
+        cbFilter.weights[id].y = (float)y;
+        cbFilter.weights[id].z = (float)expf(-((x * x + y * y) / deviationPow2) / (DirectX::XM_PI * deviationPow2));
+
+        sum += cbFilter.weights[id].z;
+        id++;
+    }
+
+    for (int i = 0; i < cbFilter.kernelSize; i++)
+    {
+        cbFilter.weights[i].z /= sum;
+    }
+}
+

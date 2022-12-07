@@ -67,3 +67,6 @@ float3 GetShadow(Texture2D tex, SamplerState samplerState, float3 shadowTexcoord
 }
 
 
+
+
+

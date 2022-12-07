@@ -55,12 +55,12 @@ void Projectile::UpdateTransform()
     Up = DirectX::XMVector3Normalize(Up);
 
     // 右ベクトルを算出
-    Right = DirectX::XMVector3Cross(Front, Up);
+    Right = DirectX::XMVector3Cross(Up, Front);
     Right = DirectX::XMVector3Normalize(Right);
 
 
     // 上ベクトルを算出
-    Up = DirectX::XMVector3Cross(Right, Front);
+    Up = DirectX::XMVector3Cross(Front, Right);
     Up = DirectX::XMVector3Normalize(Right);
 
 
@@ -92,7 +92,7 @@ void Projectile::UpdateTransform()
     transform._41 = position.x;
     transform._42 = position.y;
     transform._43 = position.z;
-    transform._44 = 1.0f;;
+    transform._44 = 1.0f;
 
     // 発射方向
     this->direction = front;

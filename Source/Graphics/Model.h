@@ -41,7 +41,7 @@ public:
 //
 //--------------------------------------------------------------
 	void UpdateAnimation(float elapsedTime);							// XVˆ—
-	void PlayAnimation(int index, bool loop, float blendSeconds = 0.2f);	// Ä¶
+	void PlayAnimation(int index, bool loop, float speed = 1.0f, float blendSeconds = 0.2f);	// Ä¶
 	bool IsPlayAnimation() const;										// Ä¶’†‚©‚Ç‚¤‚©	
 	float GetCurrentAnimetionSeconds() const
 	{
@@ -59,6 +59,7 @@ private:
 
 	int		currentAnimationIndex = -1;
 	float	currentAnimationSeconds = 0.0f;
+	float	animationSpeed = 1.0f;
 
 	bool	animationLoopFlag = false;
 	bool	animationEndFlag = false;

@@ -37,6 +37,9 @@ public:
     // レイキャスト
     virtual bool RayCast(const DirectX::XMFLOAT3& start, const DirectX::XMFLOAT3& end, HitResult& hit) = 0;
 
+    // 破棄処理
+    void Destroy();
+
     // ステージの番号
     void setStageNum(int i) { stageNum = i; }
     int GetStageNum() { return stageNum; }

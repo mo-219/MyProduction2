@@ -1,5 +1,6 @@
 #include "Character.h"
 #include "StageManager.h"
+#include "GameObjectManager.h"
 #include "Graphics/Graphics.h"
 #include "Mathf.h"
 
@@ -14,11 +15,16 @@ void Character::UpdateTransform()
 
 
     // 回転行列を作成
-    DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
+    //DirectX::XMMATRIX R = DirectX::XMMatrixRotationRollPitchYaw(angle.x, angle.y, angle.z);
+    DirectX::XMMATRIX X = DirectX::XMMatrixRotationX(angle.x);
+    DirectX::XMMATRIX Y = DirectX::XMMatrixRotationY(angle.y);
+    DirectX::XMMATRIX Z = DirectX::XMMatrixRotationZ(angle.z);
+
+    DirectX::XMMATRIX R = Y * X * Z;                    // 数学ベースでは Z * X * Y
 
 
     // 位置行列を作成
-    DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+    DirectX::XMMATRIX T = DirectX::XMMatrixTranslation(param.position.x, param.position.y, param.position.z);
 
 
     // ３つの行列を組み合わせ、ワールド行列を作成
@@ -116,31 +122,6 @@ void Character::Jump(float speed)
 void Character::UpdateVelocity(float elapsedTime)      // 後で色々変えること
 {
 
-#if 0
-    // 重力処理
-    velocity.y += gravity * elapsedFrame;           // 何フレームでなった力
-
-    // 移動処理
-    position.y += velocity.y * elapsedTime;
-
-    // 地面判定
-    if (position.y < 0.0f)
-    {
-        position.y = 0.0f;
-        velocity.y = 0.0f;
-
-        if (!IsGround())    // OnLanding関数が何度も呼ばれないように
-        {
-            OnLanding();
-        }
-        isGround = true;
-    }
-    else
-    {
-        isGround = false;
-    }
-#endif
-
     // 経過フレーム
     float elapsedFrame = 60.0f * elapsedTime;
 
@@ -237,20 +218,22 @@ void Character::UpdateVerticalMove(float elapsedTime)
     if (my < 0.0f)
     {
         // レイの開始位置は足元より少し上
-        DirectX::XMFLOAT3 start = { position.x, position.y + stepOffset, position.z };
+        DirectX::XMFLOAT3 start = { param.position.x, param.position.y + stepOffset, param.position.z };
         // レイの終点位置は移動後の位置
-        DirectX::XMFLOAT3 end = { position.x, position.y + my, position.z };
+        DirectX::XMFLOAT3 end = { param.position.x, param.position.y + my, param.position.z };
 
         // レイキャストによる地面判定
         HitResult hit;
 
-        if (StageManager::Instance().RayCast(start, end, hit))
+        //Hack: ここで球の当たり判定→レイキャストってやる
+        //if (StageManager::Instance().RayCast(start, end, hit))
+        if (ObjectManager::Instance().RayCast(param, start, end, hit))
         {
             // 法線ベクトル取得
             normal = hit.normal;
 
             // 地面に接地している
-            position = hit.position;
+            param.position = hit.position;
 
             // 回転
             angle.y += hit.rotation.y;
@@ -271,7 +254,7 @@ void Character::UpdateVerticalMove(float elapsedTime)
         else
         {
             // 空中に浮いている
-            position.y += my;
+            param.position.y += my;
             isGround = false;
         }
     }
@@ -279,7 +262,7 @@ void Character::UpdateVerticalMove(float elapsedTime)
     // 上昇中
     else if (my > 0.0f)
     {
-        position.y += my;
+        param.position.y += my;
         isGround = false;
     }
     // 地面の向きに沿うようにXZ軸回転
@@ -397,12 +380,13 @@ void Character::UpdateHorizontalMove(float elapsedTime)
         float mz = velocity.z * elapsedTime;
 
         // レイの開始位置と終点位置
-        DirectX::XMFLOAT3 start = { position.x, position.y + stepOffset , position.z };
-        DirectX::XMFLOAT3 end = { position.x + mx , position.y + stepOffset, position.z + mz };
+        DirectX::XMFLOAT3 start = { param.position.x, param.position.y + stepOffset , param.position.z };
+        DirectX::XMFLOAT3 end = { param.position.x + mx , param.position.y + stepOffset, param.position.z + mz };
 
         // レイキャストによる壁判定
         HitResult hit;
-        if (StageManager::Instance().RayCast(start, end, hit))
+        //if (StageManager::Instance().RayCast(start, end, hit))
+        if (ObjectManager::Instance().RayCast(param, start, end, hit))
         {
             // 壁から終点までベクトル
             //DirectX::XMVECTOR HitPos = DirectX::XMLoadFloat3(&hit.position);
@@ -432,22 +416,23 @@ void Character::UpdateHorizontalMove(float elapsedTime)
 
             // レイきゃうs都による再チェック
             HitResult hit2;
-            if (!StageManager::Instance().RayCast(start, collectPosition, hit2))
+            //if (!StageManager::Instance().RayCast(start, collectPosition, hit2))
+            if (!ObjectManager::Instance().RayCast(param, start, collectPosition, hit2))
             {
-                position.x = collectPosition.x;
-                position.z = collectPosition.z;
+                param.position.x = collectPosition.x;
+                param.position.z = collectPosition.z;
             }
             else
             {
-                position.x = hit2.position.x;
-                position.z = hit2.position.z;
+                param.position.x = hit2.position.x;
+                param.position.z = hit2.position.z;
             }
         }
         else
         {
             // 移動
-            position.x += mx;
-            position.z += mz;
+            param.position.x += mx;
+            param.position.z += mz;
         }
     }
 }

@@ -8,6 +8,22 @@ void StageManager::Update(float elapsedTime)
     {
         stage->Update(elapsedTime);
     }
+    // ”jŠüˆ—
+    for (Stage* stage : removes)
+    {
+        std::vector<Stage*>::iterator it =
+            std::find(stages.begin(), stages.end(), stage);
+
+        if (it != stages.end())
+        {
+            stages.erase(it);
+        }
+        // ’eŠÛ‚Ì”jŠüˆ—
+        delete stage;
+    }
+
+    // ”jŠüƒŠƒXƒg‚ğƒNƒŠƒA
+    removes.clear();
 
 }
 
@@ -54,6 +70,12 @@ void StageManager::Register(Stage* stage)
     stages.emplace_back(stage);
 }
 
+void StageManager::Remove(Stage* stage)
+{
+    // ”jŠüƒŠƒXƒg‚É’Ç‰Á
+    removes.insert(stage);
+}
+
 void StageManager::Clear()
 {
     for (Stage* stage : stages)
@@ -66,6 +88,17 @@ void StageManager::Clear()
     }
     stages.clear();
 
+}
+
+void StageManager::StageNumDelete(int type)
+{
+    for (Stage* stage : stages)
+    {
+        if (stage->GetStageNum() == type)
+        {
+            stage->Destroy();
+        }
+    }
 }
 
 void StageManager::DrawDebugGUI()

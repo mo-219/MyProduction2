@@ -6,25 +6,6 @@ CubicShader::CubicShader(ID3D11Device* device)
 {
 	// 頂点シェーダー
 	{
-		//// ファイルを開く
-		//FILE* fp = nullptr;
-		//fopen_s(&fp, "Shader\\PhongVS.cso", "rb");
-		//_ASSERT_EXPR_A(fp, "CSO File not found");
-
-		//// ファイルのサイズを求める
-		//fseek(fp, 0, SEEK_END);
-		//long csoSize = ftell(fp);
-		//fseek(fp, 0, SEEK_SET);
-
-		//// メモリ上に頂点シェーダーデータを格納する領域を用意する
-		//std::unique_ptr<u_char[]> csoData = std::make_unique<u_char[]>(csoSize);
-		//fread(csoData.get(), csoSize, 1, fp);
-		//fclose(fp);
-
-		//// 頂点シェーダー生成
-		//HRESULT hr = device->CreateVertexShader(csoData.get(), csoSize, nullptr, vertexShader.GetAddressOf());
-		//_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
-
 		// 入力レイアウト
 		D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 		{
@@ -96,6 +77,11 @@ CubicShader::CubicShader(ID3D11Device* device)
 		desc.ByteWidth = sizeof(CBShadowBlur);
 		hr = device->CreateBuffer(&desc, 0, ShadowBlurConstantBuffer.GetAddressOf());
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+
+		desc.ByteWidth = sizeof(CbDissolve);
+		hr = device->CreateBuffer(&desc, 0, dissolveConstantBuffer.GetAddressOf());
+		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
+
 
 
 	}
@@ -187,6 +173,11 @@ CubicShader::CubicShader(ID3D11Device* device)
 		_ASSERT_EXPR(SUCCEEDED(hr), HRTrace(hr));
 
 	}
+	{
+		// メンバ変数値代入
+		dissolveTexture = std::make_unique<Texture>("Data/Texture/dissolve_animation.png");
+
+	}
 }
 
 // 描画開始
@@ -205,6 +196,7 @@ void CubicShader::Begin(const RenderContext& rc)
 		fogConstantBuffer.Get(),
 		cubicConstantBuffer.Get(),
 		ShadowBlurConstantBuffer.Get(),
+		dissolveConstantBuffer.Get(),
 	};
 	rc.deviceContext->VSSetConstantBuffers(0, ARRAYSIZE(constantBuffers), constantBuffers);
 	rc.deviceContext->PSSetConstantBuffers(0, ARRAYSIZE(constantBuffers), constantBuffers);
@@ -242,6 +234,7 @@ void CubicShader::Begin(const RenderContext& rc)
 
 	// シャドウマップ設定
 	rc.deviceContext->PSSetShaderResources(2, 1, &rc.shadowmapData.shadowMap);
+	rc.deviceContext->PSSetShaderResources(3, 1, dissolveTexture->GetShaderResourceView().GetAddressOf());
 }
 
 // 描画
@@ -306,13 +299,21 @@ void CubicShader::Draw(const RenderContext& rc, const Model* model)
 		cbCubic.colorAlpha		= rc.cubicColorData.colorAlpha;
 		break;
 	};
-
 	rc.deviceContext->UpdateSubresource(cubicConstantBuffer.Get(), 0, 0, &cbCubic, 0, 0);
+
 
 	CBShadowBlur cbShadowBlur;
 	CalcGaussianFilter(cbShadowBlur, rc.shadowBlurData);
-	
 	rc.deviceContext->UpdateSubresource(ShadowBlurConstantBuffer.Get(), 0, 0, &cbShadowBlur, 0, 0);
+
+
+	CbDissolve cbDissolve;
+	cbDissolve.maskFlag = rc.maskData.maskFlag;
+	cbDissolve.dissolveThreshold = rc.maskData.dissolveThreshold;
+	cbDissolve.edgeThreshold = rc.maskData.edgeThreshold;
+	cbDissolve.edgeColor = rc.maskData.edgeColor;
+	rc.deviceContext->UpdateSubresource(dissolveConstantBuffer.Get(), 0, 0, &cbDissolve, 0, 0);
+
 
 	for (const ModelResource::Mesh& mesh : resource->GetMeshes())
 	{
@@ -374,6 +375,28 @@ void CubicShader::DebugGUI()
 		ImGui::ColorEdit3("fog_color", &fogColor.x);
 		ImGui::SliderFloat("fog_near", &fogRange.x, 0.1f, +100.0f);
 		ImGui::SliderFloat("fog_far", &fogRange.y, 0.1f, +100.0f);
+
+		ImGui::Separator();
+		ImGui::ColorEdit3("colorTop1",		&colorTop1.x);
+		ImGui::ColorEdit3("colorTop2", &colorTop2.x);
+
+		ImGui::ColorEdit3("colorBottom1",	&colorBottom1.x);
+		ImGui::ColorEdit3("colorBottom2", &colorBottom2.x);
+
+		ImGui::ColorEdit3("colorRight1",	&colorRight1.x);
+		ImGui::ColorEdit3("colorRight2", &colorRight2.x);
+
+		ImGui::ColorEdit3("colorLeft1",		&colorLeft1.x);
+		ImGui::ColorEdit3("colorLeft2", &colorLeft2.x);
+
+		ImGui::ColorEdit3("colorBack1",		&colorBack1.x);
+		ImGui::ColorEdit3("colorBack2", &colorBack2.x);
+
+		ImGui::ColorEdit3("colorFront1",	&colorFront1.x);
+		ImGui::ColorEdit3("colorFront2", &colorFront2.x);
+
+		ImGui::SliderFloat("Alpha", &colorAlpha.w, 0.0f, 1.0f);
+
 	}
 
 	ImGui::End();
