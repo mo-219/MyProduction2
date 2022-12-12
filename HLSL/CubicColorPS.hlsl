@@ -65,10 +65,16 @@ float4 main(VS_OUT pin) : SV_TARGET
     //color *= float4(shadow,1.0f);
 
     color = CubicColor(color, N, color1, color2, colorAlpha.a, rightVec,topVec,frontVec);
+    
+    color.rgb += CalcHemiSphereLight(N, float3(0, 1, 0), float3(1, 1, 1), float3(0, 0, 0), hemisphereWeight);
+    
     color = CalcFog(color, fogColor, fogRange.xy, length(pin.worldPosition.xyz - viewPosition.xyz));
+    
+    color.rgb += CalcRimLight(N, E, L, directionalLightData.color.rgb);
     
     float4 dissolveValue = CulcDissolve(dissolveTexture, colorSamplerState, pin.texcoord, edgeColor, dissolveThreshold, edgeThreshold, maskFlag);
 
+    
     color.a *= dissolveValue.a;
     clip(color.a - 0.01f);
     

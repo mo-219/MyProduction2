@@ -13,7 +13,7 @@ class ObjectManager
 {
 private:
     ObjectManager() {}
-    ~ObjectManager() {}
+    ~ObjectManager();
 
 public:
     // 唯一のインスタンス取得

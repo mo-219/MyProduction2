@@ -78,10 +78,12 @@ private:
 	{
 		DirectX::XMFLOAT4 fogColor;
 		DirectX::XMFLOAT4 fogRange;	// X: near、　Y: far、　zw: 空き
+		DirectX::XMFLOAT4 hemisphereWeight;	// X: near、　Y: far、　zw: 空き
 	};
 	Microsoft::WRL::ComPtr<ID3D11Buffer> fogConstantBuffer;
 	DirectX::XMFLOAT4 fogColor{ 0.1f, 0.1f, 0.2f, 1.0f };			// クリアカラーにしています
 	DirectX::XMFLOAT4 fogRange{ 0.01f,100.0f,0,0 };					// x : near, y : far
+	DirectX::XMFLOAT4 hemisphereWeight = { 0.1f,0.0f,0.0f,0.0f };
 
 	DirectX::XMFLOAT4X4 lightViewProjection;
 	float shadow_bias{ 0.008f };

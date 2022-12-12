@@ -68,8 +68,7 @@ mov r1.xyz, r0.xyzx  // r1.x <- color.x; r1.y <- color.y; r1.z <- color.z
 mov r2.x, r0.w  // r2.x <- i
 loop 
   itof r2.y, r2.x
-  mul r2.z, cb0[256].x, cb0[256].x
-  lt r2.y, r2.y, r2.z
+  lt r2.y, r2.y, cb0[256].x
   breakc_z r2.y
 
 #line 12
@@ -91,4 +90,4 @@ endloop
 #line 18
 mul o0.xyzw, r1.xyzw, v1.xyzw
 ret 
-// Approximately 20 instruction slots used
+// Approximately 19 instruction slots used

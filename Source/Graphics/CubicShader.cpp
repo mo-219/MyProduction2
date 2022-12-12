@@ -1,5 +1,6 @@
 #include "Misc.h"
 #include "Graphics/CubicShader.h"
+#include "SaveShader.h"
 
 #include <imgui.h>
 CubicShader::CubicShader(ID3D11Device* device)
@@ -235,6 +236,39 @@ void CubicShader::Begin(const RenderContext& rc)
 	// シャドウマップ設定
 	rc.deviceContext->PSSetShaderResources(2, 1, &rc.shadowmapData.shadowMap);
 	rc.deviceContext->PSSetShaderResources(3, 1, dissolveTexture->GetShaderResourceView().GetAddressOf());
+
+	// セーブデータがあればロード
+	{
+		SaveShader load;
+		std::vector<ShaderDataCubic> datas;
+		datas = load.Load("Shader/Save/defaultColor.json");
+		if (datas.size() > 0)
+		{
+			ShaderDataCubic data = datas.at(0);
+			rightVec = data.rightVec;
+			topVec = data.topVec;
+			frontVec = data.frontVec;
+
+			colorTop1 = data.colorTop1;
+			colorBottom1 = data.colorBottom1;
+			colorRight1 = data.colorRight1;
+			colorLeft1 = data.colorLeft1;
+			colorBack1 = data.colorBack1;
+			colorFront1 = data.colorFront1;
+
+			colorTop2 = data.colorTop2;
+			colorBottom2 = data.colorBottom2;
+			colorRight2 = data.colorRight2;
+			colorLeft2 = data.colorLeft2;
+			colorBack2 = data.colorBack2;
+			colorFront2 = data.colorFront2;
+
+			colorAlpha = data.colorAlpha;
+		}
+	
+	}
+
+
 }
 
 // 描画
@@ -247,6 +281,9 @@ void CubicShader::Draw(const RenderContext& rc, const Model* model)
 	CbFog cbFog;
 	cbFog.fogColor = fogColor;
 	cbFog.fogRange = fogRange;
+	hemisphereWeight.y = static_cast<float>(rc.heightFogFlag);
+	cbFog.hemisphereWeight = hemisphereWeight;
+
 	rc.deviceContext->UpdateSubresource(fogConstantBuffer.Get(), 0, 0, &cbFog, 0, 0);
 
 	// キュービックカラーコンスタントバッファ更新
@@ -375,6 +412,9 @@ void CubicShader::DebugGUI()
 		ImGui::ColorEdit3("fog_color", &fogColor.x);
 		ImGui::SliderFloat("fog_near", &fogRange.x, 0.1f, +100.0f);
 		ImGui::SliderFloat("fog_far", &fogRange.y, 0.1f, +100.0f);
+		ImGui::Separator();
+		ImGui::SliderFloat("hemisphereWeight", &hemisphereWeight.x, 0.0f, +1.0f);
+		ImGui::SliderFloat("hemisphereOnOff", &hemisphereWeight.y, 0.0f, +1.0f);
 
 		ImGui::Separator();
 		ImGui::ColorEdit3("colorTop1",		&colorTop1.x);
@@ -396,6 +436,67 @@ void CubicShader::DebugGUI()
 		ImGui::ColorEdit3("colorFront2", &colorFront2.x);
 
 		ImGui::SliderFloat("Alpha", &colorAlpha.w, 0.0f, 1.0f);
+
+		ImGui::Separator();
+
+		if (ImGui::Button("Save"))
+		{
+			ShaderDataCubic data;
+			data.code = OwnerCode::Defalt;
+			data.rightVec = rightVec;
+			data.topVec = topVec;
+			data.frontVec = frontVec;
+
+			data.colorTop1 = colorTop1;
+			data.colorBottom1 = colorBottom1;
+			data.colorRight1 = colorRight1;
+			data.colorLeft1 = colorLeft1;
+			data.colorBack1 = colorBack1;
+			data.colorFront1 = colorFront1;
+			
+			data.colorTop2 = colorTop2;
+			data.colorBottom2 = colorBottom2;
+			data.colorRight2 = colorRight2;
+			data.colorLeft2 = colorLeft2;
+			data.colorBack2 = colorBack2;
+			data.colorFront2 = colorFront2;
+			
+			data.colorAlpha = colorAlpha;
+
+			SaveShader save;
+			save.SaveInit(data);
+			save.Save("defaultColor");
+		}
+		if (ImGui::Button("Load"))
+		{
+			SaveShader load;
+			std::vector<ShaderDataCubic> datas;
+			datas = load.Load("Shader/Save/defaultColor.json");
+			if (datas.size() > 0)
+			{
+				ShaderDataCubic data = datas.at(0);
+				rightVec = data.rightVec;
+				topVec = data.topVec;
+				frontVec = data.frontVec;
+
+				colorTop1 = data.colorTop1;
+				colorBottom1 = data.colorBottom1;
+				colorRight1 = data.colorRight1;
+				colorLeft1 = data.colorLeft1;
+				colorBack1 = data.colorBack1;
+				colorFront1 = data.colorFront1;
+
+				colorTop2 = data.colorTop2;
+				colorBottom2 = data.colorBottom2;
+				colorRight2 = data.colorRight2;
+				colorLeft2 = data.colorLeft2;
+				colorBack2 = data.colorBack2;
+				colorFront2 = data.colorFront2;
+
+				colorAlpha = data.colorAlpha;
+			}
+
+		}
 
 	}
 

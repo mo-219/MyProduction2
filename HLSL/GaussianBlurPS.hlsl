@@ -7,7 +7,7 @@ float4 main(VS_OUT pin) : SV_TARGET
     float4 color = (float4) 0;
     color.a = pin.color.a;
 	
-    for (int i = 0; i < kernelSize * kernelSize; i++)
+    for (int i = 0; i < kernelSize; i++)
     {
         float2 offset = texcel * weights[i].xy;
         float weight = weights[i].z;

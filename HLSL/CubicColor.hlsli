@@ -47,7 +47,7 @@ cbuffer CbFog : register(b4)
 {
     float4 fogColor;
     float4 fogRange;
-    
+    float4 hemisphereWeight;
 };
 
 
@@ -91,4 +91,11 @@ cbuffer CbMask : register(b7)
     float dummy2;
 
     float4 edgeColor; // âèÇÃêF
+};
+
+cbuffer CbRimLight : register(b8)
+{
+    float4 rimLightColorLeft;
+    float4 rimLightColorRight;
+    
 };

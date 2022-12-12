@@ -28,7 +28,10 @@ void LightManager::Clear()
 {
     for (Light* light : lights)
     {
-        delete light;
+        if (light != nullptr)
+        {
+            delete light;
+        }
     }
     lights.clear();
 }

@@ -1,4 +1,5 @@
 #include "Graphics/Graphics.h"
+
 #include "SceneGame.h"
 #include "Camera.h"
 
@@ -48,15 +49,13 @@ void SceneGame::Initialize()
 
 
 
-
-
-
-
 	// プレイヤー初期化
 	player = new Player();
 
 	// ゲージスプライト
 	guage = new Sprite();
+
+
 
 	// 画面遷移用
 	fade.setSprite();
@@ -140,9 +139,16 @@ void SceneGame::Initialize()
 		postprocessingRenderer->SetSceneData(srvData);
 	}
 
+	// スカイボックス生成
+	{
+		Graphics& graphics = Graphics::Instance();
+		sky = new SkyBox(graphics.GetDevice());
+		sky->SetPosition(player->GetPosition());
+	}
 
 	// カメラコントローラー初期化
 	cameraController = new CameraController();
+
 
 
 	LoadObj load;
@@ -164,6 +170,14 @@ void SceneGame::Finalize()
 		cameraController = nullptr;
 	}
 
+	// スカイボックス終了化
+	if (sky != nullptr)
+	{
+		delete sky;
+		sky = nullptr;
+	}
+
+
 	// ゲージスプライト終了化
 	if (guage != nullptr)
 	{
@@ -179,8 +193,6 @@ void SceneGame::Finalize()
 	}
 
 	StageManager::Instance().Clear();
-
-
 }
 
 // 更新処理
@@ -314,6 +326,8 @@ void SceneGame::Update(float elapsedTime)
 	Graphics& graphics = Graphics::Instance();
 	ID3D11DeviceContext* dc = graphics.GetDeviceContext();
 
+	sky->SetPosition(player->GetPosition());
+	sky->UpdateTransform();
 	timer++;
 }
 
@@ -379,10 +393,9 @@ void SceneGame::Render()
 		vp.MaxDepth = 1.0f;
 		dc->RSSetViewports(1, &vp);
 
-		RenderContext rc;
-		rc.deviceContext = dc;
-		rc.BlurCount = timer % 2;
-
+		//RenderContext rc;
+		//rc.deviceContext = dc;
+		//rc.BlurCount 
 		// ポストプロセス処理
 		postprocessingRenderer->Render(dc);
 		//postprocessingRenderer->Render(&rc);
@@ -540,13 +553,14 @@ void SceneGame::Render3DScene()
 		shader->Begin(rc);
 
 		// ステージ描画
-		//StageManager::Instance().Render(rc, shader);
-		player->Render(rc, shader);
 		EnemyManager::Instance().Render(rc, shader);
 		ObjectManager::Instance().Render(rc, shader);
+		player->Render(rc, shader);
+		sky->Render(rc,shader);
 
 		shader->End(rc);
 	}
+
 
 
 	//3Dエフェクト描画
@@ -562,6 +576,7 @@ void SceneGame::Render3DScene()
 		EnemyManager::Instance().DrawDebugPrimitive();
 		//StageManager::Instance().DrawDebugPrimitive();
 		ObjectManager::Instance().DrawDebugPrimitive();
+		sky->DebugPrimitive();
 
 
 

@@ -1,5 +1,6 @@
 #include "GameObject.h"
 #include <imgui.h>
+
 GameObject::~GameObject()
 {
     delete model;
@@ -57,6 +58,11 @@ RenderContext GameObject::SetRenderContext(const RenderContext& rc)
 {
     RenderContext myRc = rc;
     myRc.cubicColorData.shaderFlag = CUBIC_DEFAULT;
+    myRc.heightFogFlag = heightFogFlag;
+    if (heightFogFlag == 0)
+    {
+        myRc = myRc;
+    }
 
     return myRc;
 }
