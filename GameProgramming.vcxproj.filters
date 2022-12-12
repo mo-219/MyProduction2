@@ -300,6 +300,18 @@
     <ClInclude Include="Source\Param.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Graphics\SkyShader.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\SkyBox.h">
+      <Filter>Source\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\SaveShader.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\SerializeFunc.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="External\imgui\imgui.cpp">
@@ -524,6 +536,15 @@
     <ClCompile Include="Source\GameObjectManager.cpp">
       <Filter>Source\Scene\Stage</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\SkyShader.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\SkyBox.cpp">
+      <Filter>Source\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\SaveShader.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="HLSL\Debug.hlsli">
@@ -575,6 +596,9 @@
       <Filter>HLSL</Filter>
     </None>
     <None Include="HLSL\ShadingFunctions.hlsli">
+      <Filter>HLSL</Filter>
+    </None>
+    <None Include="HLSL\SkyBox.hlsli">
       <Filter>HLSL</Filter>
     </None>
   </ItemGroup>
@@ -654,7 +678,10 @@
     <FxCompile Include="HLSL\CubicColorVS.hlsl">
       <Filter>HLSL</Filter>
     </FxCompile>
-    <FxCompile Include="HLSL\GaussianBlurPS_2Pass.hlsl">
+    <FxCompile Include="HLSL\SkyBoxPS.hlsl">
+      <Filter>HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="HLSL\SkyBoxVS.hlsl">
       <Filter>HLSL</Filter>
     </FxCompile>
   </ItemGroup>

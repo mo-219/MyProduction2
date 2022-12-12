@@ -36,6 +36,7 @@
 //
 //   float4 fogColor;                   // Offset:    0 Size:    16
 //   float4 fogRange;                   // Offset:   16 Size:    16
+//   float4 hemisphereWeight;           // Offset:   32 Size:    16
 //
 // }
 //
@@ -114,7 +115,7 @@ ps_5_0
 dcl_globalFlags refactoringAllowed | skipOptimization
 dcl_constantbuffer CB0[8], immediateIndexed
 dcl_constantbuffer CB3[5], immediateIndexed
-dcl_constantbuffer CB4[2], immediateIndexed
+dcl_constantbuffer CB4[3], immediateIndexed
 dcl_constantbuffer CB5[16], immediateIndexed
 dcl_constantbuffer CB7[1], immediateIndexed
 dcl_sampler s0, mode_default
@@ -127,7 +128,7 @@ dcl_input_ps linear v2.xyz
 dcl_input_ps linear v5.xy
 dcl_input_ps linear v7.xyz
 dcl_output o0.xyzw
-dcl_temps 20
+dcl_temps 22
 //
 // Initial variable locations:
 //   v0.x <- pin.position.x; v0.y <- pin.position.y; v0.z <- pin.position.z; v0.w <- pin.position.w; 
@@ -198,42 +199,42 @@ max r6.xyz, r6.xyzx, l(0.700000, 0.700000, 0.700000, 0.000000)
 nop 
 mov r3.xyz, r3.xyzx
 mov r1.xyz, r1.xyzx
-mov r2.xyz, -r2.xyzx
-mov r7.xyz, cb0[7].xyzx
+mov r7.xyz, -r2.xyzx
+mov r8.xyz, cb0[7].xyzx
 mov r5.xyz, r5.xyzx
 
 #line 41 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadingFunctions.hlsli"
 dp3 r1.w, r1.xyzx, r3.xyzx
 add r1.w, r1.w, r1.w
 mov r1.w, -r1.w
-mul r8.xyz, r1.wwww, r3.xyzx
-add r1.xyz, r1.xyzx, r8.xyzx  // r1.x <- R.x; r1.y <- R.y; r1.z <- R.z
+mul r9.xyz, r1.wwww, r3.xyzx
+add r9.xyz, r1.xyzx, r9.xyzx  // r9.x <- R.x; r9.y <- R.y; r9.z <- R.z
 
 #line 42
-mov r2.xyz, -r2.xyzx
-dp3 r1.x, r2.xyzx, r1.xyzx
-itof r1.y, l(0)
-max r1.x, r1.y, r1.x  // r1.x <- power
+mov r7.xyz, -r7.xyzx
+dp3 r1.w, r7.xyzx, r9.xyzx
+itof r2.w, l(0)
+max r1.w, r1.w, r2.w  // r1.w <- power
 
 #line 43
-itof r1.y, l(128)
-log r1.x, r1.x
-mul r1.x, r1.x, r1.y
-exp r1.x, r1.x  // r1.x <- power
+itof r2.w, l(128)
+log r1.w, r1.w
+mul r1.w, r1.w, r2.w
+exp r1.w, r1.w  // r1.w <- power
 
 #line 45
-mul r1.xyz, r1.xxxx, r7.xyzx
-mul r1.xyz, r5.xyzx, r1.xyzx  // r1.x <- <CalcPhongSpeculer return value>.x; r1.y <- <CalcPhongSpeculer return value>.y; r1.z <- <CalcPhongSpeculer return value>.z
+mul r7.xyz, r1.wwww, r8.xyzx
+mul r5.xyz, r5.xyzx, r7.xyzx  // r5.x <- <CalcPhongSpeculer return value>.x; r5.y <- <CalcPhongSpeculer return value>.y; r5.z <- <CalcPhongSpeculer return value>.z
 
 #line 35 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\CubicColorPS.hlsl"
-mov r1.xyz, r1.xyzx  // r1.x <- directionalSpecular.x; r1.y <- directionalSpecular.y; r1.z <- directionalSpecular.z
+mov r5.xyz, r5.xyzx  // r5.x <- directionalSpecular.x; r5.y <- directionalSpecular.y; r5.z <- directionalSpecular.z
 
 #line 37
 nop 
 nop 
 nop 
 mov r1.w, v7.z
-mov r2.xyz, cb3[4].xyzx
+mov r7.xyz, cb3[4].xyzx
 mov r2.w, cb3[4].w
 
 #line 43 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadowmapFunctions.hlsli"
@@ -247,50 +248,50 @@ ge r1.w, r2.w, r1.w
 movc r1.w, r1.w, l(1.000000), l(0)  // r1.w <- shadow
 
 #line 48
-itof r5.xyz, l(1, 1, 1, 0)
-mov r7.xyz, -r2.xyzx
-add r5.xyz, r5.xyzx, r7.xyzx
-mul r5.xyz, r1.wwww, r5.xyzx
-add r2.xyz, r2.xyzx, r5.xyzx  // r2.x <- <CalcShadowColor return value>.x; r2.y <- <CalcShadowColor return value>.y; r2.z <- <CalcShadowColor return value>.z
+itof r8.xyz, l(1, 1, 1, 0)
+mov r9.xyz, -r7.xyzx
+add r8.xyz, r8.xyzx, r9.xyzx
+mul r8.xyz, r1.wwww, r8.xyzx
+add r7.xyz, r7.xyzx, r8.xyzx  // r7.x <- <CalcShadowColor return value>.x; r7.y <- <CalcShadowColor return value>.y; r7.z <- <CalcShadowColor return value>.z
 
 #line 37 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\CubicColorPS.hlsl"
-mov r2.xyz, r2.xyzx  // r2.x <- shadow.x; r2.y <- shadow.y; r2.z <- shadow.z
+mov r7.xyz, r7.xyzx  // r7.x <- shadow.x; r7.y <- shadow.y; r7.z <- shadow.z
 
 #line 45
-mov r5.xyzw, cb5[3].xyzw  // r5.x <- color1.colorTop.x; r5.y <- color1.colorTop.y; r5.z <- color1.colorTop.z; r5.w <- color1.colorTop.w
+mov r8.xyzw, cb5[3].xyzw  // r8.x <- color1.colorTop.x; r8.y <- color1.colorTop.y; r8.z <- color1.colorTop.z; r8.w <- color1.colorTop.w
 
 #line 46
-mov r7.xyzw, cb5[4].xyzw  // r7.x <- color1.colorBottom.x; r7.y <- color1.colorBottom.y; r7.z <- color1.colorBottom.z; r7.w <- color1.colorBottom.w
+mov r9.xyzw, cb5[4].xyzw  // r9.x <- color1.colorBottom.x; r9.y <- color1.colorBottom.y; r9.z <- color1.colorBottom.z; r9.w <- color1.colorBottom.w
 
 #line 47
-mov r8.xyzw, cb5[5].xyzw  // r8.x <- color1.colorRight.x; r8.y <- color1.colorRight.y; r8.z <- color1.colorRight.z; r8.w <- color1.colorRight.w
+mov r10.xyzw, cb5[5].xyzw  // r10.x <- color1.colorRight.x; r10.y <- color1.colorRight.y; r10.z <- color1.colorRight.z; r10.w <- color1.colorRight.w
 
 #line 48
-mov r9.xyzw, cb5[6].xyzw  // r9.x <- color1.colorLeft.x; r9.y <- color1.colorLeft.y; r9.z <- color1.colorLeft.z; r9.w <- color1.colorLeft.w
+mov r11.xyzw, cb5[6].xyzw  // r11.x <- color1.colorLeft.x; r11.y <- color1.colorLeft.y; r11.z <- color1.colorLeft.z; r11.w <- color1.colorLeft.w
 
 #line 49
-mov r10.xyzw, cb5[7].xyzw  // r10.x <- color1.colorBack.x; r10.y <- color1.colorBack.y; r10.z <- color1.colorBack.z; r10.w <- color1.colorBack.w
+mov r12.xyzw, cb5[7].xyzw  // r12.x <- color1.colorBack.x; r12.y <- color1.colorBack.y; r12.z <- color1.colorBack.z; r12.w <- color1.colorBack.w
 
 #line 50
-mov r11.xyzw, cb5[8].xyzw  // r11.x <- color1.colorFront.x; r11.y <- color1.colorFront.y; r11.z <- color1.colorFront.z; r11.w <- color1.colorFront.w
+mov r13.xyzw, cb5[8].xyzw  // r13.x <- color1.colorFront.x; r13.y <- color1.colorFront.y; r13.z <- color1.colorFront.z; r13.w <- color1.colorFront.w
 
 #line 53
-mov r12.xyzw, cb5[9].xyzw  // r12.x <- color2.colorTop.x; r12.y <- color2.colorTop.y; r12.z <- color2.colorTop.z; r12.w <- color2.colorTop.w
+mov r14.xyzw, cb5[9].xyzw  // r14.x <- color2.colorTop.x; r14.y <- color2.colorTop.y; r14.z <- color2.colorTop.z; r14.w <- color2.colorTop.w
 
 #line 54
-mov r13.xyzw, cb5[10].xyzw  // r13.x <- color2.colorBottom.x; r13.y <- color2.colorBottom.y; r13.z <- color2.colorBottom.z; r13.w <- color2.colorBottom.w
+mov r15.xyzw, cb5[10].xyzw  // r15.x <- color2.colorBottom.x; r15.y <- color2.colorBottom.y; r15.z <- color2.colorBottom.z; r15.w <- color2.colorBottom.w
 
 #line 55
-mov r14.xyzw, cb5[11].xyzw  // r14.x <- color2.colorRight.x; r14.y <- color2.colorRight.y; r14.z <- color2.colorRight.z; r14.w <- color2.colorRight.w
+mov r16.xyzw, cb5[11].xyzw  // r16.x <- color2.colorRight.x; r16.y <- color2.colorRight.y; r16.z <- color2.colorRight.z; r16.w <- color2.colorRight.w
 
 #line 56
-mov r15.xyzw, cb5[12].xyzw  // r15.x <- color2.colorLeft.x; r15.y <- color2.colorLeft.y; r15.z <- color2.colorLeft.z; r15.w <- color2.colorLeft.w
+mov r17.xyzw, cb5[12].xyzw  // r17.x <- color2.colorLeft.x; r17.y <- color2.colorLeft.y; r17.z <- color2.colorLeft.z; r17.w <- color2.colorLeft.w
 
 #line 57
-mov r16.xyzw, cb5[13].xyzw  // r16.x <- color2.colorBack.x; r16.y <- color2.colorBack.y; r16.z <- color2.colorBack.z; r16.w <- color2.colorBack.w
+mov r18.xyzw, cb5[13].xyzw  // r18.x <- color2.colorBack.x; r18.y <- color2.colorBack.y; r18.z <- color2.colorBack.z; r18.w <- color2.colorBack.w
 
 #line 58
-mov r17.xyzw, cb5[14].xyzw  // r17.x <- color2.colorFront.x; r17.y <- color2.colorFront.y; r17.z <- color2.colorFront.z; r17.w <- color2.colorFront.w
+mov r19.xyzw, cb5[14].xyzw  // r19.x <- color2.colorFront.x; r19.y <- color2.colorFront.y; r19.z <- color2.colorFront.z; r19.w <- color2.colorFront.w
 
 #line 60
 mov r4.xyz, r4.xyzx  // r4.x <- color.x; r4.y <- color.y; r4.z <- color.z
@@ -298,20 +299,18 @@ mov r0.w, r0.w  // r0.w <- color.w
 
 #line 62
 mul r6.xyz, r0.xyzx, r6.xyzx
-mul r6.xyz, r2.xyzx, r6.xyzx
+mul r6.xyz, r7.xyzx, r6.xyzx
 add r4.xyz, r4.xyzx, r6.xyzx
 
 #line 63
-mul r1.xyz, r1.xyzx, r2.xyzx
-add r0.xyz, r1.xyzx, r4.xyzx  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
+mul r5.xyz, r5.xyzx, r7.xyzx
+add r0.xyz, r4.xyzx, r5.xyzx  // r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
 
 #line 67
 nop 
 mov r0.xyz, r0.xyzx
 mov r0.w, r0.w
 mov r3.xyz, r3.xyzx
-mov r5.xyzw, r5.xyzw
-mov r7.xyzw, r7.xyzw
 mov r8.xyzw, r8.xyzw
 mov r9.xyzw, r9.xyzw
 mov r10.xyzw, r10.xyzw
@@ -322,219 +321,275 @@ mov r14.xyzw, r14.xyzw
 mov r15.xyzw, r15.xyzw
 mov r16.xyzw, r16.xyzw
 mov r17.xyzw, r17.xyzw
-mov r1.x, cb5[15].w
-mov r1.yzw, cb5[0].xxyz
-mov r2.xyz, cb5[1].xyzx
-mov r4.xyz, cb5[2].xyzx
+mov r18.xyzw, r18.xyzw
+mov r19.xyzw, r19.xyzw
+mov r1.w, cb5[15].w
+mov r4.xyz, cb5[0].xyzx
+mov r5.xyz, cb5[1].xyzx
+mov r6.xyz, cb5[2].xyzx
 
-#line 292 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadingFunctions.hlsli"
-mov r1.yzw, r1.yyzw  // r1.y <- vecRight.x; r1.z <- vecRight.y; r1.w <- vecRight.z
-
-#line 293
-mov r2.xyz, r2.xyzx  // r2.x <- vecTop.x; r2.y <- vecTop.y; r2.z <- vecTop.z
-
-#line 294
-mov r4.xyz, r4.xyzx  // r4.x <- vecFront.x; r4.y <- vecFront.y; r4.z <- vecFront.z
-
-#line 296
-itof r6.xyz, l(-1, -1, -1, 0)
-mul r6.xyz, r1.yzwy, r6.xyzx  // r6.x <- vecLeft.x; r6.y <- vecLeft.y; r6.z <- vecLeft.z
-
-#line 297
-itof r18.xyz, l(-1, -1, -1, 0)
-mul r18.xyz, r2.xyzx, r18.xyzx  // r18.x <- vecBottom.x; r18.y <- vecBottom.y; r18.z <- vecBottom.z
+#line 297 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadingFunctions.hlsli"
+mov r4.xyz, r4.xyzx  // r4.x <- vecRight.x; r4.y <- vecRight.y; r4.z <- vecRight.z
 
 #line 298
-itof r19.xyz, l(-1, -1, -1, 0)
-mul r19.xyz, r4.xyzx, r19.xyzx  // r19.x <- vecBack.x; r19.y <- vecBack.y; r19.z <- vecBack.z
+mov r5.xyz, r5.xyzx  // r5.x <- vecTop.x; r5.y <- vecTop.y; r5.z <- vecTop.z
+
+#line 299
+mov r6.xyz, r6.xyzx  // r6.x <- vecFront.x; r6.y <- vecFront.y; r6.z <- vecFront.z
 
 #line 301
-dp3 r2.w, r1.yzwy, r1.yzwy
-rsq r2.w, r2.w
-mul r1.yzw, r1.yyzw, r2.wwww
+itof r7.xyz, l(-1, -1, -1, 0)
+mul r7.xyz, r4.xyzx, r7.xyzx  // r7.x <- vecLeft.x; r7.y <- vecLeft.y; r7.z <- vecLeft.z
 
 #line 302
-dp3 r2.w, r2.xyzx, r2.xyzx
-rsq r2.w, r2.w
-mul r2.xyz, r2.wwww, r2.xyzx
+itof r20.xyz, l(-1, -1, -1, 0)
+mul r20.xyz, r5.xyzx, r20.xyzx  // r20.x <- vecBottom.x; r20.y <- vecBottom.y; r20.z <- vecBottom.z
 
 #line 303
+itof r21.xyz, l(-1, -1, -1, 0)
+mul r21.xyz, r6.xyzx, r21.xyzx  // r21.x <- vecBack.x; r21.y <- vecBack.y; r21.z <- vecBack.z
+
+#line 306
 dp3 r2.w, r4.xyzx, r4.xyzx
 rsq r2.w, r2.w
 mul r4.xyz, r2.wwww, r4.xyzx
 
-#line 304
+#line 307
+dp3 r2.w, r5.xyzx, r5.xyzx
+rsq r2.w, r2.w
+mul r5.xyz, r2.wwww, r5.xyzx
+
+#line 308
 dp3 r2.w, r6.xyzx, r6.xyzx
 rsq r2.w, r2.w
 mul r6.xyz, r2.wwww, r6.xyzx
 
-#line 305
-dp3 r2.w, r18.xyzx, r18.xyzx
-rsq r2.w, r2.w
-mul r18.xyz, r2.wwww, r18.xyzx
-
-#line 306
-dp3 r2.w, r19.xyzx, r19.xyzx
-rsq r2.w, r2.w
-mul r19.xyz, r2.wwww, r19.xyzx
-
 #line 309
-itof r2.w, l(0)
-dp3 r2.x, r3.xyzx, r2.xyzx
-max r2.x, r2.x, r2.w  // r2.x <- dirTop
+dp3 r2.w, r7.xyzx, r7.xyzx
+rsq r2.w, r2.w
+mul r7.xyz, r2.wwww, r7.xyzx
 
 #line 310
-itof r2.y, l(0)
-dp3 r2.z, r3.xyzx, r18.xyzx
-max r2.y, r2.z, r2.y  // r2.y <- dirBottom
+dp3 r2.w, r20.xyzx, r20.xyzx
+rsq r2.w, r2.w
+mul r20.xyz, r2.wwww, r20.xyzx
 
 #line 311
-itof r2.z, l(0)
-dp3 r1.y, r3.xyzx, r1.yzwy
-max r1.y, r1.y, r2.z  // r1.y <- dirRight
-
-#line 312
-itof r1.z, l(0)
-dp3 r1.w, r3.xyzx, r6.xyzx
-max r1.z, r1.w, r1.z  // r1.z <- dirLeft
-
-#line 313
-itof r1.w, l(0)
-dp3 r2.z, r3.xyzx, r19.xyzx
-max r1.w, r1.w, r2.z  // r1.w <- dirBack
+dp3 r2.w, r21.xyzx, r21.xyzx
+rsq r2.w, r2.w
+mul r21.xyz, r2.wwww, r21.xyzx
 
 #line 314
-itof r2.z, l(0)
-dp3 r2.w, r3.xyzx, r4.xyzx
-max r2.z, r2.w, r2.z  // r2.z <- dirFront
+itof r2.w, l(0)
+dp3 r3.w, r3.xyzx, r5.xyzx
+max r2.w, r2.w, r3.w  // r2.w <- dirTop
+
+#line 315
+itof r3.w, l(0)
+dp3 r4.w, r3.xyzx, r20.xyzx
+max r3.w, r3.w, r4.w  // r3.w <- dirBottom
+
+#line 316
+itof r4.w, l(0)
+dp3 r4.x, r3.xyzx, r4.xyzx
+max r4.x, r4.x, r4.w  // r4.x <- dirRight
+
+#line 317
+itof r4.y, l(0)
+dp3 r4.z, r3.xyzx, r7.xyzx
+max r4.y, r4.z, r4.y  // r4.y <- dirLeft
+
+#line 318
+itof r4.z, l(0)
+dp3 r4.w, r3.xyzx, r21.xyzx
+max r4.z, r4.w, r4.z  // r4.z <- dirBack
 
 #line 319
-mov r3.xyzw, -r5.xyzw
-add r3.xyzw, r3.xyzw, r12.xyzw
-mul r3.xyzw, r3.xyzw, l(0.500000, 0.500000, 0.500000, 0.500000)
-add r3.xyzw, r3.xyzw, r5.xyzw  // r3.x <- colorTop.x; r3.y <- colorTop.y; r3.z <- colorTop.z; r3.w <- colorTop.w
+itof r4.w, l(0)
+dp3 r5.x, r3.xyzx, r6.xyzx
+max r4.w, r4.w, r5.x  // r4.w <- dirFront
 
-#line 322
-mov r4.xyzw, -r7.xyzw
-add r4.xyzw, r4.xyzw, r13.xyzw
-mul r4.xyzw, r4.xyzw, l(0.500000, 0.500000, 0.500000, 0.500000)
-add r4.xyzw, r4.xyzw, r7.xyzw  // r4.x <- colorBottom.x; r4.y <- colorBottom.y; r4.z <- colorBottom.z; r4.w <- colorBottom.w
-
-#line 325
+#line 324
 mov r5.xyzw, -r8.xyzw
 add r5.xyzw, r5.xyzw, r14.xyzw
 mul r5.xyzw, r5.xyzw, l(0.500000, 0.500000, 0.500000, 0.500000)
-add r5.xyzw, r5.xyzw, r8.xyzw  // r5.x <- colorRight.x; r5.y <- colorRight.y; r5.z <- colorRight.z; r5.w <- colorRight.w
+add r5.xyzw, r5.xyzw, r8.xyzw  // r5.x <- colorTop.x; r5.y <- colorTop.y; r5.z <- colorTop.z; r5.w <- colorTop.w
 
-#line 328
+#line 327
 mov r6.xyzw, -r9.xyzw
 add r6.xyzw, r6.xyzw, r15.xyzw
 mul r6.xyzw, r6.xyzw, l(0.500000, 0.500000, 0.500000, 0.500000)
-add r6.xyzw, r6.xyzw, r9.xyzw  // r6.x <- colorLeft.x; r6.y <- colorLeft.y; r6.z <- colorLeft.z; r6.w <- colorLeft.w
+add r6.xyzw, r6.xyzw, r9.xyzw  // r6.x <- colorBottom.x; r6.y <- colorBottom.y; r6.z <- colorBottom.z; r6.w <- colorBottom.w
 
-#line 331
+#line 330
 mov r7.xyzw, -r10.xyzw
 add r7.xyzw, r7.xyzw, r16.xyzw
 mul r7.xyzw, r7.xyzw, l(0.500000, 0.500000, 0.500000, 0.500000)
-add r7.xyzw, r7.xyzw, r10.xyzw  // r7.x <- colorBack.x; r7.y <- colorBack.y; r7.z <- colorBack.z; r7.w <- colorBack.w
+add r7.xyzw, r7.xyzw, r10.xyzw  // r7.x <- colorRight.x; r7.y <- colorRight.y; r7.z <- colorRight.z; r7.w <- colorRight.w
 
-#line 334
+#line 333
 mov r8.xyzw, -r11.xyzw
 add r8.xyzw, r8.xyzw, r17.xyzw
 mul r8.xyzw, r8.xyzw, l(0.500000, 0.500000, 0.500000, 0.500000)
-add r8.xyzw, r8.xyzw, r11.xyzw  // r8.x <- colorFront.x; r8.y <- colorFront.y; r8.z <- colorFront.z; r8.w <- colorFront.w
+add r8.xyzw, r8.xyzw, r11.xyzw  // r8.x <- colorLeft.x; r8.y <- colorLeft.y; r8.z <- colorLeft.z; r8.w <- colorLeft.w
+
+#line 336
+mov r9.xyzw, -r12.xyzw
+add r9.xyzw, r9.xyzw, r18.xyzw
+mul r9.xyzw, r9.xyzw, l(0.500000, 0.500000, 0.500000, 0.500000)
+add r9.xyzw, r9.xyzw, r12.xyzw  // r9.x <- colorBack.x; r9.y <- colorBack.y; r9.z <- colorBack.z; r9.w <- colorBack.w
 
 #line 339
-itof r9.xyzw, l(1, 1, 1, 1)  // r9.x <- white.x; r9.y <- white.y; r9.z <- white.z; r9.w <- white.w
+mov r10.xyzw, -r13.xyzw
+add r10.xyzw, r10.xyzw, r19.xyzw
+mul r10.xyzw, r10.xyzw, l(0.500000, 0.500000, 0.500000, 0.500000)
+add r10.xyzw, r10.xyzw, r13.xyzw  // r10.x <- colorFront.x; r10.y <- colorFront.y; r10.z <- colorFront.z; r10.w <- colorFront.w
 
-#line 341
+#line 344
+itof r11.xyzw, l(1, 1, 1, 1)  // r11.x <- white.x; r11.y <- white.y; r11.z <- white.z; r11.w <- white.w
+
+#line 346
+itof r12.x, l(1)
+mov r2.w, -r2.w
+add r2.w, r2.w, r12.x
+mov r12.xyzw, -r5.xyzw
+add r12.xyzw, r11.xyzw, r12.xyzw
+mul r12.xyzw, r2.wwww, r12.xyzw
+add r5.xyzw, r5.xyzw, r12.xyzw
 itof r2.w, l(1)
-mov r2.x, -r2.x
-add r2.x, r2.x, r2.w
-mov r10.xyzw, -r3.xyzw
-add r10.xyzw, r9.xyzw, r10.xyzw
-mul r10.xyzw, r2.xxxx, r10.xyzw
-add r3.xyzw, r3.xyzw, r10.xyzw
-itof r2.x, l(1)
-mov r2.y, -r2.y
-add r2.x, r2.y, r2.x
-mov r10.xyzw, -r4.xyzw
-add r10.xyzw, r9.xyzw, r10.xyzw
-mul r10.xyzw, r2.xxxx, r10.xyzw
+mov r3.w, -r3.w
+add r2.w, r2.w, r3.w
+mov r12.xyzw, -r6.xyzw
+add r12.xyzw, r11.xyzw, r12.xyzw
+mul r12.xyzw, r2.wwww, r12.xyzw
+add r6.xyzw, r6.xyzw, r12.xyzw
+mul r5.xyzw, r5.xyzw, r6.xyzw
+itof r2.w, l(1)
+mov r3.w, -r4.x
+add r2.w, r2.w, r3.w
+mov r6.xyzw, -r7.xyzw
+add r6.xyzw, r6.xyzw, r11.xyzw
+mul r6.xyzw, r2.wwww, r6.xyzw
+add r6.xyzw, r6.xyzw, r7.xyzw
+mul r5.xyzw, r5.xyzw, r6.xyzw
+itof r2.w, l(1)
+mov r3.w, -r4.y
+add r2.w, r2.w, r3.w
+mov r6.xyzw, -r8.xyzw
+add r6.xyzw, r6.xyzw, r11.xyzw
+mul r6.xyzw, r2.wwww, r6.xyzw
+add r6.xyzw, r6.xyzw, r8.xyzw
+mul r5.xyzw, r5.xyzw, r6.xyzw
+itof r2.w, l(1)
+mov r3.w, -r4.z
+add r2.w, r2.w, r3.w
+mov r6.xyzw, -r9.xyzw
+add r6.xyzw, r6.xyzw, r11.xyzw
+mul r6.xyzw, r2.wwww, r6.xyzw
+add r6.xyzw, r6.xyzw, r9.xyzw
+mul r5.xyzw, r5.xyzw, r6.xyzw
+itof r2.w, l(1)
+mov r3.w, -r4.w
+add r2.w, r2.w, r3.w
+mov r4.xyzw, -r10.xyzw
+add r4.xyzw, r4.xyzw, r11.xyzw
+mul r4.xyzw, r2.wwww, r4.xyzw
 add r4.xyzw, r4.xyzw, r10.xyzw
-mul r3.xyzw, r3.xyzw, r4.xyzw
-itof r2.x, l(1)
-mov r1.y, -r1.y
-add r1.y, r1.y, r2.x
-mov r4.xyzw, -r5.xyzw
-add r4.xyzw, r4.xyzw, r9.xyzw
-mul r4.xyzw, r1.yyyy, r4.xyzw
-add r4.xyzw, r4.xyzw, r5.xyzw
-mul r3.xyzw, r3.xyzw, r4.xyzw
-itof r1.y, l(1)
-mov r1.z, -r1.z
-add r1.y, r1.z, r1.y
-mov r4.xyzw, -r6.xyzw
-add r4.xyzw, r4.xyzw, r9.xyzw
-mul r4.xyzw, r1.yyyy, r4.xyzw
-add r4.xyzw, r4.xyzw, r6.xyzw
-mul r3.xyzw, r3.xyzw, r4.xyzw
-itof r1.y, l(1)
-mov r1.z, -r1.w
-add r1.y, r1.z, r1.y
-mov r4.xyzw, -r7.xyzw
-add r4.xyzw, r4.xyzw, r9.xyzw
-mul r4.xyzw, r1.yyyy, r4.xyzw
-add r4.xyzw, r4.xyzw, r7.xyzw
-mul r3.xyzw, r3.xyzw, r4.xyzw
-itof r1.y, l(1)
-mov r1.z, -r2.z
-add r1.y, r1.z, r1.y
-mov r2.xyzw, -r8.xyzw
-add r2.xyzw, r2.xyzw, r9.xyzw
-mul r2.xyzw, r1.yyyy, r2.xyzw
-add r2.xyzw, r2.xyzw, r8.xyzw
-mul r2.xyzw, r2.xyzw, r3.xyzw
-add r2.xyzw, r0.xyzw, r2.xyzw  // r2.x <- newColor.x; r2.y <- newColor.y; r2.z <- newColor.z; r2.w <- newColor.w
+mul r4.xyzw, r4.xyzw, r5.xyzw
+add r4.xyzw, r0.xyzw, r4.xyzw  // r4.x <- newColor.x; r4.y <- newColor.y; r4.z <- newColor.z; r4.w <- newColor.w
 
-#line 345
-mov r3.xyzw, -r0.xyzw
-add r2.xyzw, r2.xyzw, r3.xyzw
-mul r1.xyzw, r1.xxxx, r2.xyzw
-add r0.xyzw, r0.xyzw, r1.xyzw  // r0.x <- <CubicColor return value>.x; r0.y <- <CubicColor return value>.y; r0.z <- <CubicColor return value>.z; r0.w <- <CubicColor return value>.w
+#line 350
+mov r5.xyzw, -r0.xyzw
+add r4.xyzw, r4.xyzw, r5.xyzw
+mul r4.xyzw, r1.wwww, r4.xyzw
+add r0.xyzw, r0.xyzw, r4.xyzw  // r0.x <- <CubicColor return value>.x; r0.y <- <CubicColor return value>.y; r0.z <- <CubicColor return value>.z; r0.w <- <CubicColor return value>.w
 
 #line 67 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\CubicColorPS.hlsl"
 mov r0.xyzw, r0.xyzw  // r0.w <- color.w; r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
 
-#line 68
+#line 69
 nop 
-mov r0.xyzw, r0.xyzw
-mov r1.xyzw, cb4[0].xyzw
-mov r2.xy, cb4[1].xyxx
-mov r3.xyz, -cb0[0].xyzx
-add r3.xyz, r3.xyzx, v1.xyzx
-dp3 r2.z, r3.xyzx, r3.xyzx
-sqrt r2.z, r2.z
+mov r3.xyz, r3.xyzx
+itof r4.xyz, l(0, 1, 0, 0)
+itof r5.xyz, l(1, 1, 1, 0)
+itof r6.xyz, l(0, 0, 0, 0)
+mov r7.xy, cb4[2].xyxx
 
-#line 149 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadingFunctions.hlsli"
-mov r2.w, -r2.x
-add r2.z, r2.w, r2.z
-mov r2.x, -r2.x
-add r2.x, r2.x, r2.y
-div r2.x, r2.z, r2.x
-max r2.x, r2.x, l(0.000000)
-min r2.x, r2.x, l(1.000000)  // r2.x <- fogAlpha
+#line 134 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadingFunctions.hlsli"
+dp3 r1.w, r3.xyzx, r4.xyzx
+mul r1.w, r1.w, l(0.500000)
+add r1.w, r1.w, l(0.500000)  // r1.w <- facter
 
-#line 151
-mov r3.xyzw, -r0.xyzw
-add r1.xyzw, r1.xyzw, r3.xyzw
-mul r1.xyzw, r1.xyzw, r2.xxxx
-add r0.xyzw, r0.xyzw, r1.xyzw  // r0.x <- <CalcFog return value>.x; r0.y <- <CalcFog return value>.y; r0.z <- <CalcFog return value>.z; r0.w <- <CalcFog return value>.w
+#line 135
+mov r4.xyz, -r6.xyzx
+add r4.xyz, r4.xyzx, r5.xyzx
+mul r4.xyz, r1.wwww, r4.xyzx
+add r4.xyz, r4.xyzx, r6.xyzx
+mul r4.xyz, r7.xxxx, r4.xyzx
+mul r4.xyz, r7.yyyy, r4.xyzx  // r4.x <- <CalcHemiSphereLight return value>.x; r4.y <- <CalcHemiSphereLight return value>.y; r4.z <- <CalcHemiSphereLight return value>.z
 
-#line 68 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\CubicColorPS.hlsl"
+#line 69 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\CubicColorPS.hlsl"
+add r0.xyz, r0.xyzx, r4.xyzx
+
+#line 71
+nop 
+mov r0.xyz, r0.xyzx
+mov r0.w, r0.w
+mov r4.xyzw, cb4[0].xyzw
+mov r5.xy, cb4[1].xyxx
+mov r6.xyz, -cb0[0].xyzx
+add r6.xyz, r6.xyzx, v1.xyzx
+dp3 r1.w, r6.xyzx, r6.xyzx
+sqrt r1.w, r1.w
+
+#line 150 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadingFunctions.hlsli"
+mov r2.w, -r5.x
+add r1.w, r1.w, r2.w
+mov r2.w, -r5.x
+add r2.w, r2.w, r5.y
+div r1.w, r1.w, r2.w
+max r1.w, r1.w, l(0.000000)
+min r1.w, r1.w, l(1.000000)  // r1.w <- fogAlpha
+
+#line 152
+mov r5.xyzw, -r0.xyzw
+add r4.xyzw, r4.xyzw, r5.xyzw
+mul r4.xyzw, r1.wwww, r4.xyzw
+add r0.xyzw, r0.xyzw, r4.xyzw  // r0.x <- <CalcFog return value>.x; r0.y <- <CalcFog return value>.y; r0.z <- <CalcFog return value>.z; r0.w <- <CalcFog return value>.w
+
+#line 71 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\CubicColorPS.hlsl"
 mov r0.xyzw, r0.xyzw  // r0.w <- color.w; r0.x <- color.x; r0.y <- color.y; r0.z <- color.z
 
-#line 70
+#line 73
+nop 
+mov r3.xyz, r3.xyzx
+mov r2.xyz, r2.xyzx
+mov r1.xyz, r1.xyzx
+mov r4.xyz, cb0[7].xyzx
+
+#line 77 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadingFunctions.hlsli"
+dp3 r1.w, r2.xyzx, r3.xyzx
+max r1.w, r1.w, l(0.000000)
+min r1.w, r1.w, l(1.000000)
+mov r1.w, -r1.w
+add r3.xyz, r1.wwww, l(1.000000, 1.000000, 1.000000, 0.000000)  // r3.z <- rim
+
+#line 79
+mov r5.xyz, l(1.000000,1.000000,1.000000,0)
+mul r5.xyz, r3.xyzx, r5.xyzx
+mul r3.xyz, r3.xyzx, r3.xyzx
+mul r3.xyz, r3.xyzx, r5.xyzx
+mul r3.xyz, r3.xyzx, r4.xyzx
+mul r3.xyz, r4.xyzx, r3.xyzx
+dp3 r1.x, r2.xyzx, r1.xyzx
+max r1.x, r1.x, l(0.000000)
+min r1.x, r1.x, l(1.000000)
+mul r1.xyz, r1.xxxx, r3.xyzx  // r1.x <- <CalcRimLight return value>.x; r1.y <- <CalcRimLight return value>.y; r1.z <- <CalcRimLight return value>.z
+
+#line 73 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\CubicColorPS.hlsl"
+add r0.xyz, r0.xyzx, r1.xyzx
+
+#line 75
 nop 
 nop 
 nop 
@@ -542,17 +597,17 @@ mov r1.x, cb7[0].x
 mov r1.y, cb7[0].y
 mov r1.z, cb7[0].z
 
-#line 356 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadingFunctions.hlsli"
+#line 361 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadingFunctions.hlsli"
 sample_indexable(texture2d)(float,float,float,float) r1.w, v5.xyxx, t3.yzwx, s0
 mov r1.w, r1.w  // r1.w <- mask
 
-#line 360
+#line 365
 ge r2.x, r1.x, r1.w
 movc r2.x, r2.x, l(1.000000), l(0)
 ge r1.z, r1.z, r2.x
 movc r1.z, r1.z, l(1.000000), l(0)  // r1.z <- alpha
 
-#line 363
+#line 368
 mov r2.x, -r1.x
 add r2.x, r1.w, r2.x
 ge r2.x, r1.x, r2.x
@@ -565,29 +620,29 @@ ge r1.x, r1.x, r1.w
 movc r1.x, r1.x, l(1.000000), l(0)
 mul r1.x, r1.x, r2.x  // r1.x <- edgeValue
 
-#line 368
+#line 373
 add r1.x, r1.x, r1.z
 max r1.x, r1.x, l(0.000000)
 min r1.x, r1.x, l(1.000000)  // r1.x <- color.w
 
-#line 370
+#line 375
 mov r1.x, r1.x  // r1.x <- <CulcDissolve return value>.w
 
-#line 70 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\CubicColorPS.hlsl"
+#line 75 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\CubicColorPS.hlsl"
 mov r1.x, r1.x  // r1.x <- dissolveValue.w
 
-#line 72
+#line 78
 mul r0.w, r0.w, r1.x
 
-#line 73
+#line 79
 mov r1.x, l(-0.010000)
 add r1.x, r0.w, r1.x
 lt r1.x, r1.x, l(0.000000)
 and r1.x, r1.x, l(-1)
 discard_nz r1.x
 
-#line 77
+#line 83
 mov o0.xyz, r0.xyzx
 mov o0.w, r0.w
 ret 
-// Approximately 289 instruction slots used
+// Approximately 327 instruction slots used

@@ -5,7 +5,10 @@
 
 #include <algorithm>
 
-
+ObjectManager::~ObjectManager()
+{
+    Clear();
+}
 
 
 // XVˆ—

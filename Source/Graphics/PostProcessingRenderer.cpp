@@ -103,22 +103,48 @@ void PostprocessingRenderer::Render(ID3D11DeviceContext* device)
             // 高輝度抽出処理
             SpriteShader* shader = graphics.GetShader(SpriteShaderId::GaussianBlur);
 
-            shader->Begin(rc);
+            // X方向にブラー
+            {
+                rc.BlurCount = 0;
 
-            // 描画対象を変更
-            renderSprite->SetShaderResourceView(luminanceExtractRenderTarget->GetShaderResourceView(),
-                luminanceExtractRenderTarget->GetWidth(),
-                luminanceExtractRenderTarget->GetHeight());
+                shader->Begin(rc);
 
-            renderSprite->Update(0, 0, viewport.Width, viewport.Height,
-                0, 0, static_cast<float>(luminanceExtractRenderTarget->GetWidth()),
-                static_cast<float>(luminanceExtractRenderTarget->GetHeight()),
-                0,
-                1, 1, 1, 1);
+                // 描画対象を変更
+                renderSprite->SetShaderResourceView(luminanceExtractRenderTarget->GetShaderResourceView(),
+                    luminanceExtractRenderTarget->GetWidth(),
+                    luminanceExtractRenderTarget->GetHeight());
 
-            shader->Draw(rc, renderSprite.get());
+                renderSprite->Update(0, 0, viewport.Width, viewport.Height,
+                    0, 0, static_cast<float>(luminanceExtractRenderTarget->GetWidth()),
+                    static_cast<float>(luminanceExtractRenderTarget->GetHeight()),
+                    0,
+                    1, 1, 1, 1);
 
-            shader->End(rc);
+                shader->Draw(rc, renderSprite.get());
+
+                shader->End(rc);
+            }
+            // Y方向にブラー
+            {
+                rc.BlurCount = 1;
+
+                shader->Begin(rc);
+
+                // 描画対象を変更
+                renderSprite->SetShaderResourceView(luminanceExtractRenderTarget->GetShaderResourceView(),
+                    luminanceExtractRenderTarget->GetWidth(),
+                    luminanceExtractRenderTarget->GetHeight());
+
+                renderSprite->Update(0, 0, viewport.Width, viewport.Height,
+                    0, 0, static_cast<float>(luminanceExtractRenderTarget->GetWidth()),
+                    static_cast<float>(luminanceExtractRenderTarget->GetHeight()),
+                    0,
+                    1, 1, 1, 1);
+
+                shader->Draw(rc, renderSprite.get());
+
+                shader->End(rc);
+            }
         }
     }
 
@@ -189,7 +215,7 @@ void PostprocessingRenderer::Render(const RenderContext* renderContext)
     rc.deviceContext = renderContext->deviceContext;
     rc.luminanceExtractionData = bloomData.luminanceExtractionData;
     rc.gaussianFilterData = bloomData.gaussianFilterData;
-    rc.BlurCount = renderContext->BlurCount;
+    //rc.BlurCount = renderContext->BlurCount;
 
     if (effectFlag)
     {
@@ -250,22 +276,48 @@ void PostprocessingRenderer::Render(const RenderContext* renderContext)
             // 高輝度抽出処理
             SpriteShader* shader = graphics.GetShader(SpriteShaderId::GaussianBlur);
 
-            shader->Begin(rc);
+            // X方向ブラー
+            {
+                rc.BlurCount = 0;
 
-            // 描画対象を変更
-            renderSprite->SetShaderResourceView(luminanceExtractRenderTarget->GetShaderResourceView(),
-                luminanceExtractRenderTarget->GetWidth(),
-                luminanceExtractRenderTarget->GetHeight());
+                shader->Begin(rc);
 
-            renderSprite->Update(0, 0, viewport.Width, viewport.Height,
-                0, 0, static_cast<float>(luminanceExtractRenderTarget->GetWidth()),
-                static_cast<float>(luminanceExtractRenderTarget->GetHeight()),
-                0,
-                1, 1, 1, 1);
+                // 描画対象を変更
+                renderSprite->SetShaderResourceView(luminanceExtractRenderTarget->GetShaderResourceView(),
+                    luminanceExtractRenderTarget->GetWidth(),
+                    luminanceExtractRenderTarget->GetHeight());
 
-            shader->Draw(rc, renderSprite.get());
+                renderSprite->Update(0, 0, viewport.Width, viewport.Height,
+                    0, 0, static_cast<float>(luminanceExtractRenderTarget->GetWidth()),
+                    static_cast<float>(luminanceExtractRenderTarget->GetHeight()),
+                    0,
+                    1, 1, 1, 1);
 
-            shader->End(rc);
+                shader->Draw(rc, renderSprite.get());
+
+                shader->End(rc);
+            }
+            // Y方向ブラー
+            {
+                rc.BlurCount = 1;
+
+                shader->Begin(rc);
+
+                // 描画対象を変更
+                renderSprite->SetShaderResourceView(luminanceExtractRenderTarget->GetShaderResourceView(),
+                    luminanceExtractRenderTarget->GetWidth(),
+                    luminanceExtractRenderTarget->GetHeight());
+
+                renderSprite->Update(0, 0, viewport.Width, viewport.Height,
+                    0, 0, static_cast<float>(luminanceExtractRenderTarget->GetWidth()),
+                    static_cast<float>(luminanceExtractRenderTarget->GetHeight()),
+                    0,
+                    1, 1, 1, 1);
+
+                shader->Draw(rc, renderSprite.get());
+
+                shader->End(rc);
+            }
         }
     }
 

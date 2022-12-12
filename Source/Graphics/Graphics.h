@@ -17,6 +17,7 @@ enum class ModelShaderId
 	Phong,
 	ShadowmapCaster,
 	Cubic,
+	SkyBox,
 
 	Max
 };

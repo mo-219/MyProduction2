@@ -91,8 +91,20 @@ void Player::Update(float elapsedTime)  //前回Updateしてから今やってる時までの時
         break;
 
 
-    case State::Attack:
-        UpdateAttackState(elapsedTime);
+    case State::Attack1:
+        UpdateAttack1State(elapsedTime);
+        break;    
+    
+    case State::Attack2:
+        UpdateAttack2State(elapsedTime);
+        break;    
+    
+    case State::Attack3:
+        UpdateAttack3State(elapsedTime);
+        break;    
+    
+    case State::Attack4:
+        UpdateAttack4State(elapsedTime);
         break;
 
     case State::Dodge:
@@ -210,8 +222,20 @@ void Player::DrawDebugGUI()
     std::string str = "";
 
     switch (state) {
-    case State::Attack:
-        str = "Attack";
+    case State::Attack1:
+        str = "Attack1";
+        break;  
+
+    case State::Attack2:
+        str = "Attack2";
+        break;    
+    
+    case State::Attack3:
+        str = "Attack3";
+        break;    
+    
+    case State::Attack4:
+        str = "Attack4";
         break;
 
     case State::Idle:
@@ -773,7 +797,7 @@ void Player::UpdateIdleState(float elapsedTime)
     // 攻撃入力処理
     if (InputAttack() && attackCount <= attackLimit)
     {
-        TransitionAttackState();
+        TransitionAttack1State();
     }
     if (InputDodge())
     {
@@ -808,7 +832,7 @@ void Player::UpdateMoveState(float elapsedTime)
     // 攻撃入力処理
     if (InputAttack() && attackCount <= attackLimit)
     {
-        TransitionAttackState();
+        TransitionAttack1State();
     }
     if (InputDodge())
     {
@@ -931,38 +955,23 @@ void Player::UpdateFallingState(float elapsedTime)
     }
 }
 
-void Player::TransitionAttackState()
+void Player::TransitionAttack1State()
 {
-    state = State::Attack;
-
-    // 待機アニメーション再生
-    switch (attackCount)
-    {
-    case 0:
-        // 1回
-        model->PlayAnimation(Anim_Combo1, false, 1.0f);
-        break;
-    case 1:
-        // 2回
-        model->PlayAnimation(Anim_Combo2, false, 1.0f);
-        break;
-    }
-    attackCount++;
+    state = State::Attack1;
+    AnimationLimit = 0.3f;
+    model->PlayAnimation(Anim_Combo1, false, 0.9f);
 }
 
-void Player::UpdateAttackState(float elapsedTime)
+void Player::UpdateAttack1State(float elapsedTime)
 {
     Attacked();
-    InputAttack();
+
 
     if (!model->IsPlayAnimation())
     {
         /*attckCollisionFlag = false;*/
-        if (JudgeAttack())
-        {
-            TransitionAttackState();
-        }
-        else if (!InputMove(elapsedTime))
+
+        if (!InputMove(elapsedTime))
         {
             TransitionIdleState();
         }
@@ -970,10 +979,114 @@ void Player::UpdateAttackState(float elapsedTime)
         {
             TransitionMoveState();
         }
-
+    }  
+    else if (model->GetCurrentAnimetionSeconds() >= AnimationLimit)
+    {
+        if (InputAttack())
+        {
+            TransitionAttack2State();
+        }
     }
-        
 }
+
+void Player::TransitionAttack2State()
+{
+    state = State::Attack2;
+    AnimationLimit = 0.5f;
+    model->PlayAnimation(Anim_Combo2, false, 0.9f);
+}
+
+void Player::UpdateAttack2State(float elapsedTime)
+{
+    Attacked();
+
+    if (!model->IsPlayAnimation())
+    {
+        /*attckCollisionFlag = false;*/
+        if (!InputMove(elapsedTime))
+        {
+            TransitionIdleState();
+        }
+        else
+        {
+            TransitionMoveState();
+        }
+    }
+    else if (model->GetCurrentAnimetionSeconds() >= AnimationLimit)
+    {
+        if (InputAttack())
+        {
+            TransitionAttack3State();
+        }
+    }
+}
+
+
+void Player::TransitionAttack3State()
+{
+    state = State::Attack3;
+    AnimationLimit = 0.5f;
+    model->PlayAnimation(Anim_Combo3, false, 0.9f);
+}
+
+void Player::UpdateAttack3State(float elapsedTime)
+{
+    Attacked();
+
+
+    if (!model->IsPlayAnimation())
+    {
+        /*attckCollisionFlag = false;*/
+        if (!InputMove(elapsedTime))
+        {
+            TransitionIdleState();
+        }
+        else
+        {
+            TransitionMoveState();
+        }
+    }
+    else if (model->GetCurrentAnimetionSeconds() >= AnimationLimit)
+    {
+        if (InputAttack())
+        {
+            TransitionAttack4State();
+        }
+    }
+}
+
+void Player::TransitionAttack4State()
+{
+    state = State::Attack4;
+    AnimationLimit = 1.0f;
+    model->PlayAnimation(Anim_Combo4, false, 0.9f);
+}
+
+void Player::UpdateAttack4State(float elapsedTime)
+{
+    Attacked();
+
+    if (!model->IsPlayAnimation())
+    {
+        /*attckCollisionFlag = false;*/
+        if (!InputMove(elapsedTime))
+        {
+            TransitionIdleState();
+        }
+        else
+        {
+            TransitionMoveState();
+        }
+    }
+}
+
+
+
+
+
+
+
+
 
 void Player::TransitionDodgeState()
 {

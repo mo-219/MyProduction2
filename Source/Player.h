@@ -121,7 +121,10 @@ private:
         Idle,
         Move,
         Jump,
-        Attack,
+        Attack1,
+        Attack2,
+        Attack3,
+        Attack4,
         Dodge,
         Falling,
         Landing,
@@ -160,9 +163,27 @@ private:
     void TransitionFallingState();              // 遷移
     void UpdateFallingState(float elapsedTime); // 更新処理
 
-    // 攻撃ステート
-    void TransitionAttackState();               // 遷移
-    void UpdateAttackState(float elapsedTime);  // 更新処理
+    //
+    //  攻撃ステート
+    //
+    // コンボ１
+    void TransitionAttack1State();               // 遷移
+    void UpdateAttack1State(float elapsedTime);  // 更新処理
+
+    // コンボ2
+    void TransitionAttack2State();               // 遷移
+    void UpdateAttack2State(float elapsedTime);  // 更新処理
+
+    // コンボ3
+    void TransitionAttack3State();               // 遷移
+    void UpdateAttack3State(float elapsedTime);  // 更新処理
+
+    // コンボ4
+    void TransitionAttack4State();               // 遷移
+    void UpdateAttack4State(float elapsedTime);  // 更新処理
+
+
+
 
     // 避けステート
     void TransitionDodgeState();               // 遷移
@@ -174,6 +195,8 @@ private:
 
     Model* model            = nullptr;
     Sword* sword            = nullptr;
+
+    float AnimationLimit = 0.0f;
 
     State   state = State::Idle;
 

@@ -3,6 +3,12 @@
 
 #include "Collision.h"
 
+EnemyManager::~EnemyManager()
+{
+    removes.clear();
+    enemies.clear();
+    
+}
 
 // XVˆ—
 void EnemyManager::Update(float elapsedTime)

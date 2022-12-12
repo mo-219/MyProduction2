@@ -88,6 +88,8 @@ public:
 
 	Param param = { DirectX::XMFLOAT3(0,0,0), 0.5f, 0.0f,2.0f,0.0f };
 
+	int heightFogFlag = 1.0f;
+
 public:
 	// デバッグ用
 	bool CollisionFlag = false;

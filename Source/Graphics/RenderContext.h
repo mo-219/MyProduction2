@@ -130,5 +130,8 @@ struct RenderContext
 	GaussianFilterData		shadowBlurData;
 
 	int BlurCount = 0;
+
+	// heightFog‚·‚é‚©”Û‚©
+	int heightFogFlag = 1;
 };
 

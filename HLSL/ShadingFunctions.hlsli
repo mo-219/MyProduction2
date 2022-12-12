@@ -71,11 +71,12 @@ float3 CalcHalfLambert(float3 N, float3 L, float3 C, float3 K)
 //  C: ライト色
 //　RimPower: リムライトの強さ
 //-----------------------------------------------
-float3 CalcRimLight(float3 N, float3 E, float3 L, float3 C, float3 RimPower = 3.0f)
+float3 CalcRimLight(float3 normal, float3 eyeVector, float3 lightVector, 
+                    float3 lightColor, float3 rimPower = 3.0f)
 {
-    float rim = 1.0f - saturate(dot(N, -E));
+    float rim = 1.0f - saturate(dot(eyeVector, normal)); //
     
-    return C * pow(rim, RimPower) * saturate(dot(L, -E));
+    return lightColor.rgb * pow(rim, rimPower) * lightColor.rgb * saturate(dot(eyeVector,lightVector));
 }
 
 
@@ -131,7 +132,7 @@ float3 CalcSphereEnvironment(Texture2D tex, SamplerState samp, in float3 color,
 float3 CalcHemiSphereLight(float3 normal, float3 up, float3 sky_color, float3 ground_color, float4 hemisphere_weight)
 {
     float facter = dot(normal, up) * 0.5f + 0.5f;
-    return lerp(ground_color, sky_color, facter) * hemisphere_weight.x;
+    return (lerp(ground_color, sky_color, facter) * hemisphere_weight.x) * hemisphere_weight.y;
     
 }
 
@@ -199,6 +200,8 @@ float3 CubicColor(float3 color, float3 N,
     return color + newColor;
 };
 
+
+
 float4 CubicColor(float4 color, float3 N,
                   float4 colorTop, float4 colorBottom, float4 colorRight,
                   float4 colorLeft, float4 colorBack, float4 colorFront, float colorAlpha)
@@ -228,6 +231,8 @@ float4 CubicColor(float4 color, float3 N,
     
     return lerp(color, newColor, colorAlpha);
 };
+
+
 
 float4 CubicColor(float4 color, float3 N,
                   float4 colorTop1, float4 colorBottom1, float4 colorRight1,

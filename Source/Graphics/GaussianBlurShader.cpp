@@ -21,7 +21,6 @@ GaussianBlurShader::GaussianBlurShader(ID3D11Device* device)
 
         // ピクセルシェーダー生成
         create_ps_from_cso(device, "Shader\\GaussianBlurPS.cso", pixelShader.GetAddressOf());
-        create_ps_from_cso(device, "Shader\\GaussianBlurPS_2Pass.cso", pixelShader_2pass.GetAddressOf());
     }
     
 
@@ -132,8 +131,8 @@ void GaussianBlurShader::Begin(const RenderContext& rc)
 {
     rc.deviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
     
-    //rc.deviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
-    rc.deviceContext->PSSetShader(pixelShader_2pass.Get(), nullptr, 0);
+    rc.deviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
+
 
     rc.deviceContext->IASetInputLayout(inputLayout.Get());
     rc.deviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0);
@@ -161,18 +160,18 @@ void GaussianBlurShader::Draw(const RenderContext& rc, const Sprite* sprite)
 
     // ガウスフィルター値の計算
     CBFilter cbFilter;
-    //switch (rc.BlurCount)
-    //{
-    //case 0:
-    //    // X方向にブラー
-    //    CalcGaussianFilterX(cbFilter, rc.gaussianFilterData);
-    //    break;
-    //case 1:
-    //    // Y方向にブラー
-    //    CalcGaussianFilterY(cbFilter, rc.gaussianFilterData);
-    //    break;
-    //}
-    CalcGaussianFilter(cbFilter, rc.gaussianFilterData);
+    switch (rc.BlurCount)
+    {
+    case 0:
+        // X方向にブラー
+        CalcGaussianFilterX(cbFilter, rc.gaussianFilterData);
+        break;
+    case 1:
+        // Y方向にブラー
+        CalcGaussianFilterY(cbFilter, rc.gaussianFilterData);
+        break;
+    }
+   /* CalcGaussianFilter(cbFilter, rc.gaussianFilterData);*/
     rc.deviceContext->UpdateSubresource(filterConstantBuffer.Get(), 0, 0, &cbFilter, 0, 0);
     
     UINT stride = sizeof(Sprite::Vertex);

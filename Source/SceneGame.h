@@ -4,6 +4,7 @@
 #include "Stage.h"
 #include "CameraController.h"
 #include "Graphics/Light.h"
+#include "Graphics/SkyBox.h"
 #include "Player.h"
 
 #include "Graphics/PostprocessingRenderer.h"
@@ -64,6 +65,7 @@ private:
 
 	Rect fade;		// ‰æ–Ê‘JˆÚ—p
 	Player* player = nullptr;
+	SkyBox* sky = nullptr;
 	Sprite* guage = nullptr;
 	State state = State::INITIALIZE;
 	int currentStageNum = 0;
