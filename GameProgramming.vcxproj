@@ -254,6 +254,7 @@
     <ClInclude Include="Source\Input\GamePad.h" />
     <ClInclude Include="Source\Input\Input.h" />
     <ClInclude Include="Source\Input\Mouse.h" />
+    <ClInclude Include="Source\ItemObj.h" />
     <ClInclude Include="Source\LevelManager.h" />
     <ClInclude Include="Source\LightManager.h" />
     <ClInclude Include="Source\LoadObj.h" />
@@ -337,6 +338,7 @@
     <ClCompile Include="Source\Input\GamePad.cpp" />
     <ClCompile Include="Source\Input\Input.cpp" />
     <ClCompile Include="Source\Input\Mouse.cpp" />
+    <ClCompile Include="Source\ItemObj.cpp" />
     <ClCompile Include="Source\LevelManager.cpp" />
     <ClCompile Include="Source\LightManager.cpp" />
     <ClCompile Include="Source\Loading.cpp" />

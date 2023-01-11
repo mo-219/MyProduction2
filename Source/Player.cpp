@@ -40,7 +40,7 @@ Player::Player()
     sword = new Sword("Data/Model/Sword/Sword2.mdl");
     DirectX::XMFLOAT4X4 swordStart = model->FindNode("LeftHand")->worldTransform;     // 手元
 
-    handNode = model->FindNode("LeftHand");   // 手のノード取得
+    //handNode = model->FindNode("LeftHand");   // 手のノード取得
 
     // 待機ステートへ遷移
     TransitionIdleState();
@@ -119,6 +119,13 @@ void Player::Update(float elapsedTime)  //前回Updateしてから今やってる時までの時
         UpdateLandingState(elapsedTime);
         break;
 
+    case State::Damage:
+        UpdateDamageState(elapsedTime);
+        break;
+
+    case State::Dead:
+        UpdateDeathState(elapsedTime);
+        break;
 
     }
 
@@ -134,6 +141,8 @@ void Player::Update(float elapsedTime)  //前回Updateしてから今やってる時までの時
     // 速力処理更新
     UpdateVelocity(elapsedTime);
 
+    CalcPositionMaxMin();
+
     // 弾丸入力処理
     InputProjectile();
 
@@ -148,11 +157,12 @@ void Player::Update(float elapsedTime)  //前回Updateしてから今やってる時までの時
 
     CollisionPlayerVsObject();
 
+
     UpdateOnlyTransform(elapsedTime);
 
 
-
-
+    // AP回復
+    AddAP(0.1f);
 }
 
 void Player::UpdateOnlyTransform(float elapsedTime)
@@ -167,6 +177,7 @@ void Player::UpdateOnlyTransform(float elapsedTime)
     model->UpdateTransform(transform);
 
 
+    // 初期化見直す
 
 
     sword->UpdateTransform(model->FindNode("LeftHand")->worldTransform);
@@ -440,8 +451,8 @@ void Player::DrawDebugPrimitive()
     //debugRenderer->DrawSphere(position, radius, DirectX::XMFLOAT4(0, 0, 0, 1));
 
     // 小塔判定用のデバッグ円柱を描画
-    debugRenderer->DrawCylinder(param.position, param.radius, param.height, DirectX::XMFLOAT4(0, 0, 0, 1));
-    debugRenderer->DrawSphere(param.position, param.rayCastRadius, DirectX::XMFLOAT4{ 0,1,0,1 });
+    debugRenderer->DrawCylinder(collisionPosition, param.radius, param.height, DirectX::XMFLOAT4(0, 0, 0, 1));
+    //debugRenderer->DrawSphere(param.position, param.rayCastRadius, DirectX::XMFLOAT4{ 0,1,0,1 });
 
 
     sword->DrawDebugPrimitive();
@@ -500,7 +511,7 @@ void Player::CollisionPlayerVsEnemies()
             else
             {
                 // 押し出し後の位置設定
-                enemyManager.GetEnemy(i)->setPosition(outPosition);
+                enemyManager.GetEnemy(i)->SetPosition(outPosition);
 
             }
 
@@ -635,10 +646,13 @@ void Player::CollisionPlayerVsObject()
         DirectX::XMFLOAT3 outPosition{};
         GameObject* obj = objManager.GetObj(i);
         obj->CollisionFlag = false;
+        if (obj->collision == &noneBehavior) continue;
+        if (obj->GetInvincibleTimer() > 0.0f)continue;
         if (obj->GetBehavior()->collision(obj->GetParam(), this->GetParam(), outPosition))
         {
+            obj->Hit(this, outPosition);
             obj->CollisionFlag = true;
-            param.position = outPosition;
+            
         }
     }
 
@@ -677,18 +691,19 @@ bool Player::InputAttack()
     return false;
 }
 
-// アタックさせるかどうかはここで判定
-bool Player::JudgeAttack()
+bool Player::JudgeAttack(int Value)
 {
-    if (InputAttack() || attackInputTimer > 0.0f)
+    if (InputAttack())
     {
-        if (attackCount <= attackLimit)
+        if (AP - Value < 0)
         {
             return true;
         }
     }
     return false;
 }
+
+
 
 bool Player::InputDodge()
 {
@@ -707,6 +722,18 @@ bool Player::CalcDodge()
     DirectX::XMFLOAT3 front = DirectX::XMFLOAT3(transform._31, transform._32, transform._33);
     param.position.z += front.z * dodgeSpeed;
     param.position.x += front.x * dodgeSpeed;
+}
+
+void Player::CalcAP(float Value)
+{
+    AP -= Value;
+    if (AP <= 0) AP = 0;
+}
+
+void Player::AddAP(float Value)
+{
+    AP += Value;
+    if (AP >= MaxAP) AP = MaxAP;
 }
 
 // 接地したときに呼ばれる
@@ -729,14 +756,14 @@ void Player::OnLanding()
 void Player::OnDamaged()
 {
     // ダメージステートへ遷移
-    //TransitionDamageState();
+    TransitionDamageState();
 
 }
 
 void Player::OnDead()
 {
     // 死亡ステートへ遷移
-    //TransitionDeathState();
+    TransitionDeathState();
 
 }
 
@@ -789,23 +816,31 @@ void Player::UpdateIdleState(float elapsedTime)
     {
         TransitionMoveState();
     }
+   
     // ジャンプ入力処理
     if (ImputJump())
     {
         TransitionJumpState();
     }
     // 攻撃入力処理
-    if (InputAttack() && attackCount <= attackLimit)
+    if(GetCurrentAP()-5 >= 0)
     {
-        TransitionAttack1State();
+        if (InputAttack() && attackCount <= attackLimit)
+        {
+            TransitionAttack1State();
+        }
     }
-    if (InputDodge())
+    if (GetCurrentAP()-30 >= 0)
     {
-        TransitionDodgeState();
+        if (InputDodge())
+        {
+            TransitionDodgeState();
+        }
     }
 
     // 弾丸入力処理
     InputProjectile();
+    SetCollisionPosition(GetPosition());
 }
 
 void Player::TransitionMoveState()
@@ -830,20 +865,27 @@ void Player::UpdateMoveState(float elapsedTime)
         TransitionJumpState();
     }
     // 攻撃入力処理
-    if (InputAttack() && attackCount <= attackLimit)
+    if (GetCurrentAP() - 5 >= 0)
     {
-        TransitionAttack1State();
+        if (InputAttack() && attackCount <= attackLimit)
+        {
+            TransitionAttack1State();
+        }
     }
-    if (InputDodge())
+    if (GetCurrentAP() - 30 >= 0)
     {
-        TransitionDodgeState();
+        if (InputDodge())
+        {
+            TransitionDodgeState();
+        }
     }
     // 弾丸入力処理
     InputProjectile();
-
+    SetCollisionPosition(GetPosition());
 }
 void Player::TransitionJumpInitState()
 {
+    CalcAP(10);
     state = State::Jump;
 
     model->PlayAnimation(Anim_Jump_Up1, true, 1.0f);
@@ -875,7 +917,7 @@ void Player::UpdateJumpInitState(float elapsedTime)
 
 
 
-
+    SetCollisionPosition(GetPosition());
 }
 void Player::TransitionJumpState()
 {
@@ -911,7 +953,7 @@ void Player::UpdateJumpState(float elapsedTime)
     // 弾丸入力処理
     InputProjectile();
 
-
+    SetCollisionPosition(GetPosition());
 }
 
 void Player::TransitionLandingState()
@@ -937,6 +979,7 @@ void Player::UpdateLandingState(float elapsedTime)
             TransitionMoveState();
         }
     }
+    SetCollisionPosition(GetPosition());
 }
 
 void Player::TransitionFallingState()
@@ -953,10 +996,12 @@ void Player::UpdateFallingState(float elapsedTime)
     {
         TransitionDodgeState();
     }
+    SetCollisionPosition(GetPosition());
 }
 
 void Player::TransitionAttack1State()
 {
+    CalcAP(5);
     state = State::Attack1;
     AnimationLimit = 0.3f;
     model->PlayAnimation(Anim_Combo1, false, 0.9f);
@@ -982,15 +1027,20 @@ void Player::UpdateAttack1State(float elapsedTime)
     }  
     else if (model->GetCurrentAnimetionSeconds() >= AnimationLimit)
     {
-        if (InputAttack())
+        if (GetCurrentAP() - 10 >= 0)
         {
-            TransitionAttack2State();
+            if (InputAttack())
+            {
+                TransitionAttack2State();
+            }
         }
     }
+    SetCollisionPosition(GetPosition());
 }
 
 void Player::TransitionAttack2State()
 {
+    CalcAP(10);
     state = State::Attack2;
     AnimationLimit = 0.5f;
     model->PlayAnimation(Anim_Combo2, false, 0.9f);
@@ -1014,16 +1064,21 @@ void Player::UpdateAttack2State(float elapsedTime)
     }
     else if (model->GetCurrentAnimetionSeconds() >= AnimationLimit)
     {
-        if (InputAttack())
+        if (GetCurrentAP() - 15 >= 0)
         {
-            TransitionAttack3State();
+            if (InputAttack())
+            {
+                TransitionAttack3State();
+            }
         }
     }
+    SetCollisionPosition(GetPosition());
 }
 
 
 void Player::TransitionAttack3State()
 {
+    CalcAP(15);
     state = State::Attack3;
     AnimationLimit = 0.5f;
     model->PlayAnimation(Anim_Combo3, false, 0.9f);
@@ -1048,15 +1103,20 @@ void Player::UpdateAttack3State(float elapsedTime)
     }
     else if (model->GetCurrentAnimetionSeconds() >= AnimationLimit)
     {
-        if (InputAttack())
+        if (GetCurrentAP() - 40 >= 0)
         {
-            TransitionAttack4State();
+            if (InputAttack())
+            {
+                TransitionAttack4State();
+            }
         }
     }
+    SetCollisionPosition(GetPosition());
 }
 
 void Player::TransitionAttack4State()
 {
+    CalcAP(20);
     state = State::Attack4;
     AnimationLimit = 1.0f;
     model->PlayAnimation(Anim_Combo4, false, 0.9f);
@@ -1078,22 +1138,48 @@ void Player::UpdateAttack4State(float elapsedTime)
             TransitionMoveState();
         }
     }
+    SetCollisionPosition(GetPosition());
 }
 
+void Player::TransitionDamageState()
+{
+    state = State::Damage;
+    model->PlayAnimation(Anim_HitFront, false, 0.7f);
+
+}
+
+void Player::UpdateDamageState(float elapsedTime)
+{
+    if (!model->IsPlayAnimation())
+    {
+        TransitionIdleState();
+    }
+    SetCollisionPosition(GetPosition());
+}
+
+void Player::TransitionDeathState()
+{
+    state = State::Dead;
+    model->PlayAnimation(Anim_HitFront, false);
 
 
+}
 
-
-
+void Player::UpdateDeathState(float elapsedTime)
+{
+    SetCollisionPosition(GetPosition());
+}
 
 
 
 void Player::TransitionDodgeState()
 {
+    CalcAP(30);
     state = State::Dodge;
     dodgeSpeed = 12.0f;
     dodgeFlag = true;
-    model->PlayAnimation(Anim_Dodge, false, 2.5f);
+    model->PlayAnimation(Anim_Dodge, false, 4.0f);
+    SetCollisionPosition(GetPosition());
 
 }
 
@@ -1113,4 +1199,5 @@ void Player::UpdateDodgeState(float elapsedTime)
         }
     }
     CalcDodge();
+    SetCollisionPosition(GetCollisionPosition());
 }

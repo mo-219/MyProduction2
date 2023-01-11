@@ -14,13 +14,14 @@ void CameraController::Update(float elapsedTime)
     float speed = rollSpeed * elapsedTime;
 
     // スティックの入力値に合わせてX軸Y軸を回転
-    angle.x += ay * speed;
+    //angle.x += ay * speed;
     angle.y += ax * speed;
     if (angle.x > maxAngleX)  angle.x = maxAngleX;
     if (angle.x < minAngleX)  angle.x = minAngleX;
 
     if (angle.y > DirectX::XM_PI)  angle.y -= DirectX::XM_2PI;
     if (angle.y < DirectX::XM_PI)  angle.y += DirectX::XM_2PI;
+
 
 
     UpdateOnlyTransform(elapsedTime);

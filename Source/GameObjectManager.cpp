@@ -44,7 +44,7 @@ void ObjectManager::Collision(Param paramB, DirectX::XMFLOAT3& out)
     {
         Param scaleFix = obj->GetParam();
         scaleFix.radius *= (obj->GetScale().x + obj->GetScale().y + obj->GetScale().z) / 3;
-        obj->behavior->collision(scaleFix, paramB, out);
+        obj->collision->collision(scaleFix, paramB, out);
     }
     
 }
@@ -233,17 +233,17 @@ void ObjectManager::DrawDebugPrimitive()
     for (GameObject* obj : objects)
     {
         if (obj->CollisionFlag)color = { 0,1,1,1 };
-        if (obj->behavior == &cubeBehavior)
+        if (obj->collision == &cubeBehavior)
         {
             debugRenderer->DrawCube(obj->GetPosition(), obj->GetWidth(), obj->GetHeight(), obj->GetDepth(), color);
 
         }
-        if (obj->behavior == &sphereBehavior)
+        if (obj->collision == &sphereBehavior)
         {
             debugRenderer->DrawSphere(obj->GetPosition(), obj->GetRadius(), color);
         }
 
-        if (obj->behavior == &cylinderBehavior)
+        if (obj->collision == &cylinderBehavior)
         {
             debugRenderer->DrawCylinder(obj->GetPosition(), obj->GetRadius(), obj->GetHeight(), color);
         }

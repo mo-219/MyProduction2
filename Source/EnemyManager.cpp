@@ -138,7 +138,7 @@ void EnemyManager::CollisionEnemyVsEnemies()
                                                     outPosition))
             {
                 // ‰Ÿ‚µo‚µŒã‚ÌˆÊ’uÝ’è
-                enemyManager.GetEnemy(i)->setPosition({ outPosition.x,
+                enemyManager.GetEnemy(i)->SetPosition({ outPosition.x,
                                                         outPosition.y,
                                                         outPosition.z });
 

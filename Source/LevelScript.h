@@ -9,6 +9,11 @@
 #define SET_RED(x,y,z, frm, range, type)        {{(x),(y),(z)}, (frm), (10.0f), (OBJ_TYPE::ENEMY_RED)}
 #define SET_BLUE(x,y,z, frm, range, type)        {{(x),(y),(z)}, (frm), (10.0f), (OBJ_TYPE::ENEMY_BLUE)}
 
+#define SET_MAX_POS(x,y,z, frm, range, type)        {{(x),(y),(z)}, (-1.0f), (-1.0f), (OBJ_TYPE::MAX_POS)}
+#define SET_MIN_POS(x,y,z, frm, range, type)        {{(x),(y),(z)}, (-1.0f), (-1.0f), (OBJ_TYPE::MIN_POS)}
+
+#define SET_DOOR(x,y,z, frm, range, type)        {{(x),(y),(z)}, (-1.0f), (-1.0f), (OBJ_TYPE::DOOR)}
+
 
 
 #define SET_END      {{(0),(0),(0)}, -1, -1, (OBJ_TYPE::END)}
@@ -18,10 +23,13 @@ enum OBJ_TYPE
 {
     END = -1,
     RESPAWN_POINT = 0,
+    DOOR,
     ENEMY_SLIME,
     ENEMY_GOLEM,
     ENEMY_RED,
-    ENEMY_BLUE
+    ENEMY_BLUE,
+    MAX_POS,
+    MIN_POS,
 };
 
 class LevelScript

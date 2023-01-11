@@ -5,6 +5,9 @@
 
 #include "Framework.h"
 
+
+
+
 const LONG SCREEN_WIDTH = 1280;
 const LONG SCREEN_HEIGHT = 720;
 

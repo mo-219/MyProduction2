@@ -1,8 +1,12 @@
 #include "LevelManager.h"
+#include "StageManager.h"
 #include "EnemyManager.h"
+
 #include "EnemySlime.h"
 #include "EnemyGolem.h"
 #include "EnemyRed.h"
+
+#include "StageDoor.h"
 
 LevelManager::~LevelManager()
 {
@@ -35,9 +39,11 @@ void LevelManager::load_script(LevelScript* script)
 
     // manager
     EnemyManager& enemyManager = EnemyManager::Instance();
+    StageManager& stageManager = StageManager::Instance();
 
     // new用ポインタ宣言
-    Enemy* enemy;
+    Enemy* enemy = {};
+
 
     switch (script->objType)
     {
@@ -51,26 +57,52 @@ void LevelManager::load_script(LevelScript* script)
     
     case OBJ_TYPE::ENEMY_SLIME:
         enemy = new EnemySlime();
-        enemy->setPosition(script->pos);
+        enemy->SetPosition(script->pos);
         enemy->SetTerritory(script->pos, script->territoryRange);
+        enemy->SetMaxPos(maxPos);
+        enemy->SetMinPos(minPos);
 
         enemyManager.Register(enemy);
         break;
 
     case OBJ_TYPE::ENEMY_GOLEM:
         enemy = new EnemyGolem();
-        enemy->setPosition(script->pos);
+        enemy->SetPosition(script->pos);
         enemy->SetTerritory(script->pos, script->territoryRange);
+        enemy->SetMaxPos(maxPos);
+        enemy->SetMinPos(minPos);
 
         enemyManager.Register(enemy);
         break;
 
     case OBJ_TYPE::ENEMY_RED:
         enemy = new EnemyRed();
-        enemy->setPosition(script->pos);
+        enemy->SetPosition(script->pos);
         enemy->SetTerritory(script->pos, script->territoryRange);
+        enemy->SetMaxPos(maxPos);
+        enemy->SetMinPos(minPos);
 
         enemyManager.Register(enemy);
+        break;
+    
+    case OBJ_TYPE::DOOR:
+        //enemy = new EnemyRed();
+        //enemy->SetPosition(script->pos);
+        //enemy->SetTerritory(script->pos, script->territoryRange);
+        //enemy->SetMaxPos(maxPos);
+        //enemy->SetMinPos(minPos);
+
+        //enemyManager.Register(enemy);
+        break;
+
+
+    case OBJ_TYPE::MAX_POS:
+        maxPos = script->pos;
+        break;
+
+    case OBJ_TYPE::MIN_POS:
+        minPos = script->pos;
+        break;
     }
 
     // 一応ぬるぽ入れておく

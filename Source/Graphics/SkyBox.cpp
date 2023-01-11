@@ -67,5 +67,5 @@ void SkyBox::DebugPrimitive()
     DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
 
     // ターゲット位置をデバッグ球描画
-    debugRenderer->DrawSphere(position, 3, DirectX::XMFLOAT4(1, 0, 1, 1));
+    //debugRenderer->DrawSphere(position, 3, DirectX::XMFLOAT4(1, 0, 1, 1));
 }

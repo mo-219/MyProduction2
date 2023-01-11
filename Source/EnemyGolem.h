@@ -122,7 +122,6 @@ private:
 
 
 
-
     float               moveSpeed = 1.0f;
     float               turnSpeed = DirectX::XMConvertToRadians(360);
 

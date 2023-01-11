@@ -27,6 +27,8 @@ public:
     bool IsEndLevel() { return EndFlag; }
 
     DirectX::XMFLOAT3 GetRespawnPos(){ return respawnPos; }
+    DirectX::XMFLOAT3 GetMaxPos(){ return maxPos; }
+    DirectX::XMFLOAT3 GetMinPos(){ return minPos; }
 
     int GetStageMax() { return stageSize; }
 private:
@@ -40,4 +42,7 @@ private:
     bool EndFlag = false;
 
     DirectX::XMFLOAT3 respawnPos = {};
+    DirectX::XMFLOAT3 maxPos = {};
+    DirectX::XMFLOAT3 minPos = {};
+
 };

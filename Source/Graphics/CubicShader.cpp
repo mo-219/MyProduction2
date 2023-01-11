@@ -179,6 +179,37 @@ CubicShader::CubicShader(ID3D11Device* device)
 		dissolveTexture = std::make_unique<Texture>("Data/Texture/dissolve_animation.png");
 
 	}
+
+	// セーブデータがあればロード
+	{
+		SaveShader load;
+		std::vector<ShaderDataCubic> datas;
+		datas = load.Load("Shader/Save/defaultColor.json");
+		if (datas.size() > 0)
+		{
+			ShaderDataCubic data = datas.at(0);
+			rightVec = data.rightVec;
+			topVec = data.topVec;
+			frontVec = data.frontVec;
+
+			colorTop1 = data.colorTop1;
+			colorBottom1 = data.colorBottom1;
+			colorRight1 = data.colorRight1;
+			colorLeft1 = data.colorLeft1;
+			colorBack1 = data.colorBack1;
+			colorFront1 = data.colorFront1;
+
+			colorTop2 = data.colorTop2;
+			colorBottom2 = data.colorBottom2;
+			colorRight2 = data.colorRight2;
+			colorLeft2 = data.colorLeft2;
+			colorBack2 = data.colorBack2;
+			colorFront2 = data.colorFront2;
+
+			colorAlpha = data.colorAlpha;
+		}
+
+	}
 }
 
 // 描画開始
@@ -237,36 +268,6 @@ void CubicShader::Begin(const RenderContext& rc)
 	rc.deviceContext->PSSetShaderResources(2, 1, &rc.shadowmapData.shadowMap);
 	rc.deviceContext->PSSetShaderResources(3, 1, dissolveTexture->GetShaderResourceView().GetAddressOf());
 
-	// セーブデータがあればロード
-	{
-		SaveShader load;
-		std::vector<ShaderDataCubic> datas;
-		datas = load.Load("Shader/Save/defaultColor.json");
-		if (datas.size() > 0)
-		{
-			ShaderDataCubic data = datas.at(0);
-			rightVec = data.rightVec;
-			topVec = data.topVec;
-			frontVec = data.frontVec;
-
-			colorTop1 = data.colorTop1;
-			colorBottom1 = data.colorBottom1;
-			colorRight1 = data.colorRight1;
-			colorLeft1 = data.colorLeft1;
-			colorBack1 = data.colorBack1;
-			colorFront1 = data.colorFront1;
-
-			colorTop2 = data.colorTop2;
-			colorBottom2 = data.colorBottom2;
-			colorRight2 = data.colorRight2;
-			colorLeft2 = data.colorLeft2;
-			colorBack2 = data.colorBack2;
-			colorFront2 = data.colorFront2;
-
-			colorAlpha = data.colorAlpha;
-		}
-	
-	}
 
 
 }
