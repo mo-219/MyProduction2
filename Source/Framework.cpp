@@ -12,6 +12,10 @@
 
 //static SceneGame sceneGame;
 
+//#ifdef _DEBUG
+//#define	DEBUG_NEW	new(_NORMAL_BLOCK, __FILE__, __LINE__)
+//#endif
+
 // ‚’¼“¯ŠúŠÔŠuİ’è
 static const int syncInterval = 1;
 

@@ -278,6 +278,14 @@ void Character::UpdateVerticalMove(float elapsedTime)
 
 }
 
+void Character::CalcPositionMaxMin()
+{
+    param.position.x = Mathf::clamp(minPos.x, maxPos.x, param.position.x);
+    param.position.y = Mathf::clamp(minPos.y, maxPos.y, param.position.y);
+    param.position.z = Mathf::clamp(minPos.z, maxPos.z, param.position.z);
+
+}
+
 // è’åÇÇó^Ç¶ÇÈ
 void Character::AddImpulse(const DirectX::XMFLOAT3& impulse)
 {

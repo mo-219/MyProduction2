@@ -11,6 +11,9 @@
 #include "Graphics/Shader.h"
 #include "Param.h"
 
+class Character;
+class ObjectManager;
+
 class GameObject
 {
 public:
@@ -20,10 +23,13 @@ public:
 
 	void CreateModel(const char* filename);
 
-	void Update(float elapsedTime);
+	virtual void Update(float elapsedTime);
 
 	void Render(ID3D11DeviceContext* context, Shader* shader);
-	void Render(const RenderContext& rc, ModelShader* shader);
+	virtual void Render(const RenderContext& rc, ModelShader* shader);
+
+	virtual void Hit(Character* chara,DirectX::XMFLOAT3 out);
+
 
 	//行列更新処理
 	void UpdateTransform();
@@ -37,6 +43,8 @@ public:
 
 	void Initialize();
 
+	void UpdateInvincibleTimer(float elapsedTime);
+
 	virtual void DrawDebugPrimitive() {};
 
 	virtual void DrawDebugImGui() ;
@@ -45,8 +53,7 @@ public:
 	void SetScale(DirectX::XMFLOAT3 s) { scale = s; }
 	void SetAngle(DirectX::XMFLOAT3 r) { angle = r; }
 	void SetPosition(DirectX::XMFLOAT3 p) { param.position = p; }
-	void SetBehavior(CollisionBehavior* be) { behavior = be; }
-	void SetRayCast(RayCastBehavior* ray) { rayCast = ray; }
+
 
 	void SetParam(Param para) { param = para; }
 	void SetRadius(float ra) { param.radius = ra; }
@@ -60,13 +67,31 @@ public:
 	float GetWidth() { return param.width; }
 	float GetHeight() { return param.height; }
 	float GetDepth() { return param.depth; }
+	float GetInvincibleTimer() { return invincibleTimer; }
 
-	CollisionBehavior* GetBehavior() { return behavior; }
+	CollisionBehavior* GetBehavior() { return collision; }
 	RayCastBehavior* GetRayCast() { return rayCast; }
+
+
+	void Destroy();
 	Param GetParam() { return param; }
 	Model* GetModel() { return model; }
 
 public:
+	enum CollisionType
+	{
+		Error = -1,
+		Sphere = 0,
+		Cylinder,
+		Cube,
+		None
+	};
+	void setCollision(CollisionType type);
+	void setRayCast(bool b);
+
+	void SetBehavior(CollisionBehavior* be) { collision = be; }
+	void SetRayCast(RayCastBehavior* ray) { rayCast = ray; }
+
 	// 一旦パブリックにしてる
 	Model* model = nullptr;
 
@@ -83,12 +108,14 @@ public:
 	};
 
 	// あたり判定
-	CollisionBehavior* behavior;
-	RayCastBehavior* rayCast;
+	CollisionBehavior*	collision;
+	RayCastBehavior*	rayCast;
 
-	Param param = { DirectX::XMFLOAT3(0,0,0), 0.5f, 0.0f,2.0f,0.0f };
+	Param				param = { DirectX::XMFLOAT3(0,0,0), 0.5f, 0.0f,2.0f,0.0f };
 
-	int heightFogFlag = 1.0f;
+	int					heightFogFlag = 1.0f;
+
+	float               invincibleTimer = 0.0f;
 
 public:
 	// デバッグ用

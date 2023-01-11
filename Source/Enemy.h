@@ -41,4 +41,6 @@ protected:
     DirectX::XMFLOAT3   targetPosition = { 0,0,0 };
     DirectX::XMFLOAT3   territoryOrigin = { 0,0,0 };
     float               territoryRange = 10.0f;
+
+    int                 DropHeelItem = 0;
 };

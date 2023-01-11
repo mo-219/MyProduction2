@@ -43,7 +43,9 @@ public:
     // 攻撃入力処理
     bool InputAttack();
 
-    bool JudgeAttack();
+    bool JudgeAttack(int Value);
+
+    bool IsDodge() { return state == State::Dodge; };
 
     // 攻撃入力処理
     bool InputDodge();
@@ -54,6 +56,12 @@ public:
     bool GetStageClearFlag() { return stageClearFlag; }
 
     bool GetDodgeFlag() { return dodgeFlag; }
+
+    float GetCurrentAP() { return AP; }
+    float GetMaxAP() { return MaxAP; }
+
+    void CalcAP(float value);
+    void AddAP(float value);
 
 protected:
     // 接地したときに呼ばれる
@@ -128,6 +136,8 @@ private:
         Dodge,
         Falling,
         Landing,
+        Damage,
+        Dead,
 
         Max
     };
@@ -163,7 +173,8 @@ private:
     void TransitionFallingState();              // 遷移
     void UpdateFallingState(float elapsedTime); // 更新処理
 
-    //
+    //*****
+    // 
     //  攻撃ステート
     //
     // コンボ１
@@ -182,7 +193,15 @@ private:
     void TransitionAttack4State();               // 遷移
     void UpdateAttack4State(float elapsedTime);  // 更新処理
 
+    //*****
+    
+    // ダメージステート
+    void TransitionDamageState();               // 遷移
+    void UpdateDamageState(float elapsedTime);  // 更新処理
 
+    // 死亡ステート
+    void TransitionDeathState();               // 遷移
+    void UpdateDeathState(float elapsedTime);  // 更新処理
 
 
     // 避けステート
@@ -230,5 +249,11 @@ private:
 
     // 一旦
     bool stageClearFlag = false;
+
+
+
+    // アタックポイント
+    float AP = 100;
+    float MaxAP = 100;
 
 };

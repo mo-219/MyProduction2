@@ -55,6 +55,9 @@
     <Filter Include="Source\Scene\StageData">
       <UniqueIdentifier>{82e44346-c6d5-495d-89a5-2c6836ada502}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Scene\Stage\GameObject">
+      <UniqueIdentifier>{20b4b9d9-e72c-4367-a104-7fcdbd9b4966}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\imgui\imconfig.h">
@@ -276,9 +279,6 @@
     <ClInclude Include="Source\StageSample.h">
       <Filter>Source\Scene\Stage</Filter>
     </ClInclude>
-    <ClInclude Include="Source\GameObject.h">
-      <Filter>Source\Scene\Stage</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Rect.h">
       <Filter>Source\Scene</Filter>
     </ClInclude>
@@ -289,9 +289,6 @@
       <Filter>Source\Character\Enemy</Filter>
     </ClInclude>
     <ClInclude Include="Source\LoadObj.h">
-      <Filter>Source\Scene\Stage</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\GameObjectManager.h">
       <Filter>Source\Scene\Stage</Filter>
     </ClInclude>
     <ClInclude Include="Source\Work.h">
@@ -311,6 +308,15 @@
     </ClInclude>
     <ClInclude Include="Source\SerializeFunc.h">
       <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameObject.h">
+      <Filter>Source\Scene\Stage\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameObjectManager.h">
+      <Filter>Source\Scene\Stage\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ItemObj.h">
+      <Filter>Source\Scene\Stage\GameObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -518,9 +524,6 @@
     <ClCompile Include="Source\StageSample.cpp">
       <Filter>Source\Scene\Stage</Filter>
     </ClCompile>
-    <ClCompile Include="Source\GameObject.cpp">
-      <Filter>Source\Scene\Stage</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Rect.cpp">
       <Filter>Source\Scene</Filter>
     </ClCompile>
@@ -533,9 +536,6 @@
     <ClCompile Include="Source\LoadObj.cpp">
       <Filter>Source\Scene\Stage</Filter>
     </ClCompile>
-    <ClCompile Include="Source\GameObjectManager.cpp">
-      <Filter>Source\Scene\Stage</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Graphics\SkyShader.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
@@ -544,6 +544,15 @@
     </ClCompile>
     <ClCompile Include="Source\Graphics\SaveShader.cpp">
       <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameObject.cpp">
+      <Filter>Source\Scene\Stage\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameObjectManager.cpp">
+      <Filter>Source\Scene\Stage\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ItemObj.cpp">
+      <Filter>Source\Scene\Stage\GameObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

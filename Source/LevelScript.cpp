@@ -9,7 +9,10 @@
 
 
 LevelScript level1_script[] = {
-    SET_RESPAWN(0,2,0),
+    SET_MAX_POS(70,70,70),
+    SET_MIN_POS(-70,-70,-70),
+    SET_RESPAWN(0,1,0),
+
 
     //position 生成フレーム
     SET_RED(0,0,15, 2),
@@ -20,7 +23,10 @@ LevelScript level1_script[] = {
 };
 
 LevelScript level2_script[] = {
-    SET_RESPAWN(10,10,10),
+    SET_MAX_POS(70,70,70),
+    SET_MIN_POS(-70,-70,-70),
+    SET_RESPAWN(0,1,5),
+
 
     //position 生成フレーム
     SET_SLIME(0,0,15, 2),

@@ -1,4 +1,6 @@
 #include "GameObject.h"
+#include "GameObjectManager.h"
+#include "Character.h"
 #include <imgui.h>
 
 GameObject::~GameObject()
@@ -26,6 +28,13 @@ void GameObject::Render(const RenderContext& rc, ModelShader* shader)
 {
     shader->Draw(rc, model);
 }
+
+void GameObject::Hit(Character* chara, DirectX::XMFLOAT3 out)
+{
+    //DirectX::XMFLOAT3 pos = chara->GetPosition();
+    chara->SetPosition(DirectX::XMFLOAT3(out));
+}
+
 
 void GameObject::UpdateTransform()
 {
@@ -91,9 +100,47 @@ void GameObject::DrawDebugImGui()
 
 }
 
+
+void GameObject::setCollision(CollisionType type)
+{
+    switch (type)
+    {
+    case CollisionType::Sphere:     collision = &sphereBehavior;     break;
+    case CollisionType::Cylinder:   collision = &cylinderBehavior;   break;
+    case CollisionType::Cube:       collision = &cubeBehavior;       break;
+    case CollisionType::None:       collision = &noneBehavior;       break;
+    }
+}
+
+void GameObject::setRayCast(bool rayCastFlag)
+{
+    if (rayCastFlag)
+    {
+        rayCast = &rayCastBehavior;
+    }
+    else
+    {
+        rayCast = &noneRayCastBehavior;
+    }
+}
+
 void GameObject::Initialize()
 {
     scale.x *= 0.012f;
     scale.y *= 0.012f;
     scale.z *= 0.012f;
+}
+
+void GameObject::Destroy()
+{
+    ObjectManager::Instance().Remove(this);
+}
+
+void GameObject::UpdateInvincibleTimer(float elapsedTime)
+{
+    if (invincibleTimer > 0.0f)
+    {
+        invincibleTimer -= elapsedTime;
+        if (invincibleTimer <= 0.0f)    invincibleTimer = 0.0f;
+    }
 }

@@ -63,7 +63,10 @@ private:
 		MAX
 	};
 
-	Rect fade;		// ‰æ–Ê‘JˆÚ—p
+	RectFade* fade;		// ‰æ–Ê‘JˆÚ—p
+	RectBar*  HPBar;
+	RectBar*  APBar;
+
 	Player* player = nullptr;
 	SkyBox* sky = nullptr;
 	Sprite* guage = nullptr;

@@ -7,6 +7,9 @@
 #include "player.h"
 #include "Collision.h"
 
+#include "GameObjectManager.h"
+#include "ItemObj.h"
+
 // コンストラクタ
 EnemyGolem::EnemyGolem()
 {
@@ -19,6 +22,8 @@ EnemyGolem::EnemyGolem()
     scale = { 0.009f,  0.009f, 0.009f };
     param.radius = 1.5f;
     param.height = 4.0f;
+    param.rayCastRadius = 10.0f;
+
 
     dissolveData.maskFlag = 1.0f;
     dissolveData.dissolveThreshold = 0.0f;
@@ -78,6 +83,8 @@ void EnemyGolem::Update(float elapsedTime)
 
     // 無敵時間更新
     UpdateInvincibleTimer(elapsedTime);
+
+    CalcPositionMaxMin();
 
     UpdateOnlyTransform(elapsedTime);
 }
@@ -168,7 +175,7 @@ void EnemyGolem::DrawDebugPrimitive()
 void EnemyGolem::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
 {
     Player& player = Player::Instance();
-    if (player.GetDodgeFlag())return;
+   
 
     // ノードの位置と当たり判定を行う
     Model::Node* node = model->FindNode(nodeName);
@@ -185,31 +192,42 @@ void EnemyGolem::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
         DirectX::XMFLOAT3 outPosition;
 
         if (Collision::InstersectSphereVsCylinder(nodePosition, nodeRadius,
-            player.GetPosition(), player.GetRadius(), player.GetHeight(),
+            player.GetCollisionPosition(), player.GetRadius(), player.GetHeight(),
             outPosition))
         {
             // ダメージを与える
-            if (player.ApplyDamage(1, 0.5f))
+            if (!player.IsDodge())
             {
-                // 敵を吹っ飛ばすベクトルを算出
-                DirectX::XMFLOAT3 vec;
-                vec.x = outPosition.x - nodePosition.x;
-                vec.z = outPosition.z - nodePosition.z;
+                if (player.ApplyDamage(1, 0.5f))
+                {
+                    // 敵を吹っ飛ばすベクトルを算出
+                    DirectX::XMFLOAT3 vec;
+                    vec.x = outPosition.x - nodePosition.x;
+                    vec.z = outPosition.z - nodePosition.z;
 
-                float length = sqrtf(vec.x * vec.x + vec.z * vec.z);
-                vec.x /= length;
-                vec.z /= length;
+                    float length = sqrtf(vec.x * vec.x + vec.z * vec.z);
+                    vec.x /= length;
+                    vec.z /= length;
 
-                // XZ平面に吹っ飛ばす力をかける
-                float power = 10.0f;
-                vec.x *= power;
-                vec.z *= power;
+                    // XZ平面に吹っ飛ばす力をかける
+                    float power = 10.0f;
+                    vec.x *= power;
+                    vec.z *= power;
 
-                // Y方向の力
-                vec.y = 5.0f;
+                    // Y方向の力
+                    vec.y = 5.0f;
 
-                // 吹っ飛ばす
-                player.AddImpulse(vec);
+                    // 吹っ飛ばす
+                    player.AddImpulse(vec);
+                }
+            }
+            else if(DropHeelItem <= 0)
+            {
+                ObjectManager& objectManager = ObjectManager::Instance();
+                ItemHeel* obj = new ItemHeel();
+                obj->SetPosition(player.GetPosition());
+                objectManager.Register(obj);
+                DropHeelItem++;
             }
 
         }
@@ -439,7 +457,7 @@ void EnemyGolem::UpdatePursuitState(float elapsedTime)
 void EnemyGolem::TransitionAttack1State()
 {
     state = State::Attack;
-
+    DropHeelItem = 0;
     model->PlayAnimation(Anim_Attack1, false);
 }
 
@@ -463,7 +481,7 @@ void EnemyGolem::UpdateAttack1State(float elapsedTime)
 void EnemyGolem::TransitionAttack2State()
 {
     state = State::Attack;
-
+    DropHeelItem = 0;
     model->PlayAnimation(Anim_Attack2, false);
 }
 

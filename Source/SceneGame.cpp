@@ -13,7 +13,7 @@
 #include "StageMain.h"
 #include "StageMoveFloor.h"
 #include "StageDoor.h"
-
+#include "ItemObj.h"
 
 
 #include "Input/Input.h"
@@ -36,9 +36,7 @@ void SceneGame::Initialize()
 
 	// ステージ初期化
 	StageManager& stageManager = StageManager::Instance();
-	StageMain* stageMain = new StageMain();
-	stageMain->setStageNum(StageNumber::Main);
-	stageManager.Register(stageMain);
+
 
 	//StageMoveFloor* stageMoveFloor = new StageMoveFloor();
 	//stageMoveFloor->SetStartPoint(DirectX::XMFLOAT3(0, 1, 3));
@@ -58,17 +56,22 @@ void SceneGame::Initialize()
 
 
 	// 画面遷移用
-	fade.setSprite();
-	fade.pos = { 0,0 };
-	fade.size = { 1280,720 };
-	fade.color = { 0.0f,0.0f,0.0f,1.0f };
+	fade = new RectFade();
+	
+	fade->SetAll(0, 0, 1280, 720, 1280, 720, 0, 0, 0, 1);
 
+	HPBar = new RectBar();
+	HPBar->SetAll(30, 10, 300, 20, 300, 20, 1, 0, 0, 1);
+	HPBar->SetBaseAll(3, 3, 0, 0, 0, 1);
+
+	APBar = new RectBar();
+	APBar->SetAll(30, 50, 300, 20, 300, 20, 0, 1, 1, 1);
+	APBar->SetBaseAll(3, 3, 0, 0, 0, 1);
 
 
 	// レベルマネージャー初期化
 	LevelManager::Instance().Initialize(all_script);
 
-	//StageManager::Instance().GetStage(1)->GetCollisionFlag
 
 	// カメラ初期設定
 	Graphics& graphics = Graphics::Instance();
@@ -142,8 +145,8 @@ void SceneGame::Initialize()
 	// スカイボックス生成
 	{
 		Graphics& graphics = Graphics::Instance();
-		sky = new SkyBox(graphics.GetDevice());
-		sky->SetPosition(player->GetPosition());
+		//sky = new SkyBox(graphics.GetDevice());
+		//sky->SetPosition(player->GetPosition());
 	}
 
 	// カメラコントローラー初期化
@@ -154,6 +157,8 @@ void SceneGame::Initialize()
 	LoadObj load;
 	load.Load("Data/Stage/SimpleNaturePack/GameObjectData.json");
 	load.Create(stage1_mapData);
+
+
 
 }
 
@@ -171,12 +176,28 @@ void SceneGame::Finalize()
 	}
 
 	// スカイボックス終了化
-	if (sky != nullptr)
-	{
-		delete sky;
-		sky = nullptr;
-	}
+	//if (sky != nullptr)
+	//{
+	//	delete sky;
+	//	sky = nullptr;
+	//}
 
+	if (fade != nullptr)
+	{
+		delete fade;
+		fade = nullptr;
+	}
+		
+	if (HPBar != nullptr)
+	{
+		delete HPBar;
+		HPBar = nullptr;
+	}
+	if (APBar != nullptr)
+	{
+		delete APBar;
+		APBar = nullptr;
+	}
 
 	// ゲージスプライト終了化
 	if (guage != nullptr)
@@ -191,7 +212,7 @@ void SceneGame::Finalize()
 		delete player;
 		player = nullptr;
 	}
-
+	LightManager::Instance().Clear();
 	StageManager::Instance().Clear();
 }
 
@@ -213,15 +234,17 @@ void SceneGame::Update(float elapsedTime)
 		levelManager.Initialize(currentStageNum);
 		levelManager.update(elapsedTime);	// リスポン位置取得
 		player->Initialize(levelManager.GetRespawnPos());
+		player->SetMaxPos(levelManager.GetMaxPos());
+		player->SetMinPos(levelManager.GetMinPos());
 
 		timer = 0;
 
 		// ドア生成
 		stageDoor = new StageDoor();
-		stageDoor->setPosition(13, 0, 1);
-		stageDoor->setWidth(2);
-		stageDoor->setHeight(3);
-		stageDoor->setDepth(3);
+		stageDoor->setPosition(0, 0, -4);
+		stageDoor->setWidth(4);
+		stageDoor->setHeight(5);
+		stageDoor->setDepth(2);
 		stageDoor->setStageNum(StageNumber::Door);
 		stageManager.Register(stageDoor);
 
@@ -231,7 +254,7 @@ void SceneGame::Update(float elapsedTime)
 	case State::FADEOUT:
 		// フェードアウト
 
-		if (fade.fadeOut(0.01f))
+		if (fade->fadeOut(0.01f))
 		{
 			state = State::UPDATE;
 		}
@@ -288,7 +311,7 @@ void SceneGame::Update(float elapsedTime)
 
 	case State::FADEIN:
 		// フェードイン
-		if (fade.fadeIn(0.01f))
+		if (fade->fadeIn(0.01f))
 		{
 			state = State::END;
 		}
@@ -325,9 +348,9 @@ void SceneGame::Update(float elapsedTime)
 
 	Graphics& graphics = Graphics::Instance();
 	ID3D11DeviceContext* dc = graphics.GetDeviceContext();
+	HPBar->culcValue(player->GetHealth(), player->GetMaxHealth());
+	APBar->culcValue(player->GetCurrentAP(), player->GetMaxAP());
 
-	sky->SetPosition(player->GetPosition());
-	sky->UpdateTransform();
 	timer++;
 }
 
@@ -451,23 +474,14 @@ void SceneGame::Render()
 		// 画面遷移用
 		SpriteShader* shader = graphics.GetShader(SpriteShaderId::Default);
 
-		fade.sprite->Update(
-			fade.pos.x, fade.pos.y,
-			fade.size.x, fade.size.y,
-			0, 0,
-			fade.size.x, fade.size.y,
-			0,
-			fade.color.x, fade.color.y,
-			fade.color.z, fade.color.w);
-
-		// 描画開始
-        shader->Begin(rc);
-
-        // 描画
-        shader->Draw(rc, fade.sprite);
-
-        // 描画終了
-        shader->End(rc);
+		//Rect re;
+		//re.position = { DirectX::XMFLOAT2(0,0) };
+		//re.size  = { DirectX::XMFLOAT2(1280,720) };
+		//re.color = { DirectX::XMFLOAT4(0, 0, 0, 1) };
+		//re.imageSize = { DirectX::XMFLOAT2(1280,720) };
+		HPBar->Render(rc, shader);
+		APBar->Render(rc, shader);
+		fade->Render(rc, shader);
 
 	}
 
@@ -484,8 +498,8 @@ void SceneGame::Render()
 		EnemyManager::Instance().DrawDebugGUI();
 		shader->DebugGUI();
 
-		ObjectManager::Instance().setNearNum(
-			ObjectManager::Instance().findNear(player->GetPosition()));
+		//ObjectManager::Instance().setNearNum(
+		//	ObjectManager::Instance().findNear(player->GetPosition()));
 		ObjectManager::Instance().DrawDebugGUI();
 
 	}
@@ -553,10 +567,11 @@ void SceneGame::Render3DScene()
 		shader->Begin(rc);
 
 		// ステージ描画
+		StageManager::Instance().Render(rc,shader);
 		EnemyManager::Instance().Render(rc, shader);
 		ObjectManager::Instance().Render(rc, shader);
 		player->Render(rc, shader);
-		sky->Render(rc,shader);
+		//sky->Render(rc,shader);
 
 		shader->End(rc);
 	}
@@ -574,9 +589,9 @@ void SceneGame::Render3DScene()
 		// グリッド描画
 		player->DrawDebugPrimitive();
 		EnemyManager::Instance().DrawDebugPrimitive();
-		//StageManager::Instance().DrawDebugPrimitive();
+		StageManager::Instance().DrawDebugPrimitive();
 		ObjectManager::Instance().DrawDebugPrimitive();
-		sky->DebugPrimitive();
+		//sky->DebugPrimitive();
 
 
 
@@ -640,7 +655,7 @@ void SceneGame::RenderShadowmap()
 
 			shader->Begin(rc);
 
-			//StageManager::Instance().Render(rc, shader);
+			StageManager::Instance().Render(rc, shader);
 			player->Render(rc, shader);
 			EnemyManager::Instance().Render(rc, shader);
 			ObjectManager::Instance().Render(rc, shader);
@@ -901,10 +916,10 @@ void SceneGame::RenderEnemyGauge(
 		{
 			// どこかに当たったら
 
-			EnemyManager& enemyManager = EnemyManager::Instance();	// 先を見据えるとこっちのほうが良い
-			Enemy* enemy = new EnemySlime();
-			enemy->setPosition(hit.position);
-			enemyManager.Register(enemy);
+			//EnemyManager& enemyManager = EnemyManager::Instance();	// 先を見据えるとこっちのほうが良い
+			//Enemy* enemy = new EnemySlime();
+			//enemy->SetPosition(hit.position);
+			//enemyManager.Register(enemy);
 
 
 		}

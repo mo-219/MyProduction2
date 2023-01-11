@@ -2,40 +2,108 @@
 
 
 // マウスが中にいるかどうか
-//Rect::Rect(const char* filename)
-//{
-//    //sprite = new Sprite(filename); 
-//    isAmongFlag = false;
-//
-//}
-
 Rect::Rect()
 {
-    //sprite = new Sprite(); 
-    isAmongFlag = false;
+    texture = nullptr;
+    sprite = new Sprite();   
+}
+
+Rect::Rect(const char* filename)
+{
+    texture = new Texture(filename);
+    sprite = new Sprite();
+
+    sprite->SetShaderResourceView(texture->GetShaderResourceView(), texture->GetWidth(), texture->GetHeight());
+    imageSize.x = static_cast<float>(texture->GetWidth());
+    imageSize.y = static_cast<float>(texture->GetHeight());
+
 }
 
 Rect::~Rect()
+{
+    Clear();
+}
+
+
+void Rect::SetSprite(const char* filename)
+{
+    Clear();
+    texture = new Texture(filename);
+    sprite = new Sprite();
+
+    sprite->SetShaderResourceView(texture->GetShaderResourceView(), texture->GetWidth(), texture->GetHeight());
+    imageSize.x = static_cast<float>(texture->GetWidth());
+    imageSize.y = static_cast<float>(texture->GetHeight());
+}
+
+void Rect::SetSprite()
+{
+    Clear();
+    texture = nullptr;
+    sprite = new Sprite();
+}
+
+void Rect::Render(const RenderContext& rc, SpriteShader* shader)
+{
+    sprite->Update(position.x, position.y,
+        size.x, size.y,
+        0.0f, 0.0f,
+        imageSize.x, imageSize.y,
+        0.0f,
+        color.x, color.y, color.z, color.w);
+
+    RenderContext myRc = rc;
+    shader->Begin(myRc);
+    shader->Draw(myRc, sprite);
+    shader->End(myRc);
+}
+
+void Rect::SetAll(float posX, float posY, float sizeX, float sizeY, float imageSizeX, float imageSizeY, float r, float g, float b, float a)
+{
+    position.x = posX;
+    position.y = posY;
+
+    size.x = sizeX;
+    size.y = sizeY;
+
+    imageSize.x = imageSizeX;
+    imageSize.y = imageSizeY;
+    
+    color.x = r;
+    color.y = g;
+    color.z = b;
+    color.w = a;
+}
+
+void Rect::Clear()
 {
     if (sprite != nullptr)
     {
         delete sprite;
         sprite = nullptr;
     }
+    if (texture != nullptr)
+    {
+        delete texture;
+        texture = nullptr;
+    }
 }
 
-
-//void Rect::setSprite(const char* filename)
-//{
-//    sprite = new Sprite();
-//}
-
-void Rect::setSprite()
+void Rect::setSize(DirectX::XMFLOAT2 si, bool on)
 {
-    sprite = new Sprite();
+    size = si;
+    if (on)
+    {
+        imageSize = size;
+    }
 }
 
-void Rect::fadeInInit()
+
+RectFade::RectFade() : Rect()
+{
+}
+
+void RectFade::fadeInInit()
 {
     if (fadeReady)   return;
 
@@ -43,7 +111,7 @@ void Rect::fadeInInit()
     fadeReady = true;
 }
 
-void Rect::fadeOutInit()
+void RectFade::fadeOutInit()
 {
     if (fadeReady)   return;
 
@@ -52,7 +120,7 @@ void Rect::fadeOutInit()
 }
 
 // 画面を徐々に消していく
-bool Rect::fadeIn(float timer)
+bool RectFade::fadeIn(float timer)
 {
     if (!fadeReady) fadeInInit();
     if (color.w >= 1.0f)
@@ -66,7 +134,7 @@ bool Rect::fadeIn(float timer)
 }
 
 // 画面を徐々にみせていく
-bool Rect::fadeOut(float timer)
+bool RectFade::fadeOut(float timer)
 {
     if (!fadeReady) fadeOutInit();
     if (color.w <= 0.0f)
@@ -80,14 +148,19 @@ bool Rect::fadeOut(float timer)
     return false;
 }
 
-bool Rect::isAmong(DirectX::XMFLOAT2 cursol)
+RectSelect::RectSelect() : Rect()
+{
+    isAmongFlag = false;
+}
+
+bool RectSelect::isAmong(DirectX::XMFLOAT2 cursol)
 {
     isAmongFlag = false;
 
-    float left = pos.x;
-    float right = pos.x + size.x;
-    float top = pos.y;
-    float bottom = pos.y + size.y;
+    float left = position.x;
+    float right = position.x + size.x;
+    float top = position.y;
+    float bottom = position.y + size.y;
 
     if (cursol.x < left)         return false;
     if (cursol.x > right)        return false;
@@ -98,7 +171,7 @@ bool Rect::isAmong(DirectX::XMFLOAT2 cursol)
     return true;
 }
 
-void Rect::setSelectColor()
+void RectSelect::setSelectColor()
 {
     if (isAmongFlag)
     {
@@ -108,5 +181,90 @@ void Rect::setSelectColor()
     {
         color = { 0.4f,0.4f,0.4f,1.0f };
     }
+
+}
+
+RectBar::RectBar() : Rect()
+{
+    baseTexture = nullptr;
+    baseSprite = new Sprite();
+}
+
+RectBar::RectBar(const char* fileName) : Rect(fileName)
+{
+    baseTexture = nullptr;
+    baseSprite = new Sprite();
+}
+
+RectBar::RectBar(const char* fileName, const char* baseFileName) : Rect(fileName)
+{
+    baseTexture = new Texture(baseFileName);
+    baseSprite = new Sprite();
+
+    baseSprite->SetShaderResourceView(baseTexture->GetShaderResourceView(), baseTexture->GetWidth(), baseTexture->GetHeight());
+    imageSize.x = static_cast<float>(baseTexture->GetWidth());
+    imageSize.y = static_cast<float>(baseTexture->GetHeight());
+}
+
+RectBar::~RectBar()
+{
+    Clear();
+
+    if (baseSprite != nullptr)
+    {
+        delete baseSprite;
+        baseSprite = nullptr;
+    }
+    if (baseTexture != nullptr)
+    {
+        delete baseTexture;
+        baseTexture = nullptr;
+    }
+}
+
+void RectBar::setPosition(DirectX::XMFLOAT2 pos)
+{
+    position = pos;
+
+    basePos.x = position.x - baseSize.x;
+    basePos.y = position.y - baseSize.y;
+}
+
+void RectBar::SetBaseAll(float baseSizeX, float baseSizeY,  float r, float g, float b, float a)
+{
+    basePos.x = position.x - baseSizeX;
+    basePos.y = position.y - baseSizeX;
+    baseSize.x = baseSizeX;
+    baseSize.y = baseSizeY;
+
+    baseColor = DirectX::XMFLOAT4(r, g, b, a);
+}
+
+void RectBar::culcValue(float currentVal, float maxVal)
+{
+    sizeValue =  static_cast<float>(currentVal) / maxVal;
+}
+
+void RectBar::Render(const RenderContext& rc, SpriteShader* shader)
+{
+    baseSprite->Update(basePos.x, basePos.y,
+                       baseSize.x*2 + size.x, baseSize.y*2 + size.y,
+                       0.0f, 0.0f,
+                       baseImageSize.x, baseImageSize.y,
+                       0.0f,
+                       baseColor.x, baseColor.y, baseColor.z, baseColor.w);
+
+    sprite->Update(position.x, position.y,
+        size.x * sizeValue, size.y,
+        0.0f, 0.0f,
+        imageSize.x, imageSize.y,
+        0.0f,
+        color.x, color.y, color.z, color.w);
+
+    RenderContext myRc = rc;
+    shader->Begin(myRc);
+    shader->Draw(myRc, baseSprite);
+    shader->Draw(myRc, sprite);
+    shader->End(myRc);
 
 }

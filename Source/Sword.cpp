@@ -27,6 +27,7 @@ void Sword::Update(float elapsedTime)
 
     // モデル行列更新
     model->UpdateTransform(transform);
+    
 
 }
 

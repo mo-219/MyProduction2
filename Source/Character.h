@@ -15,7 +15,7 @@ public:
     //bool ApplyDamage(int damage);
 
 protected:
-    //DirectX::XMFLOAT3   position = { 0,0,0 };
+    DirectX::XMFLOAT3   collisionPosition = { 0,0,0 };   
     DirectX::XMFLOAT3   angle = { 0,0,0 };
     DirectX::XMFLOAT3   scale = { 1,1,1 };
     DirectX::XMFLOAT4X4 transform = {
@@ -41,29 +41,34 @@ public:
     //行列更新処理
     void UpdateTransform();
 
-    // 位置習得
-    const DirectX::XMFLOAT3& GetPosition() const { return param.position; }
 
-    // 位置設定
-    void setPosition(const DirectX::XMFLOAT3& position) { this->param.position = position; }
+    // 座標
+    const DirectX::XMFLOAT3& GetPosition() const { return param.position; }                    // 習得
+    void SetPosition(const DirectX::XMFLOAT3& position) { this->param.position = position; }   // 設定
 
-    // 回転取得
-    const DirectX::XMFLOAT3& GetAngle() const { return angle; }
+    // 回転
+    const DirectX::XMFLOAT3& GetAngle() const { return angle; }             // 取得
+    void SetAngle(const DirectX::XMFLOAT3& angle) { this->angle = angle; }  // 設定
 
-    // 回転設定
-    void SetAngle(const DirectX::XMFLOAT3& angle) { this->angle = angle; }
 
-    // スケール取得
-    const DirectX::XMFLOAT3& SetScale() const { return scale; }
-
-    // スケール取得
-    void SetScale(const DirectX::XMFLOAT3& scale) { this->scale = scale; }
+    // スケール
+    const DirectX::XMFLOAT3& SetScale() const { return scale; }             // 取得
+    void SetScale(const DirectX::XMFLOAT3& scale) { this->scale = scale; }  // 設定
 
     // 半径取得
     float GetRadius() const { return param.radius; }
 
     // 地面に接地しているか
     bool IsGround() const { return isGround; }
+
+
+    void SetMaxPos(DirectX::XMFLOAT3 pos) { maxPos = pos; }
+    void SetMinPos(DirectX::XMFLOAT3 pos) { minPos = pos; }
+
+    // あたり判定用=====================================================================================================
+
+    const DirectX::XMFLOAT3& GetCollisionPosition() const { return collisionPosition; }                    // 習得
+    void SetCollisionPosition(const DirectX::XMFLOAT3& position) { collisionPosition = position; }   // 設定
 
     // 高さ取得
     float GetHeight() const { return param.height; }
@@ -74,21 +79,31 @@ public:
     void  SetRayCastRadius(float rad) { param.rayCastRadius = rad; }
 
 
+    // =================================================================================================================
 
-    // 09_ 速力処理
+
+    // 速力処理
     // 垂直速力更新処理
     void UpdateVerticalVelocity(float elapsedTime);
 
     // 垂直移動更新処理
     void UpdateVerticalMove(float elapsedTime);
 
+    void CalcPositionMaxMin();
+ 
+
     // 衝撃を与える
     void AddImpulse(const DirectX::XMFLOAT3& impulse);
 
+    // HP関連
     int GetHealth() const { return health; }            // 健康状態を取得
     int GetMaxHealth() const { return maxHealth; }      // 最大健康状態を取得
+    void SetHealth(int i) { health = i; }
 
+    // パラメータを取得
     Param GetParam() { return param; }
+
+    CharacterName GetName() { return name; }
 
 
 protected:
@@ -128,13 +143,17 @@ protected:
 
     Param param = { DirectX::XMFLOAT3(0,0,0), 0.5f, 0.0f,2.0f,0.0f,0.0f };
 
+    DirectX::XMFLOAT3 maxPos = {};
+    DirectX::XMFLOAT3 minPos = {};
+
     float               gravity = -1.0f;          // 1フレームの重力
     DirectX::XMFLOAT3   velocity = { 0,0,0 };     // 速力
     bool                isGround = false;
 
 
-    int                 health = 5;
-    int                 maxHealth = 5;
+    int                 health = 100;
+    int                 maxHealth = 10;
+
 
     float               invincibleTimer = 0.0f;
     float               friction = 0.5f;    
@@ -180,6 +199,9 @@ protected:
     DissolveData    dissolveData;
 
     float collisionRange = 10;
+
+
+
 
 public:
     float GetDissolveThreshold() { return dissolveData.dissolveThreshold; }
