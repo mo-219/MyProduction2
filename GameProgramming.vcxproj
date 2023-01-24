@@ -215,6 +215,7 @@
     <ClInclude Include="Source\Effect.h" />
     <ClInclude Include="Source\EffectManager.h" />
     <ClInclude Include="Source\Enemy.h" />
+    <ClInclude Include="Source\EnemyBoss.h" />
     <ClInclude Include="Source\EnemyGolem.h" />
     <ClInclude Include="Source\EnemyManager.h" />
     <ClInclude Include="Source\EnemyRed.h" />
@@ -245,7 +246,6 @@
     <ClInclude Include="Source\Graphics\SaveShader.h" />
     <ClInclude Include="Source\Graphics\Shader.h" />
     <ClInclude Include="Source\Graphics\ShadowmapCasterShader.h" />
-    <ClInclude Include="Source\Graphics\SkyBox.h" />
     <ClInclude Include="Source\Graphics\SkyShader.h" />
     <ClInclude Include="Source\Graphics\Sprite.h" />
     <ClInclude Include="Source\Graphics\Texture.h" />
@@ -260,6 +260,7 @@
     <ClInclude Include="Source\LoadObj.h" />
     <ClInclude Include="Source\Logger.h" />
     <ClInclude Include="Source\Mathf.h" />
+    <ClInclude Include="Source\MetaAI.h" />
     <ClInclude Include="Source\Misc.h" />
     <ClInclude Include="Source\Param.h" />
     <ClInclude Include="Source\Player.h" />
@@ -281,8 +282,8 @@
     <ClInclude Include="Source\StageManager.h" />
     <ClInclude Include="Source\StageMoveFloor.h" />
     <ClInclude Include="Source\LevelScript.h" />
-    <ClInclude Include="Source\StageSample.h" />
     <ClInclude Include="Source\Sword.h" />
+    <ClInclude Include="Source\Telegram.h" />
     <ClInclude Include="Source\Work.h" />
   </ItemGroup>
   <ItemGroup>
@@ -301,6 +302,7 @@
     <ClCompile Include="Source\Effect.cpp" />
     <ClCompile Include="Source\EffectManager.cpp" />
     <ClCompile Include="Source\Enemy.cpp" />
+    <ClCompile Include="Source\EnemyBoss.cpp" />
     <ClCompile Include="Source\EnemyGolem.cpp" />
     <ClCompile Include="Source\EnemyManager.cpp" />
     <ClCompile Include="Source\EnemyRed.cpp" />
@@ -330,7 +332,6 @@
     <ClCompile Include="Source\Graphics\SaveShader.cpp" />
     <ClCompile Include="Source\Graphics\Shader.cpp" />
     <ClCompile Include="Source\Graphics\ShadowmapCasterShader.cpp" />
-    <ClCompile Include="Source\Graphics\SkyBox.cpp" />
     <ClCompile Include="Source\Graphics\SkyShader.cpp" />
     <ClCompile Include="Source\Graphics\Sprite.cpp" />
     <ClCompile Include="Source\Graphics\Texture.cpp" />
@@ -346,6 +347,7 @@
     <ClCompile Include="Source\Logger.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Mathf.cpp" />
+    <ClCompile Include="Source\MetaAI.cpp" />
     <ClCompile Include="Source\Player.cpp" />
     <ClCompile Include="Source\Projectile.cpp" />
     <ClCompile Include="Source\ProjectileHoming.cpp" />
@@ -362,7 +364,6 @@
     <ClCompile Include="Source\StageManager.cpp" />
     <ClCompile Include="Source\StageMoveFloor.cpp" />
     <ClCompile Include="Source\LevelScript.cpp" />
-    <ClCompile Include="Source\StageSample.cpp" />
     <ClCompile Include="Source\Sword.cpp" />
   </ItemGroup>
   <ItemGroup>

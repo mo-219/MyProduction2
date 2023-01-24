@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 
+
 #include "Graphics/Graphics.h"
 #include "Mathf.h"
 #include "player.h"
@@ -9,6 +10,9 @@
 
 #include "GameObjectManager.h"
 #include "ItemObj.h"
+
+#include "MetaAI.h"
+
 // コンストラクタ
 EnemyRed::EnemyRed()
 {
@@ -31,6 +35,9 @@ EnemyRed::EnemyRed()
     TransitionIdleState();
 
     health = 1;
+
+    searchRange = 5.0f;
+    attackRange = 1.5f;
 }
 
 // デストラクタ
@@ -54,6 +61,10 @@ void EnemyRed::Update(float elapsedTime)
 
     case State::Pursuit:
         UpdatePursuitState(elapsedTime);
+        break;
+
+    case State::AttackInit:
+        UpdateAttackInitState(elapsedTime);
         break;
 
     case State::Attack:
@@ -161,6 +172,9 @@ void EnemyRed::DrawDebugPrimitive()
 
     // ターゲット位置をデバッグ球描画
     debugRenderer->DrawSphere(targetPosition, param.radius, DirectX::XMFLOAT4(1, 1, 0, 0));
+
+    DirectX::XMFLOAT3 pos = model->FindNode("RigRArmPalmGizmo")->translate;
+    debugRenderer->DrawSphere(pos, 1.0f, DirectX::XMFLOAT4(1, 1, 0, 0));
 
 }
 
@@ -443,8 +457,65 @@ void EnemyRed::UpdatePursuitState(float elapsedTime)
     if (dist < attackRange)
     {
         // 攻撃ステートへ
-        TransitionAttack1State();
+        TransitionAttackInitState();
     }
+}
+
+void EnemyRed::TransitionAttackInitState()
+{
+    state = State::AttackInit;
+
+    //if (attackFlg)
+    //{
+    //    // 攻撃終わった時に攻撃権の放棄
+    //    // 攻撃フラグをfalseに
+
+    //    SetAttackFlg(false);
+    //    // エネミーからメタAIへ MsgChangeAttackRight を送信する	
+    //    Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgChangeAttackRight);
+    //}
+    //if (!attackFlg)
+    //{
+    //    // 攻撃権を依頼
+
+
+        // 待機アニメーション再生
+        model->PlayAnimation(Anim_Idle, true);
+    //}
+
+}
+
+void EnemyRed::UpdateAttackInitState(float elapsedTime)
+{
+    targetPosition = Player::Instance().Instance().GetPosition();
+    Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgAskAttackRight);
+
+    // プレイヤーが攻撃範囲にいた場合は攻撃ステートへ遷移
+    float vx = targetPosition.x - param.position.x;
+    float vy = targetPosition.y - param.position.y;
+    float vz = targetPosition.z - param.position.z;
+
+    float dist = sqrtf(vx * vx + vy * vy + vz * vz);
+
+    if (dist > attackRange)
+    {
+        TransitionIdleBattleState();
+    }
+    else
+    {
+        if (attackFlg)
+        {
+            // 攻撃ステートへ
+            TransitionAttack1State();
+        }
+        else
+        {
+            // 攻撃準備中（待機）
+            TransitionIdleBattleState();
+        }
+    }
+
+    MoveToTarget(elapsedTime, 0.0f);
 }
 
 void EnemyRed::TransitionAttack1State()
@@ -462,7 +533,7 @@ void EnemyRed::UpdateAttack1State(float elapsedTime)
     if (animationTime >= 0.1f && animationTime <= 0.35f)
     {
         // 目玉ノードとプレイヤーの衝突処理
-        CollisionNodeVsPlayer("EyeBall", 0.2f);
+        CollisionNodeVsPlayer("RigRArmPalmGizmo", 1.0f);
     }
 
     if (!model->IsPlayAnimation())
@@ -475,11 +546,23 @@ void EnemyRed::TransitionIdleBattleState()
 {
     state = State::IdleBattle;
 
+    if (attackFlg)
+    {
+        // 攻撃終わった時に攻撃権の放棄
+        // 攻撃フラグをfalseに
+
+        SetAttackFlg(false);
+        // エネミーからメタAIへ MsgChangeAttackRight を送信する	
+        Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgChangeAttackRight);
+    }
+
+
     // タイマーをランダム設定
-    stateTimer = Mathf::RandomRange(3.0f, 5.0f);
+    stateTimer = Mathf::RandomRange(2.0f, 3.0f);
 
     // 待機アニメーション再生
     model->PlayAnimation(Anim_Idle, true);
+
 }
 
 void EnemyRed::UpdateIdleBattleState(float elapsedTime)
@@ -498,8 +581,8 @@ void EnemyRed::UpdateIdleBattleState(float elapsedTime)
         float dist = sqrtf(vx * vx + vy * vy + vz * vz);
         if (dist < attackRange)
         {
-            // 攻撃ステートへ
-            TransitionAttack1State();
+            // 攻撃したい
+            TransitionAttackInitState();
         }
         else
         {
@@ -542,4 +625,28 @@ void EnemyRed::UpdateDeathState(float elapsedTime)
             Destroy();
         }
     }
+}
+
+bool EnemyRed::OnMessage(const Telegram& telegram)
+{
+    switch (telegram.msg)
+    {
+        // 他のエネミーから呼ばれた
+    case MESSAGE_TYPE::MsgCallHelp:
+        if (!SearchPlayer())
+        {
+            //// プレイヤーを見つけていないときに1層目ステートをReceiveに変更
+            //stateMachine->SetState(static_cast<int>(State::Recieve));
+        }
+        return true;
+
+        // メタAIから所有権を与えられたとき
+    case MESSAGE_TYPE::MsgGiveAttackRight:
+        // 攻撃フラグをtrueに設定
+        attackFlg = true;
+
+        return true;
+    }
+
+    return false;
 }

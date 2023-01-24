@@ -34,7 +34,9 @@ float4 main(VS_OUT pin) : SV_TARGET
     directionalDiffuse = max(directionalDiffuse, float3(0.7f, 0.7f, 0.7f));
     float3 directionalSpecular = CalcPhongSpeculer(N, L, -E, directionalLightData.color.rgb, kd.rgb);
 
-    float3 shadow = CalcShadowColor(shadowMap, shadowMapSamplerState, pin.shadowTexcoord, shadowColor, shadowBias);
+    float3 shadow = CalcShadowColorPCFFilter(shadowMap, shadowMapSamplerState, pin.shadowTexcoord, shadowColor, shadowBias);
+    //directionalDiffuse *= shadow;
+    //directionalSpecular *= shadow;
 
 
     

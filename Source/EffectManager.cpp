@@ -54,8 +54,6 @@ void EffectManager::Render(const DirectX::XMFLOAT4X4& view, const DirectX::XMFLO
     effekseerRenderer->BeginRendering();
 
     // Effekseer描画実行
-    // マネージャー単位で描画するので描画順を制御する場合はマネージャーを複数個作成し、 
-    // Draw()関数を実行する順序で制御できそう
     effekseerManager->Draw();
 
     // Effekseer描画終了

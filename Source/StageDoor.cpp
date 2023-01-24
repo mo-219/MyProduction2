@@ -4,8 +4,12 @@
 
 StageDoor::StageDoor()
 {
-    model = new Model("Data/Model/Cube/Cube.mdl");
-    scale = { 4,5,2 };
+    model = new Model("Data/Model/Gate/gate.mdl");
+    scale = { 1,1,1 };
+
+    //width = ;
+    //height;
+    //depth;
 }
 
 StageDoor::~StageDoor()

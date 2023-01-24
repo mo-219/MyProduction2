@@ -48,6 +48,10 @@ public:
     // エネミー取得
     Enemy* GetEnemy(int index) { return enemies.at(index); }
 
+
+    // 付与したIDからエネミーを取得
+    Enemy* GetEnemyFromId(int id);
+
 private:
     // プレイヤーとエネミーの衝突処理
     void CollisionEnemyVsEnemies();
@@ -55,6 +59,10 @@ private:
 private:
     std::vector<Enemy*> enemies;
     std::set<Enemy*>    removes;
+
+public:
+    int identity = 0;	// 付与するIDの値(この値にMetaAI::Identity::Enemyを加算して付与する)
+
 };
 
 

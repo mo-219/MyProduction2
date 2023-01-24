@@ -17,5 +17,5 @@ public:
 
 private:
     int timer = 0;
-    int heelPoint = 10;
+    int heelPoint = 1;
 };

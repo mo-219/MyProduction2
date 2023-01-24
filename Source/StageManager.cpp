@@ -130,17 +130,23 @@ void StageManager::DrawDebugGUI()
 void StageManager::DrawDebugPrimitive()
 {
     DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
+
+
     // 衝突判定用のデバッグ円柱を描画
     for (Stage* stage : stages)
     {
-        if (stage->GetStageNum() != StageNumber::Door) continue;        // ドアじゃなかったら判定無し    
+        if (stage->GetStageNum() != StageNumber::Door) continue;        // ドアじゃなかったら判定無し   
+
+        DirectX::XMFLOAT3 pos = stage->GetPosition();
+        pos = DirectX::XMFLOAT3(pos.x - stage->GetWidth() / 2, pos.y +1, pos.z);
+
         if (!stage->GetCollisionFlag())
         {
-            debugRenderer->DrawCube(stage->GetPosition(), stage->GetWidth(), stage->GetHeight(), stage->GetDepth(), DirectX::XMFLOAT4(1, 0, 0, 0));
+            debugRenderer->DrawCube(pos, stage->GetWidth(), stage->GetHeight(), stage->GetDepth(), DirectX::XMFLOAT4(1, 0, 0, 0));
         }
         else
         {
-            debugRenderer->DrawCube(stage->GetPosition(), stage->GetWidth(), stage->GetHeight(), stage->GetDepth(), DirectX::XMFLOAT4(1, 0, 0, 1));
+            debugRenderer->DrawCube(pos, stage->GetWidth(), stage->GetHeight(), stage->GetDepth(), DirectX::XMFLOAT4(1, 0, 0, 1));
         }
     }
 

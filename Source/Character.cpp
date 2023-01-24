@@ -8,8 +8,6 @@
 // 行列更新処理
 void Character::UpdateTransform()
 {
-
-    
     // スケール行列を作成
     DirectX::XMMATRIX S = DirectX::XMMatrixScaling(scale.x, scale.y, scale.z);
 
@@ -29,15 +27,6 @@ void Character::UpdateTransform()
 
     // ３つの行列を組み合わせ、ワールド行列を作成
     DirectX::XMMATRIX W = S * R * T;    //左手系
-
-
-    // 項の順番によって答えは変わる  これだけとは限らない
-    // DirectX::XMMATRIX W = S * T1 * R * T2 * T;
-    // 3Dゲームの8割はこのままで大丈夫　　やりたい順番に書く
-
-    // 右手系の場合
-    // DirectX::XMMATRIX W = T * R * S;    //左手系
-    // 掛け算が逆
 
 
 
@@ -138,7 +127,7 @@ void Character::UpdateVelocity(float elapsedTime)      // 後で色々変えること
 // ダメージを与える
 bool Character::ApplyDamage(int damage, float invincibleTime)
 {
-    if (invincibleTimer > 0.0f) return false;           // 名前が似てるので判別しやすいようにthis->invincibleTimerと書いてもよい
+    if (invincibleTimer > 0.0f) return false;           
     // ダメージが0の場合は健康状態を変更する必要がない
     if (damage <= 0)    return false;
 

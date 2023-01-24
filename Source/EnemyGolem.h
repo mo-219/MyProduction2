@@ -2,6 +2,9 @@
 
 #include "Graphics/Model.h"
 #include "Enemy.h"
+#include "MetaAI.h"
+
+#include "Effect.h"
 
 class Player;
 
@@ -28,6 +31,8 @@ public:
 
     // ノードとプレイヤーの衝突
     void CollisionNodeVsPlayer(const char* nodeName, float nodeRadius);
+
+    bool OnMessage(const Telegram& msg)override;
 
 
 protected:
@@ -67,6 +72,11 @@ protected:
     void TransitionPursuitState();                   // 遷移
     void UpdatePursuitState(float elapsedTime);      // 更新処理
 
+
+    // 攻撃開始ステート
+    void TransitionAttackInitState();                    // 遷移
+    void UpdateAttackInitState(float elapsedTime);       // 更新処理
+
     // 攻撃1ステート
     void TransitionAttack1State();                    // 遷移
     void UpdateAttack1State(float elapsedTime);       // 更新処理
@@ -98,6 +108,7 @@ private:
         Wander,
         Idle,
         Pursuit,
+        AttackInit,
         Attack,
         IdleBattle,
         Damage,
@@ -120,15 +131,17 @@ private:
 
     State               state = State::Wander;
 
+    Effect*             attackEffect = nullptr;
 
+    int count = 0;
 
     float               moveSpeed = 1.0f;
     float               turnSpeed = DirectX::XMConvertToRadians(360);
 
     float               stateTimer = 0.0f;
-    float               searchRange = 5.0f;
+    //float               searchRange = 5.0f;
 
-    float               attackRange = 3.0f;
+    //float               attackRange = 3.0f;
 
     float               fovCos = cosf(DirectX::XMConvertToRadians(45));
 };

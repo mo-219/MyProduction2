@@ -10,12 +10,15 @@
 #include "GameObjectManager.h"
 #include "ItemObj.h"
 
+
+
 // コンストラクタ
 EnemyGolem::EnemyGolem()
 {
     name = CharacterName::ENEMY_GOLEM;
 
     model = new Model("Data/model/Golem/Golem.mdl");
+    attackEffect = new Effect("Data/Effect/GohlemAttack.efk");
 
     // モデルが大きいのでスケーリング
     //scale.x = scale.y = scale.z = 0.001f;
@@ -36,11 +39,15 @@ EnemyGolem::EnemyGolem()
     TransitionIdleState();
 
     health = 1;
+
+    searchRange = 5.0f;
+    attackRange = 3.0f;
 }
 
 // デストラクタ
 EnemyGolem:: ~EnemyGolem()
 {
+    delete attackEffect;
     delete model;
 }
 
@@ -59,6 +66,10 @@ void EnemyGolem::Update(float elapsedTime)
 
     case State::Pursuit:
         UpdatePursuitState(elapsedTime);
+        break;
+
+    case State::AttackInit:
+        UpdateAttackInitState(elapsedTime);
         break;
 
     case State::Attack:
@@ -233,6 +244,31 @@ void EnemyGolem::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
         }
     }
 }
+
+bool EnemyGolem::OnMessage(const Telegram& telegram)
+{
+    switch (telegram.msg)
+    {
+        // 他のエネミーから呼ばれた
+    case MESSAGE_TYPE::MsgCallHelp:
+        if (!SearchPlayer())
+        {
+            //// プレイヤーを見つけていないときに1層目ステートをReceiveに変更
+            //stateMachine->SetState(static_cast<int>(State::Recieve));
+        }
+        return true;
+
+        // メタAIから所有権を与えられたとき
+    case MESSAGE_TYPE::MsgGiveAttackRight:
+        // 攻撃フラグをtrueに設定
+        attackFlg = true;
+
+        return true;
+    }
+
+    return false;
+}
+
 
 
 
@@ -422,6 +458,11 @@ void EnemyGolem::TransitionPursuitState()
     stateTimer = Mathf::RandomRange(3.0f, 5.0f);
 
     model->PlayAnimation(Anim_Runnning, true);
+
+
+    // エネミーからメタAIにMSG_CALL_HELPを送信
+    Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgCallHelp);
+
 }
 
 //追跡ステート更新処理
@@ -450,29 +491,106 @@ void EnemyGolem::UpdatePursuitState(float elapsedTime)
     if (dist < attackRange)
     {
         // 攻撃ステートへ
+        TransitionAttackInitState();
+    }
+}
+
+void EnemyGolem::TransitionAttackInitState()
+{
+    state = State::AttackInit;
+
+    if (attackFlg)
+    {
+        // 攻撃終わった時に攻撃権の放棄
+        // 攻撃フラグをfalseに
+
+        SetAttackFlg(false);
+        // エネミーからメタAIへ MsgChangeAttackRight を送信する	
+        Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgChangeAttackRight);
+    }
+    if (!attackFlg)
+    {
+        // 攻撃権を依頼
+        Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgAskAttackRight);
+
+        // 待機アニメーション再生
+        model->PlayAnimation(Anim_Idle, true);
+    }
+}
+
+void EnemyGolem::UpdateAttackInitState(float elapsedTime)
+{
+    targetPosition = Player::Instance().Instance().GetPosition();
+
+    // プレイヤーが攻撃範囲にいた場合は攻撃ステートへ遷移
+    float vx = targetPosition.x - param.position.x;
+    float vy = targetPosition.y - param.position.y;
+    float vz = targetPosition.z - param.position.z;
+
+    float dist = sqrtf(vx * vx + vy * vy + vz * vz);
+    if (attackFlg)
+    {
+        // 攻撃ステートへ
         TransitionAttack1State();
     }
+    else 
+    {
+        // 攻撃準備中（待機）
+        TransitionIdleBattleState();
+    }
+    
+    MoveToTarget(elapsedTime, 0.0f);
+
 }
 
 void EnemyGolem::TransitionAttack1State()
 {
     state = State::Attack;
-    DropHeelItem = 0;
-    model->PlayAnimation(Anim_Attack1, false);
+
+    //// 攻撃権がなければ
+    //if (!attackFlg)
+    //{
+    //    // 攻撃権を依頼
+    //    Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgAskAttackRight);
+    //}
+    //// 攻撃権があれば
+    //else
+    //{
+        DropHeelItem = 0;
+        model->PlayAnimation(Anim_Attack1, false);
+        count = 0;
+    //}
 }
 
 void EnemyGolem::UpdateAttack1State(float elapsedTime)
 {
-    // 任意のアニメーション再生区画でのみ衝突判定処理をする
-    float animationTime = model->GetCurrentAnimetionSeconds();
 
-    if (animationTime >= 1.0f && animationTime <= 2.0f)
+    // 攻撃権があるとき
+    if (attackFlg)
     {
-        // 目玉ノードとプレイヤーの衝突処理
-        CollisionNodeVsPlayer("mixamorig:LeftHand", 1.0f);
-    }
+        // 任意のアニメーション再生区画でのみ衝突判定処理をする
+        float animationTime = model->GetCurrentAnimetionSeconds();
 
-    if (!model->IsPlayAnimation())
+        if (animationTime >= 1.0f && animationTime <= 2.0f)
+        {
+            if (count == 0)
+            {
+                DirectX::XMFLOAT3 pos = param.position;
+                pos.y += GetHeight() / 2;
+                attackEffect->Play(pos);
+
+                count++;
+            }
+            // 目玉ノードとプレイヤーの衝突処理
+            CollisionNodeVsPlayer("mixamorig:LeftHand", 1.0f);
+        }
+        if (!model->IsPlayAnimation())
+        {
+            TransitionIdleBattleState();
+        }
+    }
+    // 攻撃権がないとき
+    else
     {
         TransitionIdleBattleState();
     }
@@ -481,22 +599,42 @@ void EnemyGolem::UpdateAttack1State(float elapsedTime)
 void EnemyGolem::TransitionAttack2State()
 {
     state = State::Attack;
-    DropHeelItem = 0;
-    model->PlayAnimation(Anim_Attack2, false);
+
+    // 攻撃権がなければ
+    if (!attackFlg)
+    {
+        // 攻撃権を依頼
+        Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgAskAttackRight);
+    }
+    // 攻撃権があれば
+    else
+    {
+        DropHeelItem = 0;
+        model->PlayAnimation(Anim_Attack2, false);
+    }
 }
 
 void EnemyGolem::UpdateAttack2State(float elapsedTime)
 {
-    // 任意のアニメーション再生区画でのみ衝突判定処理をする
-    float animationTime = model->GetCurrentAnimetionSeconds();
-
-    if (animationTime >= 0.1f && animationTime <= 0.35f)
+    // 攻撃権があれば
+    if (attackFlg)
     {
-        // 目玉ノードとプレイヤーの衝突処理
-        //CollisionNodeVsPlayer("EyeBall", 0.2f);
-    }
+        // 任意のアニメーション再生区画でのみ衝突判定処理をする
+        float animationTime = model->GetCurrentAnimetionSeconds();
 
-    if (!model->IsPlayAnimation())
+        if (animationTime >= 0.1f && animationTime <= 0.35f)
+        {
+            // 目玉ノードとプレイヤーの衝突処理
+            //CollisionNodeVsPlayer("EyeBall", 0.2f);
+        }
+
+        if (!model->IsPlayAnimation())
+        {
+            TransitionIdleBattleState();
+        }
+    }
+    // 攻撃権がなければ
+    else
     {
         TransitionIdleBattleState();
     }
@@ -506,11 +644,23 @@ void EnemyGolem::TransitionIdleBattleState()
 {
     state = State::IdleBattle;
 
+    if (attackFlg)
+    {
+        // 攻撃終わった時に攻撃権の放棄
+        // 攻撃フラグをfalseに
+
+        SetAttackFlg(false);
+        // エネミーからメタAIへ MsgChangeAttackRight を送信する	
+        Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgChangeAttackRight);
+    }
+
+
     // タイマーをランダム設定
-    stateTimer = Mathf::RandomRange(3.0f, 5.0f);
+    stateTimer = Mathf::RandomRange(1.0f, 2.0f);
 
     // 待機アニメーション再生
     model->PlayAnimation(Anim_Idle, true);
+    
 }
 
 void EnemyGolem::UpdateIdleBattleState(float elapsedTime)
@@ -527,10 +677,10 @@ void EnemyGolem::UpdateIdleBattleState(float elapsedTime)
         float vz = targetPosition.z - param.position.z;
 
         float dist = sqrtf(vx * vx + vy * vy + vz * vz);
-        if (dist < attackRange)
+     if (dist < attackRange)
         {
-            // 攻撃ステートへ
-            TransitionAttack1State();
+            // 攻撃したい
+            TransitionAttackInitState();
         }
         else
         {

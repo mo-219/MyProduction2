@@ -208,7 +208,7 @@ CubicShader::CubicShader(ID3D11Device* device)
 
 			colorAlpha = data.colorAlpha;
 		}
-
+		datas.clear();
 	}
 }
 

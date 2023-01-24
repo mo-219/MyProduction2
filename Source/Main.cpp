@@ -5,7 +5,20 @@
 
 #include "Framework.h"
 
+//
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <cstdlib>
+#include <crtdbg.h>
 
+//_CrtDumpMemoryLeaks();
+//
+//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+//
+//_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+
+
+//
 
 
 const LONG SCREEN_WIDTH = 1280;
@@ -19,8 +32,11 @@ LRESULT CALLBACK fnWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 INT WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, INT cmd_show)
 {
+
 #if defined(DEBUG) | defined(_DEBUG)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
+	_CrtDumpMemoryLeaks();
 	//_CrtSetBreakAlloc(237);
 #endif
 	WNDCLASSEX wcex;
@@ -45,5 +61,7 @@ INT WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line
 
 	Framework f(hWnd);
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(&f));
+
+
 	return f.Run();
 }

@@ -646,7 +646,7 @@ void Player::CollisionPlayerVsObject()
         DirectX::XMFLOAT3 outPosition{};
         GameObject* obj = objManager.GetObj(i);
         obj->CollisionFlag = false;
-        if (obj->collision == &noneBehavior) continue;
+        //if (obj->collision == &noneBehavior) continue;
         if (obj->GetInvincibleTimer() > 0.0f)continue;
         if (obj->GetBehavior()->collision(obj->GetParam(), this->GetParam(), outPosition))
         {

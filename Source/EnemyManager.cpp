@@ -3,6 +3,8 @@
 
 #include "Collision.h"
 
+#include "MetaAI.h"
+
 EnemyManager::~EnemyManager()
 {
     removes.clear();
@@ -66,6 +68,7 @@ void EnemyManager::Render(const RenderContext& rc, ModelShader* shader)
 // ƒGƒlƒ~[“o˜^
 void EnemyManager::Register(Enemy* enemy)
 {
+    enemy->SetId(static_cast<int>(Meta::Identity::Enemy) + identity++);
     enemies.emplace_back(enemy);
 }
 
@@ -113,6 +116,16 @@ void EnemyManager::DrawDebugGUI()
     }
     ImGui::End();
 
+}
+
+Enemy* EnemyManager::GetEnemyFromId(int id)
+{
+    for (Enemy* enemy : enemies)
+    {
+        if (enemy->GetId() == id)
+            return enemy;
+    }
+    return nullptr;
 }
 
 void EnemyManager::CollisionEnemyVsEnemies()

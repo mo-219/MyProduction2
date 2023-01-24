@@ -2,6 +2,7 @@
 
 #include "Graphics/Shader.h"
 #include "Character.h"
+#include "Telegram.h"
 
 
 // エネミー
@@ -25,6 +26,19 @@ public:
     // 縄張り設定
     void SetTerritory(const DirectX::XMFLOAT3& origin, float range);
 
+    // 攻撃フラグ取得
+    virtual bool	GetAttackFlg() { return attackFlg; }
+
+    // 攻撃フラグセット
+    virtual void	SetAttackFlg(bool flg) { attackFlg = flg; };
+    virtual void	SetId(int id) { this->id = id; }
+    virtual int		GetId() { return id; }
+
+    // 攻撃範囲取得
+    virtual float GetAttackRange() { return attackRange; }
+
+    // メッセージ受信したときの処理
+    virtual bool OnMessage(const Telegram& msg);
 
 
     // 破棄処理
@@ -43,4 +57,11 @@ protected:
     float               territoryRange = 10.0f;
 
     int                 DropHeelItem = 0;
+
+
+    bool attackFlg = false;
+    int id = 0;
+
+    float searchRange = 0.0f;
+    float attackRange = 0.0f;
 };

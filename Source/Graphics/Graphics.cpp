@@ -158,7 +158,7 @@ Graphics::Graphics(HWND hWnd)
 		modelShaders[static_cast<int>(ModelShaderId::Phong)] = std::make_unique<PhongShader>(device.Get());
 		modelShaders[static_cast<int>(ModelShaderId::ShadowmapCaster)] = std::make_unique<ShadowmapCasterShader>(device.Get());
 		modelShaders[static_cast<int>(ModelShaderId::Cubic)] = std::make_unique<CubicShader>(device.Get());
-		modelShaders[static_cast<int>(ModelShaderId::SkyBox)] = std::make_unique<SkyShader>(device.Get());
+		
 	}
 	// スプライトシェーダー
 	{

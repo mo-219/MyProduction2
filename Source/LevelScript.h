@@ -3,11 +3,12 @@
 #include <DirectXMath.h>
 #define SET_OBJ(x,y,z, frm, range, type)        {{(x),(y),(z)}, (frm), (range), (type), false}
 
-#define SET_RESPAWN(x,y,z, frm, range, type)        {{(x),(y),(z)}, (-1.0f), (-1.0f), (OBJ_TYPE::RESPAWN_POINT)}
-#define SET_SLIME(x,y,z, frm, range, type)        {{(x),(y),(z)}, (frm), (10.0f), (OBJ_TYPE::ENEMY_SLIME)}
-#define SET_GOLEM(x,y,z, frm, range, type)        {{(x),(y),(z)}, (frm), (10.0f), (OBJ_TYPE::ENEMY_GOLEM)}
-#define SET_RED(x,y,z, frm, range, type)        {{(x),(y),(z)}, (frm), (10.0f), (OBJ_TYPE::ENEMY_RED)}
-#define SET_BLUE(x,y,z, frm, range, type)        {{(x),(y),(z)}, (frm), (10.0f), (OBJ_TYPE::ENEMY_BLUE)}
+#define SET_RESPAWN(x,y,z, frm, range, type)        {{(x),(y),(z)}, (-1.0f),    (-1.0f), (OBJ_TYPE::RESPAWN_POINT)}
+#define SET_SLIME(x,y,z, frm, range, type)          {{(x),(y),(z)}, (frm),      (10.0f), (OBJ_TYPE::ENEMY_SLIME)}
+#define SET_GOLEM(x,y,z, frm, range, type)          {{(x),(y),(z)}, (frm),      (10.0f), (OBJ_TYPE::ENEMY_GOLEM)}
+#define SET_RED(x,y,z, frm, range, type)            {{(x),(y),(z)}, (frm),      (10.0f), (OBJ_TYPE::ENEMY_RED)}
+#define SET_BLUE(x,y,z, frm, range, type)           {{(x),(y),(z)}, (frm),      (10.0f), (OBJ_TYPE::ENEMY_BLUE)}
+#define SET_BOSS(x,y,z, frm, range, type)           {{(x),(y),(z)}, (frm),      (10.0f), (OBJ_TYPE::ENEMY_BOSS)}
 
 #define SET_MAX_POS(x,y,z, frm, range, type)        {{(x),(y),(z)}, (-1.0f), (-1.0f), (OBJ_TYPE::MAX_POS)}
 #define SET_MIN_POS(x,y,z, frm, range, type)        {{(x),(y),(z)}, (-1.0f), (-1.0f), (OBJ_TYPE::MIN_POS)}
@@ -28,6 +29,7 @@ enum OBJ_TYPE
     ENEMY_GOLEM,
     ENEMY_RED,
     ENEMY_BLUE,
+    ENEMY_BOSS,
     MAX_POS,
     MIN_POS,
 };
@@ -42,7 +44,6 @@ public:
     OBJ_TYPE objType;           // 生成キャラクタータイプ
 };
 
-//void load_script(LevelScript* script, float frame);
 
 extern LevelScript level1_script[];
 extern LevelScript* all_script[];       // 全てのスクリプトのポインターを持ってる配列

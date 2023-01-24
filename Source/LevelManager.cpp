@@ -5,22 +5,35 @@
 #include "EnemySlime.h"
 #include "EnemyGolem.h"
 #include "EnemyRed.h"
+#include "EnemyBoss.h"
 
 #include "StageDoor.h"
 
+LevelManager::LevelManager()
+{
+    generateEffect = new Effect("Data/Effect/Generate2.efk");
+}
+
 LevelManager::~LevelManager()
 {
+    delete generateEffect;
     pLevelScript = nullptr;
     ppLevelScript = nullptr;
 }
 
 void LevelManager::Initialize(LevelScript** pp)
 {
+    if (ppLevelScript != nullptr)
+    {
+        delete ppLevelScript;
+        ppLevelScript = nullptr;
+    }
     ppLevelScript = pp;
     currentStageNum = 0;
     pLevelScript = ppLevelScript[currentStageNum];
     timer = 0;
     EndFlag = false;
+
 }
 
 void LevelManager::Initialize(int stageNum)
@@ -31,7 +44,21 @@ void LevelManager::Initialize(int stageNum)
     EndFlag = false;
 }
 
-void LevelManager::load_script(LevelScript* script)
+void LevelManager::Clear()
+{
+    if (pLevelScript != nullptr)
+    {
+        pLevelScript = nullptr;
+        delete pLevelScript;
+    }
+    if (ppLevelScript != nullptr)
+    {
+        ppLevelScript = nullptr;
+        delete ppLevelScript;
+    }
+}
+
+void LevelManager::LoadScript(LevelScript* script)
 {
     // 一応ぬるぽちぇっく
     if (script == nullptr) return;
@@ -44,45 +71,78 @@ void LevelManager::load_script(LevelScript* script)
     // new用ポインタ宣言
     Enemy* enemy = {};
 
+    DirectX::XMFLOAT3 pos = script->pos;
 
     switch (script->objType)
     {
     case OBJ_TYPE::END:
+        
         break;
 
     case OBJ_TYPE::RESPAWN_POINT:
-        respawnPos = script->pos;
+        respawnPos = pos;
         break;
     
     
     case OBJ_TYPE::ENEMY_SLIME:
         enemy = new EnemySlime();
-        enemy->SetPosition(script->pos);
-        enemy->SetTerritory(script->pos, script->territoryRange);
+        enemy->SetPosition(pos);
+        enemy->SetTerritory(pos, script->territoryRange);
         enemy->SetMaxPos(maxPos);
         enemy->SetMinPos(minPos);
 
         enemyManager.Register(enemy);
+
+        // 生成エフェクト再生
+        pos.y += 0.5f;
+        generateEffectHandle = generateEffect->Play(pos);
+        generateEffect->SetScale(generateEffectHandle, DirectX::XMFLOAT3(1.5f, 2, 1.5f));
         break;
 
     case OBJ_TYPE::ENEMY_GOLEM:
         enemy = new EnemyGolem();
-        enemy->SetPosition(script->pos);
-        enemy->SetTerritory(script->pos, script->territoryRange);
+        enemy->SetPosition(pos);
+        enemy->SetTerritory(pos, script->territoryRange);
         enemy->SetMaxPos(maxPos);
         enemy->SetMinPos(minPos);
 
         enemyManager.Register(enemy);
+
+        // 生成エフェクト再生
+        pos.y += 0.5f;
+        generateEffectHandle = generateEffect->Play(pos);
+        generateEffect->SetScale(generateEffectHandle, DirectX::XMFLOAT3(3, 3, 3));
         break;
 
     case OBJ_TYPE::ENEMY_RED:
         enemy = new EnemyRed();
-        enemy->SetPosition(script->pos);
-        enemy->SetTerritory(script->pos, script->territoryRange);
+        enemy->SetPosition(pos);
+        enemy->SetTerritory(pos, script->territoryRange);
         enemy->SetMaxPos(maxPos);
         enemy->SetMinPos(minPos);
 
         enemyManager.Register(enemy);
+
+        // 生成エフェクト再生
+        pos.y += 0.5f;
+        generateEffectHandle = generateEffect->Play(pos);
+        generateEffect->SetScale(generateEffectHandle, DirectX::XMFLOAT3(1.5f, 2, 1.5f));
+        break;
+
+    case OBJ_TYPE::ENEMY_BOSS:
+        enemy = new EnemyBoss();
+        enemy->SetPosition(pos);
+        enemy->SetTerritory(pos, script->territoryRange);
+        enemy->SetMaxPos(maxPos);
+        enemy->SetMinPos(minPos);
+
+        enemyManager.Register(enemy);
+
+
+        // 生成エフェクト再生
+        pos.y += 0.5f;
+        generateEffectHandle = generateEffect->Play(pos);
+        generateEffect->SetScale(generateEffectHandle, DirectX::XMFLOAT3(2, 2, 2));
         break;
     
     case OBJ_TYPE::DOOR:
@@ -97,11 +157,11 @@ void LevelManager::load_script(LevelScript* script)
 
 
     case OBJ_TYPE::MAX_POS:
-        maxPos = script->pos;
+        maxPos = pos;
         break;
 
     case OBJ_TYPE::MIN_POS:
-        minPos = script->pos;
+        minPos = pos;
         break;
     }
 
@@ -109,7 +169,7 @@ void LevelManager::load_script(LevelScript* script)
     enemy = nullptr;
 }
 
-void LevelManager::update(float elapsedTime)
+void LevelManager::Update(float elapsedTime)
 {
     timer += 1 * elapsedTime;
      
@@ -125,7 +185,7 @@ void LevelManager::update(float elapsedTime)
         for (; timer >= pLevelScript->frame;)
         {
             if (pLevelScript->objType == OBJ_TYPE::END) return;
-            load_script(pLevelScript);
+            LoadScript(pLevelScript);
             pLevelScript++;
         }
     }

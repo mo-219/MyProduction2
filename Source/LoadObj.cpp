@@ -96,7 +96,7 @@ void LoadObj::Create(std::map<std::string, ObjData> Map)
 
         obj = nullptr;
     }
-
+    loadData.objects.clear();
     //objectManager.Initialize();
 }
 

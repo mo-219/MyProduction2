@@ -24,7 +24,7 @@
 #include "LevelManager.h"
 
 // シャドウマップのサイズ
-static const UINT SHADOWMAP_SIZE = 4096;
+static const UINT SHADOWMAP_SIZE = 2048;
 
 // 初期化
 void SceneGame::Initialize()
@@ -54,7 +54,6 @@ void SceneGame::Initialize()
 	guage = new Sprite();
 
 
-
 	// 画面遷移用
 	fade = new RectFade();
 	
@@ -67,6 +66,7 @@ void SceneGame::Initialize()
 	APBar = new RectBar();
 	APBar->SetAll(30, 50, 300, 20, 300, 20, 0, 1, 1, 1);
 	APBar->SetBaseAll(3, 3, 0, 0, 0, 1);
+
 
 
 	// レベルマネージャー初期化
@@ -121,8 +121,6 @@ void SceneGame::Initialize()
 		LightManager::Instance().Register(mainDirectionalLight);
 
 	}
-
-
 	// シャドウマップ用に深度ステンシルの生成
 	{
 		Graphics& graphics = Graphics::Instance();
@@ -142,12 +140,6 @@ void SceneGame::Initialize()
 		postprocessingRenderer->SetSceneData(srvData);
 	}
 
-	// スカイボックス生成
-	{
-		Graphics& graphics = Graphics::Instance();
-		//sky = new SkyBox(graphics.GetDevice());
-		//sky->SetPosition(player->GetPosition());
-	}
 
 	// カメラコントローラー初期化
 	cameraController = new CameraController();
@@ -155,9 +147,13 @@ void SceneGame::Initialize()
 
 
 	LoadObj load;
+
 	load.Load("Data/Stage/SimpleNaturePack/GameObjectData.json");
 	load.Create(stage1_mapData);
 
+
+	EnemyManager& enemyManager = EnemyManager::Instance();
+	meta = new Meta(player, &enemyManager);
 
 
 }
@@ -165,22 +161,24 @@ void SceneGame::Initialize()
 // 終了化
 void SceneGame::Finalize()
 {
+	if (meta != nullptr)
+	{
+		delete meta;
+		meta = nullptr;
+	}
+
+
 	// エネミー終了化
 	EnemyManager::Instance().Clear();
 
+	ObjectManager::Instance().Clear();
+	LevelManager::Instance().Clear();
 	// カメラコントローラー終了化
 	if (cameraController != nullptr)
 	{
 		delete cameraController;
 		cameraController = nullptr;
 	}
-
-	// スカイボックス終了化
-	//if (sky != nullptr)
-	//{
-	//	delete sky;
-	//	sky = nullptr;
-	//}
 
 	if (fade != nullptr)
 	{
@@ -198,7 +196,6 @@ void SceneGame::Finalize()
 		delete APBar;
 		APBar = nullptr;
 	}
-
 	// ゲージスプライト終了化
 	if (guage != nullptr)
 	{
@@ -232,7 +229,7 @@ void SceneGame::Update(float elapsedTime)
 	case State::INITIALIZE:
 		// ステージの初期化
 		levelManager.Initialize(currentStageNum);
-		levelManager.update(elapsedTime);	// リスポン位置取得
+		levelManager.Update(elapsedTime);	// リスポン位置取得
 		player->Initialize(levelManager.GetRespawnPos());
 		player->SetMaxPos(levelManager.GetMaxPos());
 		player->SetMinPos(levelManager.GetMinPos());
@@ -242,8 +239,8 @@ void SceneGame::Update(float elapsedTime)
 		// ドア生成
 		stageDoor = new StageDoor();
 		stageDoor->setPosition(0, 0, -4);
-		stageDoor->setWidth(4);
-		stageDoor->setHeight(5);
+		stageDoor->setWidth(3.5);
+		stageDoor->setHeight(4);
 		stageDoor->setDepth(2);
 		stageDoor->setStageNum(StageNumber::Door);
 		stageManager.Register(stageDoor);
@@ -289,7 +286,7 @@ void SceneGame::Update(float elapsedTime)
 			break;
 		}
 		stageManager.Update(elapsedTime);
-		levelManager.update(elapsedTime);
+		levelManager.Update(elapsedTime);
 
 		player->Update(elapsedTime);
 
@@ -663,51 +660,6 @@ void SceneGame::RenderShadowmap()
 			shader->End(rc);
 		}
 	}
-	{
-		//// ブラーをかける
-		//SpriteShader* shader = graphics.GetShader(SpriteShaderId::GaussianBlur);
-
-		//ID3D11RenderTargetView* rtv2 = shadowBlurTarget->GetRenderTargetView().Get();
-		//ID3D11DepthStencilView* dsv2 = shadowmapDepthStencil->GetDepthStencilView().Get();
-
-		//// 画面クリア
-		//dc->ClearDepthStencilView(dsv2, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-		//// レンダーターゲット設定
-		//dc->OMSetRenderTargets(0, &rtv2, dsv2);
-
-		//D3D11_VIEWPORT vp = {};
-		//vp.Width = static_cast<float>(SHADOWMAP_SIZE);
-		//vp.Height = static_cast<float>(SHADOWMAP_SIZE);
-		//vp.MinDepth = 0.0f;
-		//vp.MaxDepth = 1.0f;
-		//dc->RSSetViewports(1, &vp);
-		//
-		//RenderContext rc;
-		//rc.deviceContext = dc;
-
-		//rc.gaussianFilterData.textureSize.x = static_cast<float>(SHADOWMAP_SIZE);
-		//rc.gaussianFilterData.textureSize.y = static_cast<float>(SHADOWMAP_SIZE);
-		//rc.gaussianFilterData.kernelSize = shadowKernelSize;
-		//rc.gaussianFilterData.deviation = shadowDeviation;
-
-		//// 描画対象を変更
-		//shadowSprite->SetShaderResourceView(shadowmapDepthStencil->GetShaderResourceView().Get(),
-		//	shadowmapDepthStencil->GetWidth(),
-		//	shadowmapDepthStencil->GetHeight());
-	
-		//shader->Begin(rc);
-
-		//shadowSprite->Update(0, 0, static_cast<float>(shadowmapDepthStencil->GetWidth()), static_cast<float>(shadowmapDepthStencil->GetHeight()),
-		//	0, 0, static_cast<float>(shadowmapDepthStencil->GetWidth()),
-		//	static_cast<float>(shadowmapDepthStencil->GetHeight()),
-		//	0,
-		//	1, 1, 1, 1);
-
-		//shader->Draw(rc, shadowSprite.get());
-
-		//shader->End(rc);
-	}
 
 }
 
@@ -797,6 +749,8 @@ void SceneGame::RenderEnemyGauge(
 		shader->End(rc);
 
 	}
+
+#if 0
 
 	// エネミー配置処理
 	Mouse& mouse = Input::Instance().GetMouse();
@@ -924,5 +878,6 @@ void SceneGame::RenderEnemyGauge(
 
 		}
 	}
+#endif
 }
 

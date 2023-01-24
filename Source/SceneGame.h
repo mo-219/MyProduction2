@@ -15,6 +15,8 @@
 
 #include "LevelScript.h"
 
+#include "MetaAI.h"
+
 
 
 // ÉQÅ[ÉÄÉVÅ[Éì
@@ -70,6 +72,10 @@ private:
 	Player* player = nullptr;
 	SkyBox* sky = nullptr;
 	Sprite* guage = nullptr;
+
+	Meta* meta = nullptr;
+
+
 	State state = State::INITIALIZE;
 	int currentStageNum = 0;
 

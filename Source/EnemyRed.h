@@ -6,7 +6,7 @@
 
 class Player;
 
-// ゴーレム
+// 赤鬼
 class EnemyRed : public Enemy
 {
 public:
@@ -67,6 +67,10 @@ protected:
     // 追跡ステート
     void TransitionPursuitState();                   // 遷移
     void UpdatePursuitState(float elapsedTime);      // 更新処理
+    
+    // 攻撃開始ステート
+    void TransitionAttackInitState();                    // 遷移
+    void UpdateAttackInitState(float elapsedTime);       // 更新処理
 
     // 攻撃1ステート
     void TransitionAttack1State();                    // 遷移
@@ -88,6 +92,8 @@ protected:
     void TransitionDeathState();                // 遷移
     void UpdateDeathState(float elapsedTime);   // 更新処理
 
+    bool OnMessage(const Telegram& telegram)override;
+
 
 
 private:
@@ -99,6 +105,7 @@ private:
         Wander,
         Idle,
         Pursuit,
+        AttackInit,
         Attack,
         IdleBattle,
         Damage,
@@ -130,9 +137,9 @@ private:
     float               turnSpeed = DirectX::XMConvertToRadians(360);
 
     float               stateTimer = 0.0f;
-    float               searchRange = 5.0f;
+    //float               searchRange = 5.0f;
 
-    float               attackRange = 2.0f;
+    //float               attackRange = 5.0f;
 
     float               fovCos = cosf(DirectX::XMConvertToRadians(45));
 };
