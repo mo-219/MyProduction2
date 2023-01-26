@@ -134,6 +134,13 @@ DebugRenderer::DebugRenderer(ID3D11Device* device)
 
 }
 
+DebugRenderer::~DebugRenderer()
+{
+	spheres.clear();
+	cylinders.clear();
+	cubes.clear();
+}
+
 // •`‰æŠJŽn
 void DebugRenderer::Render(ID3D11DeviceContext* context, const DirectX::XMFLOAT4X4& view, const DirectX::XMFLOAT4X4& projection)
 {

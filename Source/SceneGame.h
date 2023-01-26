@@ -4,7 +4,6 @@
 #include "Stage.h"
 #include "CameraController.h"
 #include "Graphics/Light.h"
-#include "Graphics/SkyBox.h"
 #include "Player.h"
 
 #include "Graphics/PostprocessingRenderer.h"
@@ -50,6 +49,9 @@ public:
 		const DirectX::XMFLOAT4X4& view,
 		const DirectX::XMFLOAT4X4& projection);
 
+	void ScreenShake();
+	
+
 
 private:
 
@@ -70,7 +72,6 @@ private:
 	RectBar*  APBar;
 
 	Player* player = nullptr;
-	SkyBox* sky = nullptr;
 	Sprite* guage = nullptr;
 
 	Meta* meta = nullptr;
@@ -109,9 +110,8 @@ private:
 	DirectX::XMFLOAT3 shadowColor = { 0.01f, 0.0f, 1.0f}; // 影の色
 	float shadowBias = 0.00045f;
 
-	//std::unique_ptr<RenderTarget>	shadowmapRenderTarget;	// シャドウ用深度ステンシル
+
 	std::unique_ptr<Sprite>         shadowSprite;
-	std::unique_ptr<RenderTarget>   shadowBlurTarget;
 	std::unique_ptr<DepthStencil>	shadowmapDepthStencil;	// シャドウ用深度ステンシル
 	int				  shadowKernelSize = 8;		// カーネルサイズ
 	float			  shadowDeviation = 10.0f;	// 標準偏差
@@ -120,10 +120,12 @@ private:
 
 	// オフスクリーンレンダリング用描画バッファ
 	std::unique_ptr<RenderTarget> renderTarget;
-
+	std::unique_ptr<DepthStencil> depthStencil;	// シャドウ用深度ステンシル
 
 	// ポストプロセス
 	std::unique_ptr<PostprocessingRenderer> postprocessingRenderer;
 
 	ModelShaderId id = ModelShaderId::Cubic;
+
+	DirectX::XMFLOAT2 renderPosition = { 0,0 };
 };

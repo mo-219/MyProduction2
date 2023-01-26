@@ -39,6 +39,10 @@ public:
     // デバッグ情報の表示
     void DrawDebugGUI();
 
+    DirectX::XMFLOAT2 GetRenderPosition() { return renderPosition; }
+    void SetRenderPosition(DirectX::XMFLOAT2 pos) { renderPosition = pos; }
+
+
 private:
     // シーン描画データ
     ShaderResourceViewData          sceneData;
@@ -58,4 +62,6 @@ private:
 
     // デバッグ用
     bool effectFlag = true;
+
+    DirectX::XMFLOAT2 renderPosition = DirectX::XMFLOAT2(0, 0);
 };

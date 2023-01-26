@@ -30,7 +30,7 @@ void EnemyManager::Update(float elapsedTime)
         {
             enemies.erase(it);
         }
-        // ’eŠÛ‚Ì”jŠüˆ—
+        // ”jŠüˆ—
         delete enemy;
     }
     // ”jŠüƒŠƒXƒg‚ğƒNƒŠƒA

@@ -21,7 +21,7 @@ public:
 
 	// コンストラクタ
 	Meta(Player* pl, EnemyManager* eManager);
-	~Meta() {}
+	~Meta();
 
 	// インスタンス取得
 	static Meta& Instance();

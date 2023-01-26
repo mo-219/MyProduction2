@@ -21,6 +21,7 @@ void LoadObj::Load(const char* filename)
     std::ifstream ifs(filename, std::ios::in);
     cereal::JSONInputArchive archive(ifs);
     loadData.serialize(archive);
+    //loadData.objects.clear();
 }
 
 void LoadObj::Create()
@@ -91,12 +92,18 @@ void LoadObj::Create(std::map<std::string, ObjData> Map)
         // ÅŒã‚Éposition‘ã“ü
         obj->SetPosition(data.translate);
 
-        if (obj->GetBehavior() == nullptr)continue;
+        if (obj->GetBehavior() == nullptr)
+        {
+            delete obj;
+            continue;
+        }
+
         objectManager.Register(obj);
 
-        obj = nullptr;
     }
     loadData.objects.clear();
+
+
     //objectManager.Initialize();
 }
 

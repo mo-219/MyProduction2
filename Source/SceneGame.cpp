@@ -104,13 +104,12 @@ void SceneGame::Initialize()
 		// 新しい描画ターゲットの生成
 		{
 			Graphics& graphics = Graphics::Instance();
-			renderTarget = std::make_unique<RenderTarget>(static_cast<UINT>(graphics.GetScreenWidth()),
-														  static_cast<UINT>(graphics.GetScreenHeight()),
-														  DXGI_FORMAT_R8G8B8A8_UNORM);
-			shadowBlurTarget = std::make_unique<RenderTarget>(static_cast<UINT>(graphics.GetScreenWidth()),
-														  static_cast<UINT>(graphics.GetScreenHeight()),
+
+			renderTarget = std::make_unique<RenderTarget>(static_cast<UINT>(graphics.GetScreenWidth() + graphics.GetScreenBlankWidth()),
+														  static_cast<UINT>(graphics.GetScreenHeight() + graphics.GetScreenBlankHeight()),
 														  DXGI_FORMAT_R8G8B8A8_UNORM);
 
+			renderPosition = DirectX::XMFLOAT2(-graphics.GetScreenBlankWidth() / 2, -graphics.GetScreenBlankHeight() / 2);
 
 		}
 
@@ -125,6 +124,7 @@ void SceneGame::Initialize()
 	{
 		Graphics& graphics = Graphics::Instance();
 		shadowmapDepthStencil = std::make_unique<DepthStencil>(SHADOWMAP_SIZE, SHADOWMAP_SIZE);
+		depthStencil = std::make_unique<DepthStencil>(renderTarget->GetWidth(), renderTarget->GetHeight());
 	}
 
 	// ポストプロセス描画クラス生成
@@ -144,7 +144,8 @@ void SceneGame::Initialize()
 	// カメラコントローラー初期化
 	cameraController = new CameraController();
 
-
+	//Finalize();
+	//exit(0);
 
 	LoadObj load;
 
@@ -348,6 +349,9 @@ void SceneGame::Update(float elapsedTime)
 	HPBar->culcValue(player->GetHealth(), player->GetMaxHealth());
 	APBar->culcValue(player->GetCurrentAP(), player->GetMaxAP());
 
+	renderPosition.y += sinf(timer * elapsedTime * 3.0f) / 2;
+
+
 	timer++;
 }
 
@@ -369,32 +373,6 @@ void SceneGame::Render()
 
 	// 描き込み先をバックバッファに変えてオフスクリーンレンダリングの結果を描画する
 	{
-#if 0
-		ID3D11RenderTargetView* rtv = graphics.GetRenderTargetView();
-		ID3D11DepthStencilView* dsv = graphics.GetDepthStencilView();
-
-		// 画面クリア＆レンダーターゲット設定
-		FLOAT color[] = { 0.0f, 0.0f, 0.5f, 1.0f }; // RGBA(0.0～1.0)
-		dc->ClearRenderTargetView(rtv, color);
-		dc->ClearDepthStencilView(dsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		dc->OMSetRenderTargets(1, &rtv, dsv);
-
-
-		SpriteShader* shader = graphics.GetShader(SpriteShaderId::Default);
-		RenderContext rc;
-
-		rc.deviceContext = dc;
-		//rc.gaussianFilterData = gaussianFilterData;
-		//rc.gaussianFilterData.textureSize.x = gaussianBlurTexture->GetWidth();
-		//rc.gaussianFilterData.textureSize.y = gaussianBlurTexture->GetHeight();
-		//rc.gaussianFilterData.kernelSize = gaussianFilterData.kernelSize;
-
-		shader->Begin(rc);
-
-		shader->Draw(rc, sprite.get());
-
-		shader->End(rc);
-#endif
 		ID3D11RenderTargetView* rtv = graphics.GetRenderTargetView();
 		ID3D11DepthStencilView* dsv = graphics.GetDepthStencilView();
 
@@ -407,8 +385,8 @@ void SceneGame::Render()
 
 		// ビューポートの設定
 		D3D11_VIEWPORT	vp = {};
-		vp.Width = graphics.GetScreenWidth();
-		vp.Height = graphics.GetScreenHeight();
+		vp.Width = renderTarget->GetWidth();
+		vp.Height = renderTarget->GetHeight();
 		vp.MinDepth = 0.0f;
 		vp.MaxDepth = 1.0f;
 		dc->RSSetViewports(1, &vp);
@@ -417,8 +395,12 @@ void SceneGame::Render()
 		//rc.deviceContext = dc;
 		//rc.BlurCount 
 		// ポストプロセス処理
+
+		postprocessingRenderer->SetRenderPosition(renderPosition);
 		postprocessingRenderer->Render(dc);
 		//postprocessingRenderer->Render(&rc);
+
+
 	}
 
 
@@ -458,8 +440,9 @@ void SceneGame::Render()
 		ImGui::Separator();
 		LightManager::Instance().DrawDebugGUI();
 		ImGui::Separator();
-		ImGui::SliderInt("kernelSize", &shadowKernelSize, 1, MaxKernelSize - 1);
-		ImGui::SliderFloat("deviation", &shadowDeviation, 0.0f, 100.0f);
+
+		ImGui::SliderFloat("renderPositionX", &renderPosition.x, -500.0f, 500.0f);
+		ImGui::SliderFloat("renderPositionY", &renderPosition.y, -500.0f, 500.0f);
 
 	}
 
@@ -480,6 +463,7 @@ void SceneGame::Render()
 		APBar->Render(rc, shader);
 		fade->Render(rc, shader);
 
+
 	}
 
 	// 2DデバッグGUI描画
@@ -497,7 +481,7 @@ void SceneGame::Render()
 
 		//ObjectManager::Instance().setNearNum(
 		//	ObjectManager::Instance().findNear(player->GetPosition()));
-		ObjectManager::Instance().DrawDebugGUI();
+		//ObjectManager::Instance().DrawDebugGUI();
 
 	}
 }
@@ -507,7 +491,7 @@ void SceneGame::Render3DScene()
 	Graphics& graphics = Graphics::Instance();
 	ID3D11DeviceContext* dc = graphics.GetDeviceContext();
 	ID3D11RenderTargetView* rtv = renderTarget->GetRenderTargetView().Get();
-	ID3D11DepthStencilView* dsv = graphics.GetDepthStencilView();
+	ID3D11DepthStencilView* dsv = depthStencil->GetDepthStencilView().Get();
 
 
 	// 画面クリア＆レンダーターゲット設定
@@ -519,8 +503,8 @@ void SceneGame::Render3DScene()
 
 	// ビューポート設定
 	D3D11_VIEWPORT vp = {};
-	vp.Width = graphics.GetScreenWidth();
-	vp.Height = graphics.GetScreenHeight();
+	vp.Width = renderTarget->GetWidth();
+	vp.Height = renderTarget->GetHeight();
 	vp.MinDepth = 0.0f;
 	vp.MaxDepth = 1.0f;
 	dc->RSSetViewports(1, &vp);
@@ -568,8 +552,6 @@ void SceneGame::Render3DScene()
 		EnemyManager::Instance().Render(rc, shader);
 		ObjectManager::Instance().Render(rc, shader);
 		player->Render(rc, shader);
-		//sky->Render(rc,shader);
-
 		shader->End(rc);
 	}
 
@@ -580,6 +562,12 @@ void SceneGame::Render3DScene()
 		EffectManager::Instance().Render(rc.view, rc.projection);
 	}
 
+	//3D2DUI
+	{
+		RenderEnemyGauge(rc, rc.view, rc.projection);
+
+	}
+
 
 	// デバッグプリミティブの表示
 	{
@@ -587,8 +575,7 @@ void SceneGame::Render3DScene()
 		player->DrawDebugPrimitive();
 		EnemyManager::Instance().DrawDebugPrimitive();
 		StageManager::Instance().DrawDebugPrimitive();
-		ObjectManager::Instance().DrawDebugPrimitive();
-		//sky->DebugPrimitive();
+		//ObjectManager::Instance().DrawDebugPrimitive();
 
 
 
@@ -655,7 +642,7 @@ void SceneGame::RenderShadowmap()
 			StageManager::Instance().Render(rc, shader);
 			player->Render(rc, shader);
 			EnemyManager::Instance().Render(rc, shader);
-			ObjectManager::Instance().Render(rc, shader);
+			//ObjectManager::Instance().Render(rc, shader);
 
 			shader->End(rc);
 		}

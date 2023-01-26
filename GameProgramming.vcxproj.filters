@@ -294,9 +294,6 @@
     <ClInclude Include="Source\Param.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Graphics\SkyShader.h">
-      <Filter>Source\Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Graphics\SaveShader.h">
       <Filter>Source\Graphics</Filter>
     </ClInclude>
@@ -318,6 +315,9 @@
     <ClInclude Include="Source\Telegram.h" />
     <ClInclude Include="Source\EnemyBoss.h">
       <Filter>Source\Character\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Graphics\font.h">
+      <Filter>Source\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -534,9 +534,6 @@
     <ClCompile Include="Source\LoadObj.cpp">
       <Filter>Source\Scene\Stage</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\SkyShader.cpp">
-      <Filter>Source\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Graphics\SaveShader.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
@@ -554,6 +551,9 @@
     </ClCompile>
     <ClCompile Include="Source\EnemyBoss.cpp">
       <Filter>Source\Character\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Graphics\font.cpp">
+      <Filter>Source\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -606,9 +606,6 @@
       <Filter>HLSL</Filter>
     </None>
     <None Include="HLSL\ShadingFunctions.hlsli">
-      <Filter>HLSL</Filter>
-    </None>
-    <None Include="HLSL\SkyBox.hlsli">
       <Filter>HLSL</Filter>
     </None>
   </ItemGroup>
@@ -686,12 +683,6 @@
       <Filter>HLSL</Filter>
     </FxCompile>
     <FxCompile Include="HLSL\CubicColorVS.hlsl">
-      <Filter>HLSL</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\SkyBoxPS.hlsl">
-      <Filter>HLSL</Filter>
-    </FxCompile>
-    <FxCompile Include="HLSL\SkyBoxVS.hlsl">
       <Filter>HLSL</Filter>
     </FxCompile>
   </ItemGroup>
