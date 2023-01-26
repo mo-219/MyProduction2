@@ -17,8 +17,7 @@ LevelManager::LevelManager()
 LevelManager::~LevelManager()
 {
     delete generateEffect;
-    pLevelScript = nullptr;
-    ppLevelScript = nullptr;
+    Clear();
 }
 
 void LevelManager::Initialize(LevelScript** pp)

@@ -6,7 +6,7 @@
 class CameraController
 {
 public:
-    CameraController() {}
+    CameraController();
     ~CameraController() {}
 
     // 更新処理
@@ -18,6 +18,8 @@ public:
     
     // デバッグ用GUI描画
     void DrawDebugGUI();
+
+
 
 private:
     DirectX::XMFLOAT3 target = { 0,0,0 };

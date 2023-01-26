@@ -229,6 +229,7 @@
     <ClInclude Include="Source\Graphics\DefaultSpriteShader.h" />
     <ClInclude Include="Source\Graphics\DepthStencil.h" />
     <ClInclude Include="Source\Graphics\FinalpassShader.h" />
+    <ClInclude Include="Source\Graphics\font.h" />
     <ClInclude Include="Source\Graphics\GaussianBlurShader.h" />
     <ClInclude Include="Source\Graphics\Graphics.h" />
     <ClInclude Include="Source\Graphics\ImGuiRenderer.h" />
@@ -246,7 +247,6 @@
     <ClInclude Include="Source\Graphics\SaveShader.h" />
     <ClInclude Include="Source\Graphics\Shader.h" />
     <ClInclude Include="Source\Graphics\ShadowmapCasterShader.h" />
-    <ClInclude Include="Source\Graphics\SkyShader.h" />
     <ClInclude Include="Source\Graphics\Sprite.h" />
     <ClInclude Include="Source\Graphics\Texture.h" />
     <ClInclude Include="Source\Graphics\UVScrollShader.h" />
@@ -316,6 +316,7 @@
     <ClCompile Include="Source\Graphics\DefaultSpriteShader.cpp" />
     <ClCompile Include="Source\Graphics\DepthStencil.cpp" />
     <ClCompile Include="Source\Graphics\FinalpassShader.cpp" />
+    <ClCompile Include="Source\Graphics\font.cpp" />
     <ClCompile Include="Source\Graphics\GaussianBlurShader.cpp" />
     <ClCompile Include="Source\Graphics\Graphics.cpp" />
     <ClCompile Include="Source\Graphics\ImGuiRenderer.cpp" />
@@ -332,7 +333,6 @@
     <ClCompile Include="Source\Graphics\SaveShader.cpp" />
     <ClCompile Include="Source\Graphics\Shader.cpp" />
     <ClCompile Include="Source\Graphics\ShadowmapCasterShader.cpp" />
-    <ClCompile Include="Source\Graphics\SkyShader.cpp" />
     <ClCompile Include="Source\Graphics\Sprite.cpp" />
     <ClCompile Include="Source\Graphics\Texture.cpp" />
     <ClCompile Include="Source\Graphics\UVScrollShader.cpp" />
@@ -382,7 +382,6 @@
     <None Include="HLSL\ShadingFunctions.hlsli" />
     <None Include="HLSL\ShadowmapCaster.hlsli" />
     <None Include="HLSL\ShadowmapFunctions.hlsli" />
-    <None Include="HLSL\SkyBox.hlsli" />
     <None Include="HLSL\Sprite.hlsli" />
     <None Include="HLSL\UVScroll.hlsli" />
   </ItemGroup>
@@ -628,18 +627,6 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="HLSL\ShadowmapCasterVS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-    </FxCompile>
-    <FxCompile Include="HLSL\SkyBoxPS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="HLSL\SkyBoxVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

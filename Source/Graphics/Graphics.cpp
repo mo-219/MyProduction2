@@ -8,7 +8,7 @@
 #include "Graphics/PhongShader.h"
 #include "Graphics/ShadowmapCasterShader.h"
 #include "Graphics/CubicShader.h"
-#include "Graphics/SkyShader.h"
+
 
 
 // スプライトシェーダーヘッダー
@@ -37,6 +37,9 @@ Graphics::Graphics(HWND hWnd)
 
 	this->screenWidth = static_cast<float>(screenWidth);
 	this->screenHeight = static_cast<float>(screenHeight);
+
+	screenBlankWidth = SCREEN_BLANK_X;
+	screenBlankHeight = SCREEN_BLANK_Y;
 
 	HRESULT hr = S_OK;
 

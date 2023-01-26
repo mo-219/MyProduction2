@@ -7,7 +7,9 @@
 
 ObjectManager::~ObjectManager()
 {
-    Clear();
+    removes.clear();
+    objects.clear();
+
 }
 
 
@@ -214,6 +216,7 @@ void ObjectManager::Clear()
     {
         if (obj != nullptr)
         {
+            // ”jŠüˆ—
             delete obj;
             obj = nullptr;
         }
@@ -305,10 +308,7 @@ void ObjectManager::DrawDebugGUI()
         //    if(
         //    obj->DrawDebugImGui();
         //}
-        GetObj(count)->DrawDebugImGui();
-        int a = GetObjectCount();
-        ImGui::InputInt("EnemyCount", &a);
-        ImGui::InputInt("count", &count);
+
     }
     ImGui::End();
 

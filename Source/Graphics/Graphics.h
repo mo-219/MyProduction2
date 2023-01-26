@@ -10,6 +10,9 @@
 #include "Graphics/LineRenderer.h"
 #include "Graphics/ImGuiRenderer.h"
 
+#define SCREEN_BLANK_X 100
+#define SCREEN_BLANK_Y 100
+
 
 enum class ModelShaderId
 {
@@ -17,7 +20,7 @@ enum class ModelShaderId
 	Phong,
 	ShadowmapCaster,
 	Cubic,
-	SkyBox,
+
 
 	Max
 };
@@ -78,6 +81,14 @@ public:
 	// スクリーン高さ取得
 	float GetScreenHeight() const { return screenHeight; }
 
+	// スクリーン空白幅取得
+	float GetScreenBlankWidth() const { return screenBlankWidth; }
+
+	// スクリーン空白高さ取得
+	float GetScreenBlankHeight() const { return screenBlankHeight; }
+
+
+
 	// デバッグレンダラ取得
 	DebugRenderer* GetDebugRenderer() const { return debugRenderer.get(); }
 
@@ -89,6 +100,9 @@ public:
 
 	// ミューテックス取得
 	std::mutex& GetMutex() { return mutex; }
+
+	void SetRenderPostion(DirectX::XMFLOAT2 pos) { renderPostion = pos; }
+	DirectX::XMFLOAT2 GetRenderPosition() { return renderPostion; }
 
 private:
 	static Graphics*								instance;
@@ -111,6 +125,11 @@ private:
 
 	float	screenWidth;
 	float	screenHeight;
+
+	float	screenBlankWidth;
+	float	screenBlankHeight;
+
+	DirectX::XMFLOAT2 renderPostion = DirectX::XMFLOAT2(0, 0);
 
 	std::mutex										mutex;
 };

@@ -38,7 +38,7 @@ Framework::~Framework()
 	// シーン終了化
 	SceneManager::Instance().Clear();
 
-	// エフェクトマネージャー初期化
+	// エフェクトマネージャー終了化
 	EffectManager::Instance().Finalize();
 }
 

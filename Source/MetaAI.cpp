@@ -12,6 +12,10 @@ Meta::Meta(Player* pl, EnemyManager* eManager) : player(pl), enemyManager(eManag
 	instance = this;
 }
 
+Meta::~Meta()
+{
+}
+
 void Meta::Update()
 {
 	// ここで自発的にメタAIが監視している処理があれば記載する
@@ -68,7 +72,7 @@ bool Meta::OnMessage(const Telegram& telegram)
 
 			int random = Mathf::RandomRange(0, enmVec.size());
 			SendMessaging(static_cast<int>(Meta::Identity::Meta), enemyManager->GetEnemy(random)->GetId(), MESSAGE_TYPE::MsgGiveAttackRight);
-
+			enmVec.clear();
 
 		}
 		return true;
@@ -88,6 +92,7 @@ bool Meta::OnMessage(const Telegram& telegram)
 			// 誰も攻撃権を持っていなければMetaAIから送信者に攻撃権付与のメッセージを送る
 			// メッセージはMsgGiveAttackRight
 			SendMessaging(static_cast<int>(Meta::Identity::Meta), telegram.sender, MESSAGE_TYPE::MsgGiveAttackRight);
+			enmVec.clear();
 
 
 		}

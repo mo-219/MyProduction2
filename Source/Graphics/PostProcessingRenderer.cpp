@@ -7,12 +7,11 @@ PostprocessingRenderer::PostprocessingRenderer()
     renderSprite = std::make_unique<Sprite>();
     // 高輝度抽出用描画ターゲットを生成
     luminanceExtractRenderTarget = std::make_unique<RenderTarget>(static_cast<UINT>(graphics.GetScreenWidth()),
-                                                                  static_cast<UINT>(graphics.GetScreenHeight()), DXGI_FORMAT_R8G8B8A8_UNORM);
+                                                                  static_cast<UINT>(graphics.GetScreenHeight() + graphics.GetScreenBlankHeight()), DXGI_FORMAT_R8G8B8A8_UNORM);
 
     // 高輝度抽出ぼかし用描画ターゲットを生成
-    luminanceExtractBokehRenderTarget =
-        std::make_unique<RenderTarget>(static_cast<UINT>(graphics.GetScreenWidth()),
-            static_cast<UINT>(graphics.GetScreenHeight()), DXGI_FORMAT_R8G8B8A8_UNORM);
+    luminanceExtractBokehRenderTarget = std::make_unique<RenderTarget>(static_cast<UINT>(graphics.GetScreenWidth() + graphics.GetScreenBlankWidth()),
+                                                                       static_cast<UINT>(graphics.GetScreenHeight()) + graphics.GetScreenBlankHeight(), DXGI_FORMAT_R8G8B8A8_UNORM);
 
     bloomData.gaussianFilterData.textureSize.x = static_cast<float>(luminanceExtractBokehRenderTarget->GetWidth());
     bloomData.gaussianFilterData.textureSize.y = static_cast<float>(luminanceExtractBokehRenderTarget->GetHeight());
@@ -166,7 +165,7 @@ void PostprocessingRenderer::Render(ID3D11DeviceContext* device)
         // 描画対象を変更
         renderSprite->SetShaderResourceView(sceneData.srv, sceneData.width, sceneData.height);
 
-        renderSprite->Update(0, 0, graphics.GetScreenWidth(), graphics.GetScreenHeight(),
+        renderSprite->Update(renderPosition.x, renderPosition.y, sceneData.width, sceneData.height,
             0, 0, static_cast<float>(sceneData.width),
             static_cast<float>(sceneData.height),
             0,
@@ -340,7 +339,7 @@ void PostprocessingRenderer::Render(const RenderContext* renderContext)
         // 描画対象を変更
         renderSprite->SetShaderResourceView(sceneData.srv, sceneData.width, sceneData.height);
 
-        renderSprite->Update(0, 0, graphics.GetScreenWidth(), graphics.GetScreenHeight(),
+        renderSprite->Update(renderPosition.x, renderPosition.y, graphics.GetScreenWidth(), graphics.GetScreenHeight(),
             0, 0, static_cast<float>(sceneData.width),
             static_cast<float>(sceneData.height),
             0,

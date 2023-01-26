@@ -3,6 +3,10 @@
 #include "Camera.h"
 #include "Input/Input.h"
 
+CameraController::CameraController()
+{
+}
+
 // 更新処理
 void CameraController::Update(float elapsedTime)
 {
@@ -23,9 +27,7 @@ void CameraController::Update(float elapsedTime)
     if (angle.y < DirectX::XM_PI)  angle.y += DirectX::XM_2PI;
 
 
-
     UpdateOnlyTransform(elapsedTime);
-
 }
 
 void CameraController::UpdateOnlyTransform(float elapsedTime)
@@ -50,8 +52,11 @@ void CameraController::UpdateOnlyTransform(float elapsedTime)
     eye.y = target.y - front.y * range;
     eye.z = target.z - front.z * range;
 
+
     // カメラの視点と注意点を設定
     Camera::Instance().SetLookAt(eye, target, DirectX::XMFLOAT3(0, 1, 0));
+
+
 
 }
 
@@ -80,3 +85,5 @@ void CameraController::DrawDebugGUI()
     }
     ImGui::End();
 }
+
+

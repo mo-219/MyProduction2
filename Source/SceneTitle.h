@@ -22,7 +22,7 @@ private:
     std::unique_ptr<Texture>	texture;
     std::unique_ptr<Sprite>		sprite;
 
-
+    DirectX::XMFLOAT2 renderPosition = {};
 };
 
 #endif /* SCENE_TITLE_H */
