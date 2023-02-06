@@ -1,11 +1,12 @@
 #pragma once
 #include "Stage.h"
 #include "Collision.h"
+#include "Audio/Audio.h"
 
 class StageDoor : public Stage
 {
 public:
-    StageDoor() ;
+    StageDoor();
     virtual ~StageDoor();
 
     //static Stage& Instance();
@@ -14,7 +15,6 @@ public:
     void Update(float elapsedTime) override;
 
     //ï`âÊèàóù
-    void Render(ID3D11DeviceContext* dc, Shader* shader) override;
     void Render(const RenderContext& rc, ModelShader* shader) override;
 
 
@@ -27,7 +27,17 @@ public:
 private:
     void UpdateTransform();
 
+    void TraditionOpenDoor();
+
 private:
+    enum Animation
+    {
+        Anim_Close,
+        Anim_Open,
+        Anim_Max
+    };
+
+
     DirectX::XMFLOAT3   angle = { 0, 0, 0 };
     DirectX::XMFLOAT3   scale = { 1, 1, 1 };
     DirectX::XMFLOAT4X4 transform = { 1,0,0,0,
@@ -39,5 +49,5 @@ private:
 
     bool goalFlag = false;
 
-
+    std::unique_ptr<AudioSource> se;
 };

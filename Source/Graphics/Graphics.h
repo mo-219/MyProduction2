@@ -104,6 +104,8 @@ public:
 	void SetRenderPostion(DirectX::XMFLOAT2 pos) { renderPostion = pos; }
 	DirectX::XMFLOAT2 GetRenderPosition() { return renderPostion; }
 
+	RECT GetRect() { return rect; }
+
 private:
 	static Graphics*								instance;
 
@@ -128,6 +130,8 @@ private:
 
 	float	screenBlankWidth;
 	float	screenBlankHeight;
+
+	RECT rect = {};
 
 	DirectX::XMFLOAT2 renderPostion = DirectX::XMFLOAT2(0, 0);
 

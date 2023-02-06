@@ -35,6 +35,8 @@ Graphics::Graphics(HWND hWnd)
 	UINT screenWidth = rc.right - rc.left;
 	UINT screenHeight = rc.bottom - rc.top;
 
+	this->rect = rc;
+
 	this->screenWidth = static_cast<float>(screenWidth);
 	this->screenHeight = static_cast<float>(screenHeight);
 

@@ -1,8 +1,10 @@
 #include <imgui.h>
-#include "player.h"
-#include "Input/input.h"
 
+#include "player.h"
+
+#include "Input/input.h"
 #include "Camera.h"
+
 
 #include "Graphics/Graphics.h"
 
@@ -10,9 +12,6 @@
 #include "EnemyManager.h"
 #include "GameObjectManager.h"
 #include "Collision.h"
-
-#include "ProjectileStraight.h"
-#include "ProjectileHoming.h"
 
 
 // インタンス
@@ -39,8 +38,7 @@ Player::Player()
 
     sword = new Sword("Data/Model/Sword/Sword2.mdl");
     DirectX::XMFLOAT4X4 swordStart = model->FindNode("LeftHand")->worldTransform;     // 手元
-
-    //handNode = model->FindNode("LeftHand");   // 手のノード取得
+    sword->UpdateTransform(swordStart);
 
     // 待機ステートへ遷移
     TransitionIdleState();
@@ -50,9 +48,16 @@ Player::Player()
 
     maxMoveSpeed = 7.0f;
 
-    health = 1000;
+    health = 1;
 
     SetRayCastRadius(5);
+
+    // SE設定
+    Audio& audio = Audio::Instance();
+    se[SEID::SE_Sword]  = audio.LoadAudioSource("Data/Audio/SE/Sword.wav");
+    se[SEID::SE_JUMP]   = audio.LoadAudioSource("Data/Audio/SE/jump.wav");
+    se[SEID::SE_DODGE]  = audio.LoadAudioSource("Data/Audio/SE/Kaze.wav");
+    se[SEID::SE_HIT]    = audio.LoadAudioSource("Data/Audio/SE/Hit.wav");
 }
 
 // デストラクタ
@@ -63,6 +68,7 @@ Player::~Player()
     delete model;
 }
 
+// 初期化
 void Player::Initialize(DirectX::XMFLOAT3 Respawn)
 {
     health = maxHealth;
@@ -79,51 +85,62 @@ void Player::Update(float elapsedTime)  //前回Updateしてから今やってる時までの時
     switch (state)
     {
     case State::Idle:
+        // 待機
         UpdateIdleState(elapsedTime);
         break;
 
     case State::Move:
+        // 移動
         UpdateMoveState(elapsedTime);
         break;
 
     case State::Jump:
+        // ジャンプ
         UpdateJumpState(elapsedTime);
         break;
 
-
     case State::Attack1:
+        // コンボ１
         UpdateAttack1State(elapsedTime);
         break;    
     
     case State::Attack2:
+        // コンボ2
         UpdateAttack2State(elapsedTime);
         break;    
     
     case State::Attack3:
+        // コンボ3
         UpdateAttack3State(elapsedTime);
         break;    
     
     case State::Attack4:
+        // コンボ4
         UpdateAttack4State(elapsedTime);
         break;
 
     case State::Dodge:
+        // 避け
         UpdateDodgeState(elapsedTime);
         break;
 
     case State::Falling:
+        // 落ち
         UpdateFallingState(elapsedTime);
         break;
 
     case State::Landing:
+        // 着地
         UpdateLandingState(elapsedTime);
         break;
 
     case State::Damage:
+        // ダメージ
         UpdateDamageState(elapsedTime);
         break;
 
     case State::Dead:
+        // 死亡
         UpdateDeathState(elapsedTime);
         break;
 
@@ -133,7 +150,6 @@ void Player::Update(float elapsedTime)  //前回Updateしてから今やってる時までの時
     if (attackInputTimer <= 0.0f)
     {
         attackInputTimer = 0.0f;
-        attackCount = 0;
     }
 
     UpdateInvincibleTimer(elapsedTime);
@@ -141,30 +157,25 @@ void Player::Update(float elapsedTime)  //前回Updateしてから今やってる時までの時
     // 速力処理更新
     UpdateVelocity(elapsedTime);
 
+    // トランスフォーム更新処理
+    UpdateOnlyTransform(elapsedTime);
+
+
+    // 衝突処理
     CalcPositionMaxMin();
 
-    // 弾丸入力処理
-    InputProjectile();
-
-    projectileManager.Update(elapsedTime);
-
-    // プレイヤーと敵との衝突処理
     CollisionPlayerVsEnemies();
-
-    CollisionProjectilesVsEnemies();
 
     CollisionPlayerVsStage();
 
     CollisionPlayerVsObject();
 
 
-    UpdateOnlyTransform(elapsedTime);
-
-
     // AP回復
     AddAP(0.1f);
 }
 
+// トランスフォーム更新処理
 void Player::UpdateOnlyTransform(float elapsedTime)
 {
     //オブジェクト行列を更新
@@ -178,21 +189,12 @@ void Player::UpdateOnlyTransform(float elapsedTime)
 
 
     // 初期化見直す
-
-
+    sword->Update(elapsedTime);
     sword->UpdateTransform(model->FindNode("LeftHand")->worldTransform);
     DirectX::XMFLOAT4X4 tip = model->FindNode("LTip")->worldTransform;
     sword->SetTipPos(DirectX::XMFLOAT3(tip._41, tip._42, tip._43));
-    sword->Update(elapsedTime);
 }
 
-
-// 描画処理
-void Player::Render(ID3D11DeviceContext* dc, Shader* shader)
-{
-    projectileManager.Render(dc, shader);
-    shader->Draw(dc, model);
-}
 
 void Player::Render(const RenderContext& rc, ModelShader* shader)
 {
@@ -219,160 +221,15 @@ void Player::Render(const RenderContext& rc, ModelShader* shader)
 
     prc.cubicColorData.colorAlpha    = colorAlpha;
 
-    projectileManager.Render(rc, shader);
+
     sword->Render(rc,shader);
-
     shader->Draw(prc, model);
-}
-
-// デバッグ用GUI描画
-void Player::DrawDebugGUI()
-{
-    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_FirstUseEver);
-    std::string str = "";
-
-    switch (state) {
-    case State::Attack1:
-        str = "Attack1";
-        break;  
-
-    case State::Attack2:
-        str = "Attack2";
-        break;    
-    
-    case State::Attack3:
-        str = "Attack3";
-        break;    
-    
-    case State::Attack4:
-        str = "Attack4";
-        break;
-
-    case State::Idle:
-        str = "Idle";
-        break;
-
-    case State::Move:
-        str = "Move";
-        break;
-
-    case State::Dodge:
-        str = "Dodge";
-        break;
-
-    case State::Jump:
-        str = "Jump";
-        break;
-
-    case State::Falling:
-        str = "Falling";
-        break;
-    case State::Landing:
-        str = "Landing";
-        break;
-    }
-
-    if (ImGui::Begin("Player", nullptr, ImGuiWindowFlags_None))
-    {
-        ImGui::Text(u8"State　%s", str.c_str());
-
-        // トランスフォーム
-        if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            // 位置
-            
-            ImGui::InputFloat("attackInputTimer", &attackInputTimer);
-
-            DirectX::XMFLOAT4X4 nodeTransform = model->FindNode("LeftHand")->worldTransform;
-            ImGui::InputFloat("Transform11", &transform._11);
-            ImGui::InputFloat("Transform12", &transform._12);
-            ImGui::InputFloat("Transform13", &transform._13);
-            ImGui::InputFloat("Transform14", &transform._14);
-            ImGui::InputFloat("Transform21", &transform._21);
-            ImGui::InputFloat("Transform22", &transform._22);
-            ImGui::InputFloat("Transform23", &transform._23);
-            ImGui::InputFloat("Transform24", &transform._24);
-            ImGui::InputFloat("Transform31", &transform._31);
-            ImGui::InputFloat("Transform32", &transform._32);
-            ImGui::InputFloat("Transform33", &transform._33);
-            ImGui::InputFloat("Transform34", &transform._34);
-            ImGui::InputFloat("Transform41", &transform._41);
-            ImGui::InputFloat("Transform42", &transform._42);
-            ImGui::InputFloat("Transform43", &transform._43);
-            ImGui::InputFloat("Transform44", &transform._44);
-            // 回転
-            DirectX::XMFLOAT3 a;
-            a.x = DirectX::XMConvertToDegrees(angle.x);
-            a.y = DirectX::XMConvertToDegrees(angle.y);
-            a.z = DirectX::XMConvertToDegrees(angle.z);
-            ImGui::InputFloat3("Angle", &a.x);
-            angle.x = DirectX::XMConvertToRadians(a.x);
-            angle.y = DirectX::XMConvertToRadians(a.y);
-            angle.z = DirectX::XMConvertToRadians(a.z);
-
-            ImGui::InputFloat3("velocity", &velocity.x);
-            // スケール
-            ImGui::InputFloat3("Scale", &scale.x);
-            ImGui::Separator();
-            ImGui::Text("CubicColor");
-
-            if (ImGui::TreeNode("colorTop"))
-            {
-                ImGui::ColorPicker3("colorTop", &colorTop1.x);  
-                ImGui::TreePop();
-            }
-            if (ImGui::TreeNode("colorBottom"))
-            {
-                ImGui::ColorPicker3("colorBottom", &colorBottom1.x);
-                ImGui::TreePop();
-
-            }
-            if (ImGui::TreeNode("colorRight"))
-            {
-                ImGui::ColorPicker3("colorRight", &colorRight1.x);
-                ImGui::TreePop();
-
-            }
-            if (ImGui::TreeNode("colorLeft"))
-            {
-                ImGui::ColorPicker3("colorLeft", &colorLeft1.x);
-                ImGui::TreePop();
-
-            }
-            if (ImGui::TreeNode("colorBack"))
-            {
-                ImGui::ColorPicker3("colorBack", &colorBack1.x);
-                ImGui::TreePop();
-
-            }
-            if (ImGui::TreeNode("colorFront"))
-            {
-                ImGui::ColorPicker3("colorFront", &colorFront1.x);
-                ImGui::TreePop();
-
-            }
-
-            ImGui::SliderFloat("Alpha", &colorAlpha.w, 0.0f, +1.0f);
-
-            DirectX::XMFLOAT4X4 swordStart = model->FindNode("LeftHand")->worldTransform;     // 手元
-            DirectX::XMFLOAT4X4 swordEnd = model->FindNode("LTip")->worldTransform;       // 剣先
-            DirectX::XMFLOAT3 aa = DirectX::XMFLOAT3(swordStart._41, swordStart._42, swordStart._42);
-            DirectX::XMFLOAT3 bb = DirectX::XMFLOAT3(swordEnd._41, swordEnd._42, swordEnd._42);
-            ImGui::InputFloat3("swordStart", &aa.x);
-            ImGui::InputFloat3("swordEnd", &bb.x);
-            ImGui::Separator();
-            sword->DrawDebugGUI();
-
-
-        }
-    }
-    ImGui::End();
 }
 
 // スティック入力値から移動ベクトルを取得
 DirectX::XMFLOAT3 Player::GetMoveVec() const
 {
+
     // 入力情報を取得
     GamePad& gamePad = Input::Instance().GetGamePad();
     float ax = gamePad.GetAxisLX();
@@ -424,39 +281,12 @@ DirectX::XMFLOAT3 Player::GetMoveVec() const
 }
 
 
-// 移動入力処理
-bool Player::InputMove(float elapsedTime)
-{
-    // 進行ベクトル取得
-    DirectX::XMFLOAT3 moveVec = GetMoveVec();
 
-    // 移動処理
-    Move(moveVec.x, moveVec.z, maxMoveSpeed);
-    //Move(elapsedTime, moveVec.x, moveVec.z, moveSpeed);
-
-    // 旋回処理
-    Turn(elapsedTime, moveVec.x, moveVec.z, turnSpeed);
-
-    return !(moveVec.x * moveVec.x + moveVec.y * moveVec.y + moveVec.z * moveVec.z <= 0.0f);
-
-}
-
-
-// デバッグプリミティブ描画
-void Player::DrawDebugPrimitive()
-{
-    DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
-
-    //// 小塔判定用のデバッグ球を描画
-    //debugRenderer->DrawSphere(position, radius, DirectX::XMFLOAT4(0, 0, 0, 1));
-
-    // 小塔判定用のデバッグ円柱を描画
-    debugRenderer->DrawCylinder(collisionPosition, param.radius, param.height, DirectX::XMFLOAT4(0, 0, 0, 1));
-    //debugRenderer->DrawSphere(param.position, param.rayCastRadius, DirectX::XMFLOAT4{ 0,1,0,1 });
-
-
-    sword->DrawDebugPrimitive();
-}
+//---------------------------------------------------
+//
+//         衝突処理
+//
+//---------------------------------------------------
 
 // プレイヤーとエネミーとの衝突処理
 void Player::CollisionPlayerVsEnemies()
@@ -471,30 +301,12 @@ void Player::CollisionPlayerVsEnemies()
         DirectX::XMFLOAT3 outPosition{};
         Enemy* enemy = enemyManager.GetEnemy(i);
 
-        //if (Collision::InstersectSphereVsSphere(position, GetRadius(),
-        //    enemy->GetPosition(), enemy->GetRadius(),
-        //    outPosition ))
-        //{
-        //    // 押し出し後の位置設定
-        //    enemyManager.GetEnemy(i)->setPosition(outPosition);
-        //}
 
-        if (Collision::InstersectCylinderVsCylinder(param.position, GetRadius(),GetHeight(),
-            enemy->GetPosition(), enemy->GetRadius(),enemy->GetHeight(),
-            outPosition))
+        if (Collision::InstersectCylinderVsCylinder(enemy->GetPosition(), enemy->GetRadius(), enemy->GetHeight(),
+                                                    param.position, GetRadius(),GetHeight(),
+                                                    outPosition))
         {
-#if 0
-            if (position.y > enemy->GetPosition().y + 0.8f*enemy->GetHeight() )
-            {
-                velocity.y = 0.0f;
-                Jump(10.0f);
-                //OnLanding();
-            }
 
-
-            // 押し出し後の位置設定
-            enemyManager.GetEnemy(i)->setPosition(outPosition);
-#endif
             // 敵の真上付近に当たったかどうかを確認
             DirectX::XMVECTOR Pvec = DirectX::XMLoadFloat3(&param.position);
             DirectX::XMVECTOR Evec = DirectX::XMLoadFloat3(&enemy->GetPosition());
@@ -511,7 +323,7 @@ void Player::CollisionPlayerVsEnemies()
             else
             {
                 // 押し出し後の位置設定
-                enemyManager.GetEnemy(i)->SetPosition(outPosition);
+                param.position = outPosition;
 
             }
 
@@ -519,74 +331,7 @@ void Player::CollisionPlayerVsEnemies()
     }
 }
 
-void Player::CollisionProjectilesVsEnemies()
-{
-    EnemyManager& enemyManager = EnemyManager::Instance();
-
-    // 全ての弾丸とすべての敵を総当たりで衝突処理
-    int projectileCount = projectileManager.GetProjectileCount();
-    int enemyCount = enemyManager.GetEnemyCount();
-
-    for (int i = 0; i < projectileCount; ++i)
-    {
-        Projectile* projectile = projectileManager.GetProjectile(i);
-        for (int j = 0; j < enemyCount; ++j)
-        {
-            Enemy* enemy = enemyManager.GetEnemy(j);
-
-            // 衝突処理
-            DirectX::XMFLOAT3 outPosition;
-            if (Collision::InstersectSphereVsCylinder(
-                projectile->GetPosition(),
-                projectile->GetRadius(),
-                enemy->GetPosition(),
-                enemy->GetRadius(),
-                enemy->GetHeight(),
-                outPosition))
-            {
-                // ダメージを与える
-                if (enemy->ApplyDamage(1, 0.5f))
-                {
-                    // 吹き飛ばす
-                    {
-                        DirectX::XMFLOAT3 impulse;
-                        const float power = 10.0f;
-
-                        const DirectX::XMFLOAT3& e = enemy->GetPosition();
-                        const DirectX::XMFLOAT3& p = projectile->GetPosition();
-
-                        float vx = e.x - p.x;
-                        float vz = e.z - p.z;
-
-                        float length = sqrtf(vx * vx + vz * vz);
-                        vx /= length;
-                        vz /= length;
-
-                        impulse.x = vx * power;
-                        impulse.y = 0.5f * power;
-                        impulse.z = vz * power;
-
-
-                        enemy->AddImpulse(impulse);
-                    }
-
-                    // ヒットエフェクト再生
-                    {
-                        DirectX::XMFLOAT3 e = enemy->GetPosition();
-                        e.y += enemy->GetHeight() * 0.5f;
-                        hitEffect->Play(e);
-                    }
-
-
-                    // 弾丸破棄
-                    projectile->Destroy();
-                }
-            }
-        }
-    }
-
-}
-
+// プレイヤーとステージの衝突処理
 void Player::CollisionPlayerVsStage()
 {
     StageManager& stageManager = StageManager::Instance();
@@ -636,6 +381,7 @@ void Player::CollisionPlayerVsStage()
 
 }
 
+// プレイヤーとステージオブジェクトの衝突処理
 void Player::CollisionPlayerVsObject()
 {
     ObjectManager& objManager = ObjectManager::Instance();
@@ -658,10 +404,103 @@ void Player::CollisionPlayerVsObject()
 
 }
 
+// 任意のノードと敵の衝突処理
+void Player::CollisionNodeVsEnemy(const char* nodeName, float nodeRadius)
+{
+    Model::Node* node = model->FindNode(nodeName);
+    EnemyManager& enemyManager = EnemyManager::Instance();
+    int enemyCount = enemyManager.GetEnemyCount();
+
+
+    if (node != nullptr)
+    {
+        // ノードのワールド座標
+        DirectX::XMFLOAT3 nodePosition(node->worldTransform._41, node->worldTransform._42, node->worldTransform._43);
+
+
+
+        // プレイヤーと当たり判定
+        DirectX::XMFLOAT3 outPosition;
+        for (int j = 0; j < enemyCount; ++j)
+        {
+            Enemy* enemy = enemyManager.GetEnemy(j);
+
+            if (Collision::InstersectSphereVsCylinder(nodePosition, nodeRadius,
+                enemy->GetCollisionPosition(), enemy->GetRadius(), enemy->GetHeight(),
+                outPosition))
+                DirectX::XMFLOAT3 outPosition;
+            {
+                // ダメージを与える
+                if (enemy->ApplyDamage(1, 1.0f))
+                {
+                    // 吹き飛ばす
+                    {
+                        DirectX::XMFLOAT3 impulse;
+                        const float power = 8.0f;
+
+                        const DirectX::XMFLOAT3& e = enemy->GetPosition();
+                        const DirectX::XMFLOAT3& p = nodePosition;
+
+                        float vx = e.x - p.x;
+                        float vz = e.z - p.z;
+
+                        float length = sqrtf(vx * vx + vz * vz);
+                        vx /= length;
+                        vz /= length;
+
+                        impulse.x = vx * power;
+                        impulse.y = 0.5f * power;
+                        impulse.z = vz * power;
+
+
+                        enemy->AddImpulse(impulse);
+                    }
+
+                    // ヒットエフェクト再生
+                    {
+                        DirectX::XMFLOAT3 e = enemy->GetPosition();
+                        e.y += enemy->GetHeight() * 0.5f;
+
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+//---------------------------------------------------
+//
+//      入力処理
+//
+//---------------------------------------------------
+
+// 移動入力処理
+bool Player::InputMove(float elapsedTime)
+{
+    if (!isInputMove)    return false;
+
+    // 進行ベクトル取得
+    DirectX::XMFLOAT3 moveVec = GetMoveVec();
+
+    // 移動処理
+    Move(moveVec.x, moveVec.z, maxMoveSpeed);
+
+    // 旋回処理
+    Turn(elapsedTime, moveVec.x, moveVec.z, turnSpeed);
+
+    return !(moveVec.x * moveVec.x + moveVec.y * moveVec.y + moveVec.z * moveVec.z <= 0.0f);
+
+}
 
 // ジャンプ入力処理
 bool Player::ImputJump()
 {
+    if (!isInputMove)    return false;
+
     GamePad& gamePad = Input::Instance().GetGamePad();
     if (gamePad.GetButtonDown() & GamePad::BTN_A)
     {
@@ -676,11 +515,11 @@ bool Player::ImputJump()
     return false;
 }
 
-
-
-// 押されたか判定するため何回も通るようにしておく
-bool Player::InputAttack()
+// 弱攻撃入力処理
+bool Player::InputWeakAttack()
 {
+    if (!isInputMove)    return false;
+
     GamePad& gamePad = Input::Instance().GetGamePad();
 
     if (gamePad.GetButtonDown() & GamePad::BTN_B)
@@ -691,28 +530,33 @@ bool Player::InputAttack()
     return false;
 }
 
-bool Player::JudgeAttack(int Value)
+// 強攻撃入力処理
+bool Player::InputStrongAttack()
 {
-    if (InputAttack())
+    if (!isInputMove)    return false;
+
+    GamePad& gamePad = Input::Instance().GetGamePad();
+
+    if (gamePad.GetButtonDown() & GamePad::BTN_X)
     {
-        if (AP - Value < 0)
-        {
-            return true;
-        }
+        attackInputTimer = 2.0f;
+        return true;
     }
     return false;
 }
 
-
-
+// Dodge入力処理
 bool Player::InputDodge()
 {
+    if (!isInputMove)    return false;
+
     GamePad& gamePad = Input::Instance().GetGamePad();
 
     if (gamePad.GetButtonDown() & GamePad::BTN_Y) return true;
     return false;
 }
 
+// Dodge時スピード処理
 bool Player::CalcDodge()
 {
     if (dodgeSpeed < 0.0f)return false;
@@ -723,6 +567,15 @@ bool Player::CalcDodge()
     param.position.z += front.z * dodgeSpeed;
     param.position.x += front.x * dodgeSpeed;
 }
+
+
+
+
+//---------------------------------------------------
+//
+//      パラメータ計算処理
+//
+//---------------------------------------------------
 
 void Player::CalcAP(float Value)
 {
@@ -736,23 +589,27 @@ void Player::AddAP(float Value)
     if (AP >= MaxAP) AP = MaxAP;
 }
 
+
+//---------------------------------------------------
+//
+//      行動したとき呼ばれる処理処理
+//
+//---------------------------------------------------
 // 接地したときに呼ばれる
 void Player::OnLanding()
 {
-    //jumpRest = jumpLimit;
     jumpCount = 0;
 
-    // ダメージ、死亡ステート時は着地したときにステート遷移しないようにする
-    //if (state != State::Damage && state != State::Death)
-    //{
+
     if (dodgeFlag)   return;
         if (velocity.y < landingFallSpeed)
         {
             TransitionLandingState();
         }
-    //}
+    
 }
 
+// ダメージ受けたときに呼ばれる
 void Player::OnDamaged()
 {
     // ダメージステートへ遷移
@@ -760,6 +617,7 @@ void Player::OnDamaged()
 
 }
 
+// 死亡したときに呼ばれる
 void Player::OnDead()
 {
     // 死亡ステートへ遷移
@@ -767,40 +625,20 @@ void Player::OnDead()
 
 }
 
-void Player::Attacked()
+// 攻撃したときに呼ばれる
+void Player::OnAttacked()
 {
     sword->collisionWeaponVSEnemies();
 }
 
 
-// 弾丸入力処理
-void Player::InputProjectile()
-{
-    GamePad& gamePad = Input::Instance().GetGamePad();
-    if (gamePad.GetButtonDown() & GamePad::BTN_X)
-    {
-        // 前方向
-        DirectX::XMFLOAT3 dir;
-        dir.z = cosf(angle.y);      // ZX,XY,YZをかくとき初めに来るのがcosf()、後ろに来るのがsinf()と覚える
-        dir.x = sinf(angle.y);      // わざとだが順番が違うので注意
-        dir.y = 0.0f;
+//---------------------------------------------------
+//
+//      アニメーション処理処理
+//
+//---------------------------------------------------
 
-        // 発射位置
-        DirectX::XMFLOAT3 pos;
-        pos.x = param.position.x;
-        pos.y = param.position.y + param.height/2;
-        pos.z = param.position.z;
-
-        // 発射
-        ProjectileStraight* projectile = new ProjectileStraight(&projectileManager);
-        projectile->Launch(dir, pos);
-        /*projectileManager.Registar(projectile);*/
-    }
-
-
-
-}
-
+ // 待機アニメーションに遷移
 void Player::TransitionIdleState()
 {
     state = State::Idle;
@@ -809,6 +647,7 @@ void Player::TransitionIdleState()
     model->PlayAnimation(Anim_Idle, true, 1.2f);
 }
 
+// 待機アニメーション更新処理
 void Player::UpdateIdleState(float elapsedTime)
 {
     // 移動入力処理
@@ -825,7 +664,7 @@ void Player::UpdateIdleState(float elapsedTime)
     // 攻撃入力処理
     if(GetCurrentAP()-5 >= 0)
     {
-        if (InputAttack() && attackCount <= attackLimit)
+        if (InputWeakAttack())
         {
             TransitionAttack1State();
         }
@@ -839,10 +678,11 @@ void Player::UpdateIdleState(float elapsedTime)
     }
 
     // 弾丸入力処理
-    InputProjectile();
     SetCollisionPosition(GetPosition());
 }
 
+
+// 移動アニメーションに遷移
 void Player::TransitionMoveState()
 {
     state = State::Move;
@@ -852,6 +692,7 @@ void Player::TransitionMoveState()
 
 }
 
+// 移動アニメーション更新処理
 void Player::UpdateMoveState(float elapsedTime)
 {
     // 移動入力処理
@@ -867,7 +708,7 @@ void Player::UpdateMoveState(float elapsedTime)
     // 攻撃入力処理
     if (GetCurrentAP() - 5 >= 0)
     {
-        if (InputAttack() && attackCount <= attackLimit)
+        if (InputWeakAttack())
         {
             TransitionAttack1State();
         }
@@ -879,19 +720,22 @@ void Player::UpdateMoveState(float elapsedTime)
             TransitionDodgeState();
         }
     }
-    // 弾丸入力処理
-    InputProjectile();
     SetCollisionPosition(GetPosition());
 }
+
+
+// ジャンプ開始アニメーションに遷移
 void Player::TransitionJumpInitState()
 {
     CalcAP(10);
     state = State::Jump;
 
     model->PlayAnimation(Anim_Jump_Up1, true, 1.0f);
+    se[SEID::SE_JUMP]->Play(false);
 
 }
 
+// ジャンプ開始アニメーション更新処理
 void Player::UpdateJumpInitState(float elapsedTime)
 {
     float my = velocity.y * elapsedTime;
@@ -915,10 +759,11 @@ void Player::UpdateJumpInitState(float elapsedTime)
     }
 
 
-
-
     SetCollisionPosition(GetPosition());
 }
+
+
+// ジャンプアニメーションに遷移
 void Player::TransitionJumpState()
 {
     state = State::Jump;
@@ -927,6 +772,7 @@ void Player::TransitionJumpState()
 
 }
 
+// ジャンプアニメーション更新処理
 void Player::UpdateJumpState(float elapsedTime)
 {
     float my = velocity.y * elapsedTime;
@@ -950,12 +796,31 @@ void Player::UpdateJumpState(float elapsedTime)
     }
 
 
-    // 弾丸入力処理
-    InputProjectile();
-
     SetCollisionPosition(GetPosition());
 }
 
+
+// 落ちアニメーションに遷移
+void Player::TransitionFallingState()
+{
+    state = State::Falling;
+    // 待機アニメーション再生
+    model->PlayAnimation(Anim_Jump_Down1, true);
+}
+
+// 落ちアニメーション更新処理
+void Player::UpdateFallingState(float elapsedTime)
+{
+    InputMove(elapsedTime);
+    if (InputDodge())
+    {
+        TransitionDodgeState();
+    }
+    SetCollisionPosition(GetPosition());
+}
+
+
+// 着地アニメーションに遷移
 void Player::TransitionLandingState()
 {
     state = State::Landing;
@@ -965,6 +830,7 @@ void Player::TransitionLandingState()
 
 }
 
+// 着地アニメーション更新処理
 void Player::UpdateLandingState(float elapsedTime)
 {
     // 移動入力処理
@@ -982,35 +848,27 @@ void Player::UpdateLandingState(float elapsedTime)
     SetCollisionPosition(GetPosition());
 }
 
-void Player::TransitionFallingState()
-{
-    state = State::Falling;
-    // 待機アニメーション再生
-    model->PlayAnimation(Anim_Jump_Down1, true);
-}
+//************************
+// 
+//  攻撃アニメーション
+//
+//************************
 
-void Player::UpdateFallingState(float elapsedTime)
-{
-    InputMove(elapsedTime);
-    if (InputDodge())
-    {
-        TransitionDodgeState();
-    }
-    SetCollisionPosition(GetPosition());
-}
-
+// 弱攻撃1アニメーションに遷移
 void Player::TransitionAttack1State()
 {
     CalcAP(5);
     state = State::Attack1;
-    AnimationLimit = 0.3f;
+    animationLimit = 0.3f;
     model->PlayAnimation(Anim_Combo1, false, 0.9f);
+
+    se[SEID::SE_Sword]->Play(false);
 }
 
+// 弱攻撃1アニメーション更新処理
 void Player::UpdateAttack1State(float elapsedTime)
 {
-    Attacked();
-
+    OnAttacked();
 
     if (!model->IsPlayAnimation())
     {
@@ -1025,30 +883,37 @@ void Player::UpdateAttack1State(float elapsedTime)
             TransitionMoveState();
         }
     }  
-    else if (model->GetCurrentAnimetionSeconds() >= AnimationLimit)
+    else if (model->GetCurrentAnimetionSeconds() >= animationLimit)
     {
         if (GetCurrentAP() - 10 >= 0)
         {
-            if (InputAttack())
+            if (InputWeakAttack())
             {
                 TransitionAttack2State();
             }
         }
     }
     SetCollisionPosition(GetPosition());
+
 }
 
+
+// 弱攻撃2アニメーションに遷移
 void Player::TransitionAttack2State()
 {
     CalcAP(10);
     state = State::Attack2;
-    AnimationLimit = 0.5f;
+    animationLimit = 0.5f;
     model->PlayAnimation(Anim_Combo2, false, 0.9f);
+
+    se[SEID::SE_Sword]->Play(false);
+
 }
 
+// 弱攻撃2アニメーション更新処理
 void Player::UpdateAttack2State(float elapsedTime)
 {
-    Attacked();
+    OnAttacked();
 
     if (!model->IsPlayAnimation())
     {
@@ -1062,11 +927,18 @@ void Player::UpdateAttack2State(float elapsedTime)
             TransitionMoveState();
         }
     }
-    else if (model->GetCurrentAnimetionSeconds() >= AnimationLimit)
+    else if (model->GetCurrentAnimetionSeconds() >= animationLimit)
     {
+        if (GetCurrentAP() - 10 >= 0)
+        {
+            if (InputWeakAttack())
+            {
+                TransitionAttack1State();
+            }
+        }
         if (GetCurrentAP() - 15 >= 0)
         {
-            if (InputAttack())
+            if (InputStrongAttack())
             {
                 TransitionAttack3State();
             }
@@ -1076,17 +948,21 @@ void Player::UpdateAttack2State(float elapsedTime)
 }
 
 
+// 強攻撃1アニメーションに遷移
 void Player::TransitionAttack3State()
 {
     CalcAP(15);
     state = State::Attack3;
-    AnimationLimit = 0.5f;
+    animationLimit = 0.5f;
     model->PlayAnimation(Anim_Combo3, false, 0.9f);
+
+    se[SEID::SE_Sword]->Play(false);
 }
 
+// 強攻撃1アニメーション更新処理
 void Player::UpdateAttack3State(float elapsedTime)
 {
-    Attacked();
+    OnAttacked();
 
 
     if (!model->IsPlayAnimation())
@@ -1101,30 +977,37 @@ void Player::UpdateAttack3State(float elapsedTime)
             TransitionMoveState();
         }
     }
-    else if (model->GetCurrentAnimetionSeconds() >= AnimationLimit)
+    else if (model->GetCurrentAnimetionSeconds() >= animationLimit)
     {
         if (GetCurrentAP() - 40 >= 0)
         {
-            if (InputAttack())
+            if (InputStrongAttack())
             {
                 TransitionAttack4State();
             }
         }
     }
     SetCollisionPosition(GetPosition());
+
+    //CollisionNodeVsEnemy("LeftHand", 1.0f);
 }
 
+
+// 強攻撃2アニメーションに遷移
 void Player::TransitionAttack4State()
 {
     CalcAP(20);
     state = State::Attack4;
-    AnimationLimit = 1.0f;
+    animationLimit = 1.0f;
     model->PlayAnimation(Anim_Combo4, false, 0.9f);
+
+    se[SEID::SE_Sword]->Play(false);
 }
 
+// 強攻撃2アニメーション更新処理
 void Player::UpdateAttack4State(float elapsedTime)
 {
-    Attacked();
+    OnAttacked();
 
     if (!model->IsPlayAnimation())
     {
@@ -1139,15 +1022,20 @@ void Player::UpdateAttack4State(float elapsedTime)
         }
     }
     SetCollisionPosition(GetPosition());
+
+    //CollisionNodeVsEnemy("LeftHand", 1.0f);
 }
 
+
+// ダメージアニメーションに遷移
 void Player::TransitionDamageState()
 {
     state = State::Damage;
     model->PlayAnimation(Anim_HitFront, false, 0.7f);
-
+    se[SEID::SE_HIT]->Play(false);
 }
 
+// ダメージアニメーション更新処理
 void Player::UpdateDamageState(float elapsedTime)
 {
     if (!model->IsPlayAnimation())
@@ -1157,21 +1045,29 @@ void Player::UpdateDamageState(float elapsedTime)
     SetCollisionPosition(GetPosition());
 }
 
+
+// 死亡アニメーションに遷移
 void Player::TransitionDeathState()
 {
     state = State::Dead;
-    model->PlayAnimation(Anim_HitFront, false);
+    model->PlayAnimation(Anim_Death, false);
 
 
 }
 
+// 死亡アニメーション更新処理
 void Player::UpdateDeathState(float elapsedTime)
 {
     SetCollisionPosition(GetPosition());
+    if (!model->IsPlayAnimation())
+    {
+        // 死亡
+        isLive = false;
+    }
 }
 
 
-
+// 避けアニメーションに遷移
 void Player::TransitionDodgeState()
 {
     CalcAP(30);
@@ -1180,9 +1076,12 @@ void Player::TransitionDodgeState()
     dodgeFlag = true;
     model->PlayAnimation(Anim_Dodge, false, 4.0f);
     SetCollisionPosition(GetPosition());
+    
+    se[SEID::SE_DODGE]->Play(false);
 
 }
 
+// 避けアニメーション更新処理
 void Player::UpdateDodgeState(float elapsedTime)
 {
 
@@ -1198,6 +1097,193 @@ void Player::UpdateDodgeState(float elapsedTime)
             TransitionMoveState();
         }
     }
+
     CalcDodge();
     SetCollisionPosition(GetCollisionPosition());
 }
+
+
+
+
+//---------------------------------------------------
+//
+//      デバッグ用処理
+//
+//---------------------------------------------------
+
+// デバッグ用GUI描画
+void Player::DrawDebugGUI()
+{
+    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_FirstUseEver);
+    std::string str = "";
+
+    switch (state) {
+    case State::Attack1:
+        str = "Attack1";
+        break;
+
+    case State::Attack2:
+        str = "Attack2";
+        break;
+
+    case State::Attack3:
+        str = "Attack3";
+        break;
+
+    case State::Attack4:
+        str = "Attack4";
+        break;
+
+    case State::Idle:
+        str = "Idle";
+        break;
+
+    case State::Move:
+        str = "Move";
+        break;
+
+    case State::Dodge:
+        str = "Dodge";
+        break;
+
+    case State::Jump:
+        str = "Jump";
+        break;
+
+    case State::Falling:
+        str = "Falling";
+        break;
+    case State::Landing:
+        str = "Landing";
+        break;
+    }
+
+    if (ImGui::Begin("Player", nullptr, ImGuiWindowFlags_None))
+    {
+        ImGui::Text(u8"State　%s", str.c_str());
+
+        // トランスフォーム
+        if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            // 位置
+
+            ImGui::InputFloat("attackInputTimer", &attackInputTimer);
+            ImGui::InputFloat3("position", &param.position.x);
+            DirectX::XMFLOAT4X4 nodeTransform = model->FindNode("LeftHand")->worldTransform;
+            if (ImGui::TreeNode("LeftHand"))
+            {
+                ImGui::InputFloat4("Transform1", &transform.m[0][0]);
+                ImGui::InputFloat4("Transform2", &transform.m[1][0]);
+                ImGui::InputFloat4("Transform3", &transform.m[2][0]);
+                ImGui::InputFloat4("Transform4", &transform.m[3][0]);
+                ImGui::TreePop();
+            }
+            nodeTransform = model->FindNode("Spine")->worldTransform;
+            if (ImGui::TreeNode("Spine"))
+            {
+                ImGui::InputFloat4("Transform1", &nodeTransform.m[0][0]);
+                ImGui::InputFloat4("Transform2", &nodeTransform.m[1][0]);
+                ImGui::InputFloat4("Transform3", &nodeTransform.m[2][0]);
+                ImGui::InputFloat4("Transform4", &nodeTransform.m[3][0]);
+                ImGui::TreePop();
+            }
+            nodeTransform = model->FindNode("Spine")->worldTransform;
+            if (ImGui::TreeNode("LeftShoulder"))
+            {
+                ImGui::InputFloat4("Transform1", &nodeTransform.m[0][0]);
+                ImGui::InputFloat4("Transform2", &nodeTransform.m[1][0]);
+                ImGui::InputFloat4("Transform3", &nodeTransform.m[2][0]);
+                ImGui::InputFloat4("Transform4", &nodeTransform.m[3][0]);
+                ImGui::TreePop();
+            }
+
+            // 回転
+            DirectX::XMFLOAT3 a;
+            a.x = DirectX::XMConvertToDegrees(angle.x);
+            a.y = DirectX::XMConvertToDegrees(angle.y);
+            a.z = DirectX::XMConvertToDegrees(angle.z);
+            ImGui::InputFloat3("Angle", &a.x);
+            angle.x = DirectX::XMConvertToRadians(a.x);
+            angle.y = DirectX::XMConvertToRadians(a.y);
+            angle.z = DirectX::XMConvertToRadians(a.z);
+
+            ImGui::InputFloat3("velocity", &velocity.x);
+            // スケール
+            ImGui::InputFloat3("Scale", &scale.x);
+            ImGui::Separator();
+            ImGui::Text("CubicColor");
+
+            if (ImGui::TreeNode("colorTop"))
+            {
+                ImGui::ColorPicker3("colorTop", &colorTop1.x);
+                ImGui::TreePop();
+            }
+            if (ImGui::TreeNode("colorBottom"))
+            {
+                ImGui::ColorPicker3("colorBottom", &colorBottom1.x);
+                ImGui::TreePop();
+
+            }
+            if (ImGui::TreeNode("colorRight"))
+            {
+                ImGui::ColorPicker3("colorRight", &colorRight1.x);
+                ImGui::TreePop();
+
+            }
+            if (ImGui::TreeNode("colorLeft"))
+            {
+                ImGui::ColorPicker3("colorLeft", &colorLeft1.x);
+                ImGui::TreePop();
+
+            }
+            if (ImGui::TreeNode("colorBack"))
+            {
+                ImGui::ColorPicker3("colorBack", &colorBack1.x);
+                ImGui::TreePop();
+
+            }
+            if (ImGui::TreeNode("colorFront"))
+            {
+                ImGui::ColorPicker3("colorFront", &colorFront1.x);
+                ImGui::TreePop();
+
+            }
+
+            ImGui::SliderFloat("Alpha", &colorAlpha.w, 0.0f, +1.0f);
+
+            DirectX::XMFLOAT4X4 swordStart = model->FindNode("LeftHand")->worldTransform;     // 手元
+            DirectX::XMFLOAT4X4 swordEnd = model->FindNode("LTip")->worldTransform;       // 剣先
+            DirectX::XMFLOAT3 aa = DirectX::XMFLOAT3(swordStart._41, swordStart._42, swordStart._42);
+            DirectX::XMFLOAT3 bb = DirectX::XMFLOAT3(swordEnd._41, swordEnd._42, swordEnd._42);
+            ImGui::InputFloat3("swordStart", &aa.x);
+            ImGui::InputFloat3("swordEnd", &bb.x);
+            ImGui::Separator();
+            sword->DrawDebugGUI();
+
+
+        }
+    }
+    ImGui::End();
+}
+
+
+
+
+// デバッグプリミティブ描画
+void Player::DrawDebugPrimitive()
+{
+    DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
+
+    //// 小塔判定用のデバッグ球を描画
+    //debugRenderer->DrawSphere(param.position, param.radius, DirectX::XMFLOAT4(0, 0, 0, 1));
+
+    // 小塔判定用のデバッグ円柱を描画
+    //debugRenderer->DrawCylinder(collisionPosition, param.radius, param.height, DirectX::XMFLOAT4(0, 0, 0, 1));
+    //debugRenderer->DrawSphere(param.position, param.rayCastRadius, DirectX::XMFLOAT4{ 0,1,0,1 });
+
+
+    //sword->DrawDebugPrimitive();
+}
+
+

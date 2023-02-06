@@ -14,7 +14,6 @@ public:
     void Update(float elapsedTime);
 
     // 描画処理
-    void Render(ID3D11DeviceContext* dc, Shader* shader);
     void Render(const RenderContext& rc, ModelShader* shader);
 
     // デバッグ用GUI描画
@@ -57,15 +56,15 @@ public:
 
 private:
     Model* model = nullptr;
-    DirectX::XMFLOAT3 tipPos = {};
+    DirectX::XMFLOAT3 tipPos = {0,0,0};
 
     // 当たり判定
     static const int collisionNum = 3;
-    DirectX::XMFLOAT3 collisionPos[collisionNum];
+    DirectX::XMFLOAT3 collisionPos[collisionNum] = {};
 
     float collisionRange = 0.15f;
 
-    Param param = { DirectX::XMFLOAT3(0,0,0), 0.5f, 0.0f,2.0f,0.0f };
+    Param param = { DirectX::XMFLOAT3(0,0,0), 0.5f, 0.0f, 2.0f, 0.0f };
 
     DirectX::XMFLOAT3   angle = { 0,0,0 };
     DirectX::XMFLOAT3   scale = { 1,1,1 };

@@ -8,11 +8,11 @@
 class AudioSource
 {
 public:
-	AudioSource(IXAudio2* xaudio, std::shared_ptr<AudioResource>& resource, bool loop);
+	AudioSource(IXAudio2* xaudio, std::shared_ptr<AudioResource>& resource);
 	~AudioSource();
 
 	// çƒê∂
-	void Play();
+	void Play(bool loop);
 
 	// í‚é~
 	void Stop();

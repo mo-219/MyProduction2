@@ -1,10 +1,11 @@
-#include "EnemyBoss.h"
-
 #include <imgui.h>
 
+#include "EnemyBoss.h"
+
 #include "Graphics/Graphics.h"
-#include "Mathf.h"
+
 #include "player.h"
+#include "Mathf.h"
 #include "Collision.h"
 
 #include "GameObjectManager.h"
@@ -20,8 +21,7 @@ EnemyBoss::EnemyBoss()
     model = new Model("Data/model/Spider/Spider.mdl");
 
     // モデルが大きいのでスケーリング
-    //scale.x = scale.y = scale.z = 0.001f;
-    scale = { 0.09f,  0.09f, 0.09f };
+    scale = { 0.01f,  0.01f, 0.01f };
     param.radius = 1.5f;
     param.height = 4.0f;
     param.rayCastRadius = 10.0f;
@@ -109,16 +109,12 @@ void EnemyBoss::UpdateOnlyTransform(float elapsedTime)
 }
 
 // 描画処理
-void EnemyBoss::Render(ID3D11DeviceContext* dc, Shader* shader)    // ID3D11DeviceContextがdcになってる　エラー出たらcontextに変更
-{
-    shader->Draw(dc, model);
-}
-
 void EnemyBoss::Render(const RenderContext& rc, ModelShader* shader)    // ID3D11DeviceContextがdcになってる　エラー出たらcontextに変更
 {
     shader->Draw(rc, model);
 }
 
+// Render用値をRenderContextにまとめる
 RenderContext EnemyBoss::SetRenderContext(const RenderContext& rc)
 {
     RenderContext myRc = rc;
@@ -152,34 +148,7 @@ RenderContext EnemyBoss::SetRenderContext(const RenderContext& rc)
     return myRc;
 }
 
-void EnemyBoss::DrawDebugImGui()
-{
 
-    ImGui::SliderFloat("dissolveThreshold", &dissolveData.dissolveThreshold, 0.0f, 1.0f);
-
-    ImGui::SliderFloat("dissolveFlag", &dissolveData.maskFlag, 0.0f, 1.0f);
-
-}
-
-void EnemyBoss::DrawDebugPrimitive()
-{
-    // 基底クラスのデバッグプリミティブ描画
-    Enemy::DrawDebugPrimitive();
-    DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
-
-    // 縄張り範囲をデバッグ円柱描画
-    debugRenderer->DrawCylinder(territoryOrigin, territoryRange, 1.0f, DirectX::XMFLOAT4(0, 1, 0, 1));
-
-    // 索敵範囲をデバッグ円柱描画
-    debugRenderer->DrawCylinder(param.position, searchRange, 1.0f, DirectX::XMFLOAT4(0, 0, 1, 1));
-
-    // ターゲット位置をデバッグ球描画
-    debugRenderer->DrawSphere(targetPosition, param.radius, DirectX::XMFLOAT4(1, 1, 0, 0));
-
-    DirectX::XMFLOAT3 pos = model->FindNode("RigTip")->translate;
-    debugRenderer->DrawSphere(pos, 1.0f, DirectX::XMFLOAT4(1, 1, 0, 0));
-
-}
 
 void EnemyBoss::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
 {
@@ -243,6 +212,7 @@ void EnemyBoss::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
     }
 }
 
+// メタAIからメッセージを受信
 bool EnemyBoss::OnMessage(const Telegram& telegram)
 {
     switch (telegram.msg)
@@ -278,6 +248,7 @@ void EnemyBoss::OnDead()
 
 }
 
+// ダメージ処理
 void EnemyBoss::OnDamaged()
 {
     // ダメージステートへ
@@ -375,12 +346,13 @@ Player* EnemyBoss::searchPlayer()
     return nullptr;
 }
 
+
+
 //------------------------------------------------
 //
-//      ステート
+//      アニメーションステート
 //
 //-----------------------------------------------
-
 
 // 徘徊ステートへ遷移
 void EnemyBoss::TransitionWanderState()
@@ -463,7 +435,7 @@ void EnemyBoss::TransitionPursuitState()
 
 }
 
-//追跡ステート更新処理
+// 追跡ステート更新処理
 void EnemyBoss::UpdatePursuitState(float elapsedTime)
 {
     // 目標地点をプレイヤー位置に設定
@@ -493,6 +465,7 @@ void EnemyBoss::UpdatePursuitState(float elapsedTime)
     }
 }
 
+// 攻撃準備ステートに遷移遷移
 void EnemyBoss::TransitionAttackInitState()
 {
     state = State::AttackInit;
@@ -516,6 +489,7 @@ void EnemyBoss::TransitionAttackInitState()
     }
 }
 
+// 攻撃準備ステート更新処理
 void EnemyBoss::UpdateAttackInitState(float elapsedTime)
 {
     targetPosition = Player::Instance().Instance().GetPosition();
@@ -541,24 +515,17 @@ void EnemyBoss::UpdateAttackInitState(float elapsedTime)
 
 }
 
+// 攻撃1ステートに遷移
 void EnemyBoss::TransitionAttack1State()
 {
     state = State::Attack;
 
-    //// 攻撃権がなければ
-    //if (!attackFlg)
-    //{
-    //    // 攻撃権を依頼
-    //    Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgAskAttackRight);
-    //}
-    //// 攻撃権があれば
-    //else
-    //{
     DropHeelItem = 0;
     model->PlayAnimation(Anim_Attack1, false);
-    //}
+    
 }
 
+// 攻撃1ステート更新処理
 void EnemyBoss::UpdateAttack1State(float elapsedTime)
 {
     // 攻撃権があるとき
@@ -584,6 +551,7 @@ void EnemyBoss::UpdateAttack1State(float elapsedTime)
     }
 }
 
+// 攻撃2ステートに遷移
 void EnemyBoss::TransitionAttack2State()
 {
     state = State::Attack;
@@ -602,6 +570,7 @@ void EnemyBoss::TransitionAttack2State()
     }
 }
 
+// 攻撃2ステート更新処理
 void EnemyBoss::UpdateAttack2State(float elapsedTime)
 {
     // 攻撃権があれば
@@ -628,6 +597,7 @@ void EnemyBoss::UpdateAttack2State(float elapsedTime)
     }
 }
 
+// 攻撃待機ステートに遷移
 void EnemyBoss::TransitionIdleBattleState()
 {
     state = State::IdleBattle;
@@ -651,6 +621,7 @@ void EnemyBoss::TransitionIdleBattleState()
 
 }
 
+// 攻撃待機ステート更新処理
 void EnemyBoss::UpdateIdleBattleState(float elapsedTime)
 {
     targetPosition = Player::Instance().Instance().GetPosition();
@@ -679,13 +650,14 @@ void EnemyBoss::UpdateIdleBattleState(float elapsedTime)
     MoveToTarget(elapsedTime, 0.0f);
 }
 
+// ダメージステートに遷移
 void EnemyBoss::TransitionDamageState()
 {
     state = State::Damage;
     model->PlayAnimation(Anim_Damage, false);
 }
 
-
+// ダメージステート更新処理
 void EnemyBoss::UpdateDamageState(float elapsedTime)
 {
     if (!model->IsPlayAnimation())
@@ -694,12 +666,14 @@ void EnemyBoss::UpdateDamageState(float elapsedTime)
     }
 }
 
+// 死亡ステートに遷移
 void EnemyBoss::TransitionDeathState()
 {
     state = State::Death;
     model->PlayAnimation(Anim_Die, false);
 }
 
+// 死亡ステート更新処理
 void EnemyBoss::UpdateDeathState(float elapsedTime)
 {
     if (!model->IsPlayAnimation())
@@ -711,4 +685,41 @@ void EnemyBoss::UpdateDeathState(float elapsedTime)
             Destroy();
         }
     }
+}
+
+
+
+
+//-----------------------------------------------
+//
+//      デバッグ用
+//
+//-----------------------------------------------
+void EnemyBoss::DrawDebugImGui()
+{
+
+    ImGui::SliderFloat("dissolveThreshold", &dissolveData.dissolveThreshold, 0.0f, 1.0f);
+
+    ImGui::SliderFloat("dissolveFlag", &dissolveData.maskFlag, 0.0f, 1.0f);
+
+}
+
+void EnemyBoss::DrawDebugPrimitive()
+{
+    // 基底クラスのデバッグプリミティブ描画
+    Enemy::DrawDebugPrimitive();
+    DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
+
+    // 縄張り範囲をデバッグ円柱描画
+    debugRenderer->DrawCylinder(territoryOrigin, territoryRange, 1.0f, DirectX::XMFLOAT4(0, 1, 0, 1));
+
+    // 索敵範囲をデバッグ円柱描画
+    debugRenderer->DrawCylinder(param.position, searchRange, 1.0f, DirectX::XMFLOAT4(0, 0, 1, 1));
+
+    // ターゲット位置をデバッグ球描画
+    debugRenderer->DrawSphere(targetPosition, param.radius, DirectX::XMFLOAT4(1, 1, 0, 0));
+
+    DirectX::XMFLOAT3 pos = model->FindNode("RigTip")->translate;
+    debugRenderer->DrawSphere(pos, 1.0f, DirectX::XMFLOAT4(1, 1, 0, 0));
+
 }

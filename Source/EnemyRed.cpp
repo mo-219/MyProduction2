@@ -1,17 +1,19 @@
-#include "EnemyRed.h"
-
 #include <imgui.h>
 
+#include "EnemyRed.h"
 
 #include "Graphics/Graphics.h"
-#include "Mathf.h"
+
 #include "player.h"
+#include "Mathf.h"
 #include "Collision.h"
 
 #include "GameObjectManager.h"
 #include "ItemObj.h"
 
 #include "MetaAI.h"
+
+
 
 // コンストラクタ
 EnemyRed::EnemyRed()
@@ -20,7 +22,6 @@ EnemyRed::EnemyRed()
     model = new Model("Data/model/RedEnemy/RedEnemy.mdl");
 
     // モデルが大きいのでスケーリング
-    //scale.x = scale.y = scale.z = 0.001f;
     scale = { 0.009f, 0.009f, 0.009f };
     param.height = 1.0f;
     param.rayCastRadius = 10.0f;
@@ -34,10 +35,13 @@ EnemyRed::EnemyRed()
     // 待機ステートへ遷移
     TransitionIdleState();
 
-    health = 1;
+    maxHealth = 4.0f;
+    health = maxHealth;
 
     searchRange = 5.0f;
     attackRange = 1.5f;
+
+    attackPower = 1.0f;
 }
 
 // デストラクタ
@@ -67,8 +71,12 @@ void EnemyRed::Update(float elapsedTime)
         UpdateAttackInitState(elapsedTime);
         break;
 
-    case State::Attack:
+    case State::Attack1:
         UpdateAttack1State(elapsedTime);
+        break; 
+    
+    case State::Attack2:
+        UpdateAttack2State(elapsedTime);
         break;
 
     case State::IdleBattle:
@@ -106,16 +114,12 @@ void EnemyRed::UpdateOnlyTransform(float elapsedTime)
 }
 
 // 描画処理
-void EnemyRed::Render(ID3D11DeviceContext* dc, Shader* shader)    // ID3D11DeviceContextがdcになってる　エラー出たらcontextに変更
-{
-    shader->Draw(dc, model);
-}
-
 void EnemyRed::Render(const RenderContext& rc, ModelShader* shader)    // ID3D11DeviceContextがdcになってる　エラー出たらcontextに変更
 {
     shader->Draw(rc, model);
 }
 
+// Render用値をRenderContextにまとめる
 RenderContext EnemyRed::SetRenderContext(const RenderContext& rc)
 {
     RenderContext myRc = rc;
@@ -149,34 +153,7 @@ RenderContext EnemyRed::SetRenderContext(const RenderContext& rc)
     return myRc;
 }
 
-void EnemyRed::DrawDebugImGui()
-{
 
-    ImGui::SliderFloat("dissolveThreshold", &dissolveData.dissolveThreshold, 0.0f, 1.0f);
-
-    ImGui::SliderFloat("dissolveFlag", &dissolveData.maskFlag, 0.0f, 1.0f);
-
-}
-
-void EnemyRed::DrawDebugPrimitive()
-{
-    // 基底クラスのデバッグプリミティブ描画
-    Enemy::DrawDebugPrimitive();
-    DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
-
-    // 縄張り範囲をデバッグ円柱描画
-    debugRenderer->DrawCylinder(territoryOrigin, territoryRange, 1.0f, DirectX::XMFLOAT4(0, 1, 0, 1));
-
-    // 索敵範囲をデバッグ円柱描画
-    debugRenderer->DrawCylinder(param.position, searchRange, 1.0f, DirectX::XMFLOAT4(0, 0, 1, 1));
-
-    // ターゲット位置をデバッグ球描画
-    debugRenderer->DrawSphere(targetPosition, param.radius, DirectX::XMFLOAT4(1, 1, 0, 0));
-
-    DirectX::XMFLOAT3 pos = model->FindNode("RigRArmPalmGizmo")->translate;
-    debugRenderer->DrawSphere(pos, 1.0f, DirectX::XMFLOAT4(1, 1, 0, 0));
-
-}
 
 void EnemyRed::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
 {
@@ -192,7 +169,7 @@ void EnemyRed::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
         DirectX::XMFLOAT3 nodePosition(node->worldTransform._41, node->worldTransform._42, node->worldTransform._43);
 
         // 当たり判定表示
-        Graphics::Instance().GetDebugRenderer()->DrawSphere(nodePosition, nodeRadius, DirectX::XMFLOAT4(0, 0, 1, 1));
+        //Graphics::Instance().GetDebugRenderer()->DrawSphere(nodePosition, nodeRadius, DirectX::XMFLOAT4(0, 0, 1, 1));
 
         // プレイヤーと当たり判定
         DirectX::XMFLOAT3 outPosition;
@@ -204,7 +181,7 @@ void EnemyRed::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
             // ダメージを与える
             if (!player.IsDodge())
             {
-                if (player.ApplyDamage(1, 0.5f))
+                if (player.ApplyDamage(attackPower, 0.5f))
                 {
                     // 敵を吹っ飛ばすベクトルを算出
                     DirectX::XMFLOAT3 vec;
@@ -250,11 +227,40 @@ void EnemyRed::OnDead()
 
 }
 
+// ダメージ処理
 void EnemyRed::OnDamaged()
 {
     // ダメージステートへ
     TransitionDamageState();
 }
+
+
+// メタAIからメッセージを受信
+bool EnemyRed::OnMessage(const Telegram& telegram)
+{
+    switch (telegram.msg)
+    {
+        // 他のエネミーから呼ばれた
+    case MESSAGE_TYPE::MsgCallHelp:
+        if (!SearchPlayer())
+        {
+            //// プレイヤーを見つけていないときに1層目ステートをReceiveに変更
+            //stateMachine->SetState(static_cast<int>(State::Recieve));
+        }
+        return true;
+
+        // メタAIから所有権を与えられたとき
+    case MESSAGE_TYPE::MsgGiveAttackRight:
+        // 攻撃フラグをtrueに設定
+        attackFlg = true;
+
+        return true;
+    }
+
+    return false;
+}
+
+
 
 void EnemyRed::SetRamdomTargetPosition()
 {
@@ -461,30 +467,17 @@ void EnemyRed::UpdatePursuitState(float elapsedTime)
     }
 }
 
+// 攻撃準備ステートに遷移遷移
 void EnemyRed::TransitionAttackInitState()
 {
     state = State::AttackInit;
 
-    //if (attackFlg)
-    //{
-    //    // 攻撃終わった時に攻撃権の放棄
-    //    // 攻撃フラグをfalseに
-
-    //    SetAttackFlg(false);
-    //    // エネミーからメタAIへ MsgChangeAttackRight を送信する	
-    //    Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgChangeAttackRight);
-    //}
-    //if (!attackFlg)
-    //{
-    //    // 攻撃権を依頼
-
-
-        // 待機アニメーション再生
-        model->PlayAnimation(Anim_Idle, true);
-    //}
+    // 待機アニメーション再生
+    model->PlayAnimation(Anim_Idle, true);
 
 }
 
+// 攻撃準備ステート更新処理
 void EnemyRed::UpdateAttackInitState(float elapsedTime)
 {
     targetPosition = Player::Instance().Instance().GetPosition();
@@ -505,8 +498,19 @@ void EnemyRed::UpdateAttackInitState(float elapsedTime)
     {
         if (attackFlg)
         {
-            // 攻撃ステートへ
-            TransitionAttack1State();
+            int num = Mathf::RandomRange(0, 2);
+
+            switch (num)
+            {
+            case 0:
+                // 攻撃1ステートへ
+                TransitionAttack1State();
+                break;
+            case 1:
+                // 攻撃2ステートへ
+                TransitionAttack2State();
+                break;
+            }
         }
         else
         {
@@ -518,13 +522,15 @@ void EnemyRed::UpdateAttackInitState(float elapsedTime)
     MoveToTarget(elapsedTime, 0.0f);
 }
 
+// 攻撃1ステートに遷移
 void EnemyRed::TransitionAttack1State()
 {
-    state = State::Attack;
+    state = State::Attack1;
     DropHeelItem = 0;
     model->PlayAnimation(Anim_Attack1, false);
 }
 
+// 攻撃1ステート更新処理
 void EnemyRed::UpdateAttack1State(float elapsedTime)
 {
     // 任意のアニメーション再生区画でのみ衝突判定処理をする
@@ -532,7 +538,7 @@ void EnemyRed::UpdateAttack1State(float elapsedTime)
 
     if (animationTime >= 0.1f && animationTime <= 0.35f)
     {
-        // 目玉ノードとプレイヤーの衝突処理
+        // 攻撃ノードとプレイヤーの衝突処理
         CollisionNodeVsPlayer("RigRArmPalmGizmo", 1.0f);
     }
 
@@ -542,6 +548,33 @@ void EnemyRed::UpdateAttack1State(float elapsedTime)
     }
 }
 
+// 攻撃2ステートに遷移
+void EnemyRed::TransitionAttack2State()
+{
+    state = State::Attack2;
+    DropHeelItem = 0;
+    model->PlayAnimation(Anim_Attack2, false);
+}
+
+// 攻撃2ステート更新処理
+void EnemyRed::UpdateAttack2State(float elapsedTime)
+{
+    // 任意のアニメーション再生区画でのみ衝突判定処理をする
+    float animationTime = model->GetCurrentAnimetionSeconds();
+
+    if (animationTime >= 0.1f && animationTime <= 0.35f)
+    {
+        // 攻撃ノードとプレイヤーの衝突処理
+        CollisionNodeVsPlayer("RigRibcageGizmo", 1.0f);
+    }
+
+    if (!model->IsPlayAnimation())
+    {
+        TransitionIdleBattleState();
+    }
+}
+
+// 攻撃待機ステートに遷移
 void EnemyRed::TransitionIdleBattleState()
 {
     state = State::IdleBattle;
@@ -565,6 +598,7 @@ void EnemyRed::TransitionIdleBattleState()
 
 }
 
+// 攻撃待機ステート更新処理
 void EnemyRed::UpdateIdleBattleState(float elapsedTime)
 {
     targetPosition = Player::Instance().Instance().GetPosition();
@@ -593,13 +627,14 @@ void EnemyRed::UpdateIdleBattleState(float elapsedTime)
     MoveToTarget(elapsedTime, 0.0f);
 }
 
+// ダメージステートに遷移
 void EnemyRed::TransitionDamageState()
 {
     state = State::Damage;
     model->PlayAnimation(Anim_Hit, false);
 }
 
-
+// ダメージステート更新処理
 void EnemyRed::UpdateDamageState(float elapsedTime)
 {
     if (!model->IsPlayAnimation())
@@ -608,12 +643,14 @@ void EnemyRed::UpdateDamageState(float elapsedTime)
     }
 }
 
+// 死亡ステートに遷移
 void EnemyRed::TransitionDeathState()
 {
     state = State::Death;
     model->PlayAnimation(Anim_Die, false);
 }
 
+// 死亡ステート更新処理
 void EnemyRed::UpdateDeathState(float elapsedTime)
 {
     if (!model->IsPlayAnimation())
@@ -627,26 +664,38 @@ void EnemyRed::UpdateDeathState(float elapsedTime)
     }
 }
 
-bool EnemyRed::OnMessage(const Telegram& telegram)
+
+
+//-----------------------------------------------
+//
+//      デバッグ用
+//
+//-----------------------------------------------
+void EnemyRed::DrawDebugImGui()
 {
-    switch (telegram.msg)
-    {
-        // 他のエネミーから呼ばれた
-    case MESSAGE_TYPE::MsgCallHelp:
-        if (!SearchPlayer())
-        {
-            //// プレイヤーを見つけていないときに1層目ステートをReceiveに変更
-            //stateMachine->SetState(static_cast<int>(State::Recieve));
-        }
-        return true;
 
-        // メタAIから所有権を与えられたとき
-    case MESSAGE_TYPE::MsgGiveAttackRight:
-        // 攻撃フラグをtrueに設定
-        attackFlg = true;
+    ImGui::SliderFloat("dissolveThreshold", &dissolveData.dissolveThreshold, 0.0f, 1.0f);
 
-        return true;
-    }
+    ImGui::SliderFloat("dissolveFlag", &dissolveData.maskFlag, 0.0f, 1.0f);
 
-    return false;
+}
+
+void EnemyRed::DrawDebugPrimitive()
+{
+    // 基底クラスのデバッグプリミティブ描画
+    Enemy::DrawDebugPrimitive();
+    DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
+
+    // 縄張り範囲をデバッグ円柱描画
+    debugRenderer->DrawCylinder(territoryOrigin, territoryRange, 1.0f, DirectX::XMFLOAT4(0, 1, 0, 1));
+
+    // 索敵範囲をデバッグ円柱描画
+    debugRenderer->DrawCylinder(param.position, searchRange, 1.0f, DirectX::XMFLOAT4(0, 0, 1, 1));
+
+    // ターゲット位置をデバッグ球描画
+    debugRenderer->DrawSphere(targetPosition, param.radius, DirectX::XMFLOAT4(1, 1, 0, 0));
+
+    DirectX::XMFLOAT3 pos = model->FindNode("RigRArmPalmGizmo")->translate;
+    debugRenderer->DrawSphere(pos, 1.0f, DirectX::XMFLOAT4(1, 1, 0, 0));
+
 }

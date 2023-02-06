@@ -1,10 +1,11 @@
-#include "EnemyGolem.h"
-
 #include <imgui.h>
 
+#include "EnemyGolem.h"
+
 #include "Graphics/Graphics.h"
-#include "Mathf.h"
+
 #include "player.h"
+#include "Mathf.h"
 #include "Collision.h"
 
 #include "GameObjectManager.h"
@@ -38,10 +39,13 @@ EnemyGolem::EnemyGolem()
     // 待機ステートへ遷移
     TransitionIdleState();
 
-    health = 1;
+    maxHealth = 5.0f;
+    health = maxHealth;
 
     searchRange = 5.0f;
     attackRange = 3.0f;
+
+    attackPower = 3.0f;
 }
 
 // デストラクタ
@@ -72,8 +76,12 @@ void EnemyGolem::Update(float elapsedTime)
         UpdateAttackInitState(elapsedTime);
         break;
 
-    case State::Attack:
+    case State::Attack1:
         UpdateAttack1State(elapsedTime);
+        break;
+
+    case State::Attack2:
+        UpdateAttack2State(elapsedTime);
         break;
 
     case State::IdleBattle:
@@ -111,11 +119,6 @@ void EnemyGolem::UpdateOnlyTransform(float elapsedTime)
 }
 
 // 描画処理
-void EnemyGolem::Render(ID3D11DeviceContext* dc, Shader* shader)    // ID3D11DeviceContextがdcになってる　エラー出たらcontextに変更
-{
-    shader->Draw(dc, model);
-}
-
 void EnemyGolem::Render(const RenderContext& rc, ModelShader* shader)    // ID3D11DeviceContextがdcになってる　エラー出たらcontextに変更
 {
     shader->Draw(rc, model);
@@ -154,34 +157,7 @@ RenderContext EnemyGolem::SetRenderContext(const RenderContext& rc)
     return myRc;
 }
 
-void EnemyGolem::DrawDebugImGui()
-{
 
-    ImGui::SliderFloat("dissolveThreshold", &dissolveData.dissolveThreshold, 0.0f, 1.0f);
-
-    ImGui::SliderFloat("dissolveFlag", &dissolveData.maskFlag, 0.0f, 1.0f);
-
-}
-
-void EnemyGolem::DrawDebugPrimitive()
-{
-    // 基底クラスのデバッグプリミティブ描画
-    Enemy::DrawDebugPrimitive();
-    DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
-
-    // 縄張り範囲をデバッグ円柱描画
-    debugRenderer->DrawCylinder(territoryOrigin, territoryRange, 1.0f, DirectX::XMFLOAT4(0, 1, 0, 1));
-
-    // 索敵範囲をデバッグ円柱描画
-    debugRenderer->DrawCylinder(param.position, searchRange, 1.0f, DirectX::XMFLOAT4(0, 0, 1, 1));
-
-    // ターゲット位置をデバッグ球描画
-    debugRenderer->DrawSphere(targetPosition, param.radius, DirectX::XMFLOAT4(1, 1, 0, 0));
-
-    DirectX::XMFLOAT3 pos = model->FindNode("mixamorig:LeftHand")->translate;
-    debugRenderer->DrawSphere(pos, 1.0f, DirectX::XMFLOAT4(1, 1, 0, 0));
-
-}
 
 void EnemyGolem::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
 {
@@ -197,7 +173,7 @@ void EnemyGolem::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
         DirectX::XMFLOAT3 nodePosition(node->worldTransform._41, node->worldTransform._42, node->worldTransform._43);
 
         // 当たり判定表示
-        Graphics::Instance().GetDebugRenderer()->DrawSphere(nodePosition, nodeRadius, DirectX::XMFLOAT4(0, 0, 1, 1));
+        //Graphics::Instance().GetDebugRenderer()->DrawSphere(nodePosition, nodeRadius, DirectX::XMFLOAT4(0, 0, 1, 1));
 
         // プレイヤーと当たり判定
         DirectX::XMFLOAT3 outPosition;
@@ -209,7 +185,7 @@ void EnemyGolem::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
             // ダメージを与える
             if (!player.IsDodge())
             {
-                if (player.ApplyDamage(1, 0.5f))
+                if (player.ApplyDamage(attackPower, 0.5f))
                 {
                     // 敵を吹っ飛ばすベクトルを算出
                     DirectX::XMFLOAT3 vec;
@@ -245,6 +221,8 @@ void EnemyGolem::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
     }
 }
 
+
+// メタAIからメッセージを受信
 bool EnemyGolem::OnMessage(const Telegram& telegram)
 {
     switch (telegram.msg)
@@ -379,11 +357,9 @@ Player* EnemyGolem::searchPlayer()
 
 //------------------------------------------------
 //
-//      ステート
+//      アニメーションステート
 //
 //-----------------------------------------------
-
-
 // 徘徊ステートへ遷移
 void EnemyGolem::TransitionWanderState()
 {
@@ -495,19 +471,11 @@ void EnemyGolem::UpdatePursuitState(float elapsedTime)
     }
 }
 
+// 攻撃準備ステートに遷移遷移
 void EnemyGolem::TransitionAttackInitState()
 {
     state = State::AttackInit;
 
-    if (attackFlg)
-    {
-        // 攻撃終わった時に攻撃権の放棄
-        // 攻撃フラグをfalseに
-
-        SetAttackFlg(false);
-        // エネミーからメタAIへ MsgChangeAttackRight を送信する	
-        Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgChangeAttackRight);
-    }
     if (!attackFlg)
     {
         // 攻撃権を依頼
@@ -518,6 +486,7 @@ void EnemyGolem::TransitionAttackInitState()
     }
 }
 
+// 攻撃準備ステート更新処理
 void EnemyGolem::UpdateAttackInitState(float elapsedTime)
 {
     targetPosition = Player::Instance().Instance().GetPosition();
@@ -530,8 +499,19 @@ void EnemyGolem::UpdateAttackInitState(float elapsedTime)
     float dist = sqrtf(vx * vx + vy * vy + vz * vz);
     if (attackFlg)
     {
-        // 攻撃ステートへ
-        TransitionAttack1State();
+        int num = Mathf::RandomRange(0, 2);
+
+        switch (num)
+        {
+        case 0:
+            // 攻撃1ステートへ
+            TransitionAttack1State();
+            break;
+        case 1:
+            // 攻撃2ステートへ
+            TransitionAttack2State();
+            break;
+        }
     }
     else 
     {
@@ -543,25 +523,18 @@ void EnemyGolem::UpdateAttackInitState(float elapsedTime)
 
 }
 
+// 攻撃1ステートに遷移
 void EnemyGolem::TransitionAttack1State()
 {
-    state = State::Attack;
+    state = State::Attack1;
 
-    //// 攻撃権がなければ
-    //if (!attackFlg)
-    //{
-    //    // 攻撃権を依頼
-    //    Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgAskAttackRight);
-    //}
-    //// 攻撃権があれば
-    //else
-    //{
-        DropHeelItem = 0;
-        model->PlayAnimation(Anim_Attack1, false);
-        count = 0;
-    //}
+
+    DropHeelItem = 0;
+    model->PlayAnimation(Anim_Attack1, false);
+  
 }
 
+// 攻撃1ステート更新処理
 void EnemyGolem::UpdateAttack1State(float elapsedTime)
 {
 
@@ -573,14 +546,11 @@ void EnemyGolem::UpdateAttack1State(float elapsedTime)
 
         if (animationTime >= 1.0f && animationTime <= 2.0f)
         {
-            if (count == 0)
-            {
-                DirectX::XMFLOAT3 pos = param.position;
-                pos.y += GetHeight() / 2;
-                attackEffect->Play(pos);
+            DirectX::XMFLOAT3 pos = param.position;
+            pos.y += GetHeight() / 2;
+            attackEffect->Play(pos);
 
-                count++;
-            }
+
             // 目玉ノードとプレイヤーの衝突処理
             CollisionNodeVsPlayer("mixamorig:LeftHand", 1.0f);
         }
@@ -596,50 +566,49 @@ void EnemyGolem::UpdateAttack1State(float elapsedTime)
     }
 }
 
+// 攻撃2ステートに遷移
 void EnemyGolem::TransitionAttack2State()
 {
-    state = State::Attack;
+    state = State::Attack2;
 
-    // 攻撃権がなければ
-    if (!attackFlg)
-    {
-        // 攻撃権を依頼
-        Meta::Instance().SendMessaging(GetId(), 0, MESSAGE_TYPE::MsgAskAttackRight);
-    }
-    // 攻撃権があれば
-    else
-    {
-        DropHeelItem = 0;
-        model->PlayAnimation(Anim_Attack2, false);
-    }
+
+    DropHeelItem = 0;
+    model->PlayAnimation(Anim_Attack2, false);
+
 }
 
+// 攻撃2ステート更新処理
 void EnemyGolem::UpdateAttack2State(float elapsedTime)
 {
-    // 攻撃権があれば
+    // 攻撃権があるとき
     if (attackFlg)
     {
         // 任意のアニメーション再生区画でのみ衝突判定処理をする
         float animationTime = model->GetCurrentAnimetionSeconds();
 
-        if (animationTime >= 0.1f && animationTime <= 0.35f)
+        if (animationTime >= 0.3f && animationTime <= 1.0f)
         {
-            // 目玉ノードとプレイヤーの衝突処理
-            //CollisionNodeVsPlayer("EyeBall", 0.2f);
-        }
+           
+            DirectX::XMFLOAT3 pos = param.position;
+            pos.y += GetHeight() / 2;
 
+
+            // 目玉ノードとプレイヤーの衝突処理
+            CollisionNodeVsPlayer("mixamorig:RightHand", 1.0f);
+        }
         if (!model->IsPlayAnimation())
         {
             TransitionIdleBattleState();
         }
     }
-    // 攻撃権がなければ
+    // 攻撃権がないとき
     else
     {
         TransitionIdleBattleState();
     }
 }
 
+// 攻撃待機ステートに遷移
 void EnemyGolem::TransitionIdleBattleState()
 {
     state = State::IdleBattle;
@@ -656,13 +625,14 @@ void EnemyGolem::TransitionIdleBattleState()
 
 
     // タイマーをランダム設定
-    stateTimer = Mathf::RandomRange(1.0f, 2.0f);
+    stateTimer = Mathf::RandomRange(0.5f, 1.0f);
 
     // 待機アニメーション再生
     model->PlayAnimation(Anim_Idle, true);
     
 }
 
+// 攻撃待機ステート更新処理
 void EnemyGolem::UpdateIdleBattleState(float elapsedTime)
 {
     targetPosition = Player::Instance().Instance().GetPosition();
@@ -691,13 +661,14 @@ void EnemyGolem::UpdateIdleBattleState(float elapsedTime)
     MoveToTarget(elapsedTime, 0.0f);
 }
 
+// ダメージステートに遷移
 void EnemyGolem::TransitionDamageState()
 {
     state = State::Damage;
-    model->PlayAnimation(Anim_Hit, false);
+    model->PlayAnimation(Anim_Hit, false, 2.0f);
 }
 
-
+// ダメージステート更新処理
 void EnemyGolem::UpdateDamageState(float elapsedTime)
 {
     if (!model->IsPlayAnimation())
@@ -706,12 +677,14 @@ void EnemyGolem::UpdateDamageState(float elapsedTime)
     }
 }
 
+// 死亡ステートに遷移
 void EnemyGolem::TransitionDeathState()
 {
     state = State::Death;
     model->PlayAnimation(Anim_Die, false);
 }
 
+// 死亡ステート更新処理
 void EnemyGolem::UpdateDeathState(float elapsedTime)
 {
     if (!model->IsPlayAnimation())
@@ -723,4 +696,40 @@ void EnemyGolem::UpdateDeathState(float elapsedTime)
             Destroy();
         }
     }
+}
+
+
+
+//--------------------------------------
+//
+//      デバッグ用
+//
+//--------------------------------------
+void EnemyGolem::DrawDebugImGui()
+{
+
+    ImGui::SliderFloat("dissolveThreshold", &dissolveData.dissolveThreshold, 0.0f, 1.0f);
+
+    ImGui::SliderFloat("dissolveFlag", &dissolveData.maskFlag, 0.0f, 1.0f);
+
+}
+
+void EnemyGolem::DrawDebugPrimitive()
+{
+    // 基底クラスのデバッグプリミティブ描画
+    Enemy::DrawDebugPrimitive();
+    DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
+
+    // 縄張り範囲をデバッグ円柱描画
+    debugRenderer->DrawCylinder(territoryOrigin, territoryRange, 1.0f, DirectX::XMFLOAT4(0, 1, 0, 1));
+
+    // 索敵範囲をデバッグ円柱描画
+    debugRenderer->DrawCylinder(param.position, searchRange, 1.0f, DirectX::XMFLOAT4(0, 0, 1, 1));
+
+    // ターゲット位置をデバッグ球描画
+    debugRenderer->DrawSphere(targetPosition, param.radius, DirectX::XMFLOAT4(1, 1, 0, 0));
+
+    DirectX::XMFLOAT3 pos = model->FindNode("mixamorig:LeftHand")->translate;
+    debugRenderer->DrawSphere(pos, 1.0f, DirectX::XMFLOAT4(1, 1, 0, 0));
+
 }

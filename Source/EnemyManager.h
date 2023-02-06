@@ -25,7 +25,6 @@ public:
     void UpdateOnlyTransform(float elapsedTime);
 
     // 描画処理
-    void Render(ID3D11DeviceContext* context, Shader* shader);
     void Render(const RenderContext& rc, ModelShader* shader);
 
     // エネミー登録
@@ -44,9 +43,12 @@ public:
 
     // エネミー数取得
     int GetEnemyCount() const { return static_cast<int>(enemies.size()); }
+    int GetCurrentEnemyCount() const { return currentEnemyCount; }
+    void SetCurrentEnemyCount(int co) { currentEnemyCount = co; }
 
     // エネミー取得
     Enemy* GetEnemy(int index) { return enemies.at(index); }
+
 
 
     // 付与したIDからエネミーを取得
@@ -62,6 +64,8 @@ private:
 
 public:
     int identity = 0;	// 付与するIDの値(この値にMetaAI::Identity::Enemyを加算して付与する)
+
+    int currentEnemyCount = 0;
 
 };
 

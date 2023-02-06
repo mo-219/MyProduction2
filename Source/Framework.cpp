@@ -12,9 +12,6 @@
 
 //static SceneGame sceneGame;
 
-//#ifdef _DEBUG
-//#define	DEBUG_NEW	new(_NORMAL_BLOCK, __FILE__, __LINE__)
-//#endif
 
 // 垂直同期間隔設定
 static const int syncInterval = 1;
@@ -35,6 +32,7 @@ Framework::Framework(HWND hWnd)
 // デストラクタ
 Framework::~Framework()
 {
+
 	// シーン終了化
 	SceneManager::Instance().Clear();
 
@@ -98,7 +96,7 @@ void Framework::CalculateFrameStats()
 		float mspf = 1000.0f / fps;
 		std::ostringstream outs;
 		outs.precision(6);
-		outs << "FPS : " << fps << " / " << "Frame Time : " << mspf << " (ms)";
+		outs << "キティのぼうけん";
 		SetWindowTextA(hWnd, outs.str().c_str());
 
 		// Reset for next average.

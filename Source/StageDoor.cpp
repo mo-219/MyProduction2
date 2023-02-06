@@ -7,9 +7,7 @@ StageDoor::StageDoor()
     model = new Model("Data/Model/Gate/gate.mdl");
     scale = { 1,1,1 };
 
-    //width = ;
-    //height;
-    //depth;
+    se = Audio::Instance().LoadAudioSource("Data/Audio/SE/Gate.wav");
 }
 
 StageDoor::~StageDoor()
@@ -25,17 +23,14 @@ void StageDoor::Update(float elapsedTime)
 
     if (enemyManager.GetEnemyCount() <= 0 && levelManager.IsEndLevel())
     {
+        TraditionOpenDoor();
         goalFlag = true;
         collisionFlag = false;
     }
 
     UpdateTransform();
+    model->UpdateAnimation(elapsedTime);
     model->UpdateTransform(transform);
-}
-
-void StageDoor::Render(ID3D11DeviceContext* dc, Shader* shader)
-{
-
 }
 
 void StageDoor::Render(const RenderContext& rc, ModelShader* shader)
@@ -63,6 +58,13 @@ void StageDoor::UpdateTransform()
 
     DirectX::XMStoreFloat4x4(&transform, W);
 
+}
+
+void StageDoor::TraditionOpenDoor()
+{
+    if (!collisionFlag)   return;
+    model->PlayAnimation(Anim_Open, false, 1.0f);
+    se->Play(false);
 }
 
 

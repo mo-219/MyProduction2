@@ -32,7 +32,9 @@ EnemySlime::EnemySlime()
     // 待機ステートへ遷移
     TransitionIdleState();
 
-    health = 1;
+    maxHealth = 3.0f;
+    health = maxHealth;
+    attackPower = 1.0f;
 }
 
 // デストラクタ
@@ -97,11 +99,6 @@ void EnemySlime::UpdateOnlyTransform(float elapsedTime)
 }
 
 // 描画処理
-void EnemySlime::Render(ID3D11DeviceContext* dc, Shader* shader)    // ID3D11DeviceContextがdcになってる　エラー出たらcontextに変更
-{
-    shader->Draw(dc, model);
-}
-
 void EnemySlime::Render(const RenderContext& rc, ModelShader* shader)    // ID3D11DeviceContextがdcになってる　エラー出たらcontextに変更
 {
     shader->Draw(rc, model);
@@ -180,7 +177,7 @@ void EnemySlime::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
         DirectX::XMFLOAT3 nodePosition(node->worldTransform._41, node->worldTransform._42, node->worldTransform._43);
 
         // 当たり判定表示
-        Graphics::Instance().GetDebugRenderer()->DrawSphere(nodePosition, nodeRadius, DirectX::XMFLOAT4(0, 0, 1, 1));
+        //Graphics::Instance().GetDebugRenderer()->DrawSphere(nodePosition, nodeRadius, DirectX::XMFLOAT4(0, 0, 1, 1));
 
         // プレイヤーと当たり判定
         DirectX::XMFLOAT3 outPosition;
@@ -193,7 +190,7 @@ void EnemySlime::CollisionNodeVsPlayer(const char* nodeName, float nodeRadius)
             {
 
                 // ダメージを与える
-                if (player.ApplyDamage(1, 0.5f))
+                if (player.ApplyDamage(attackPower, 0.5f))
                 {
                     // 敵を吹っ飛ばすベクトルを算出
                     DirectX::XMFLOAT3 vec;

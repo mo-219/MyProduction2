@@ -18,7 +18,6 @@ public:
     void Update(float elapsedTime) override;
     void UpdateOnlyTransform(float elapsedTime)override;
     // 描画処理
-    void Render(ID3D11DeviceContext* dc, Shader* shader) override;
     void Render(const RenderContext& rc, ModelShader* shader) override;
     RenderContext SetRenderContext(const RenderContext& rc) override;
 
@@ -67,31 +66,31 @@ protected:
     // 追跡ステート
     void TransitionPursuitState();                   // 遷移
     void UpdatePursuitState(float elapsedTime);      // 更新処理
-    
+
     // 攻撃開始ステート
-    void TransitionAttackInitState();                    // 遷移
-    void UpdateAttackInitState(float elapsedTime);       // 更新処理
-
+    void TransitionAttackInitState();
+    void UpdateAttackInitState(float elapsedTime);   // 遷移
+                                                     // 更新処理
     // 攻撃1ステート
-    void TransitionAttack1State();                    // 遷移
-    void UpdateAttack1State(float elapsedTime);       // 更新処理
-
+    void TransitionAttack1State();
+    void UpdateAttack1State(float elapsedTime);      // 遷移
+                                                     // 更新処理
     // 攻撃2ステート
-    void TransitionAttack2State();                    // 遷移
-    void UpdateAttack2State(float elapsedTime);       // 更新処理
-
+    void TransitionAttack2State();
+    void UpdateAttack2State(float elapsedTime);      // 遷移
+                                                     // 更新処理
     // 戦闘待機ステート
-    void TransitionIdleBattleState();                // 遷移
-    void UpdateIdleBattleState(float elapsedTime);   // 更新処理
-
+    void TransitionIdleBattleState();
+    void UpdateIdleBattleState(float elapsedTime);   // 遷移
+                                                     // 更新処理
     // ダメージステート
-    void TransitionDamageState();                // 遷移
-    void UpdateDamageState(float elapsedTime);   // 更新処理
-
+    void TransitionDamageState();
+    void UpdateDamageState(float elapsedTime);       // 遷移
+                                                     // 更新処理
     // ダメージステート
-    void TransitionDeathState();                // 遷移
-    void UpdateDeathState(float elapsedTime);   // 更新処理
-
+    void TransitionDeathState();
+    void UpdateDeathState(float elapsedTime);        // 遷移
+                                                     // 更新処理
     bool OnMessage(const Telegram& telegram)override;
 
 
@@ -106,7 +105,8 @@ private:
         Idle,
         Pursuit,
         AttackInit,
-        Attack,
+        Attack1,
+        Attack2,
         IdleBattle,
         Damage,
         Death,
@@ -131,15 +131,11 @@ private:
     State               state = State::Wander;
 
 
-
-
     float               moveSpeed = 2.0f;
     float               turnSpeed = DirectX::XMConvertToRadians(360);
 
     float               stateTimer = 0.0f;
-    //float               searchRange = 5.0f;
 
-    //float               attackRange = 5.0f;
 
     float               fovCos = cosf(DirectX::XMConvertToRadians(45));
 };

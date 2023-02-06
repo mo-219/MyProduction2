@@ -91,9 +91,9 @@ AudioResource::AudioResource(const char* filename)
 	// WAV フォーマットをセットアップ
 	{
 		wfx.wFormatTag = WAVE_FORMAT_PCM;
-		wfx.nChannels = 2;
-		wfx.nSamplesPerSec = 44100;
-		wfx.wBitsPerSample = 16;
+		wfx.nChannels = fmt.channel;
+		wfx.nSamplesPerSec = fmt.sampleRate;
+		wfx.wBitsPerSample = fmt.quantumBits;
 		wfx.nBlockAlign = (wfx.wBitsPerSample >> 3) * wfx.nChannels;
 		wfx.nAvgBytesPerSec = wfx.nBlockAlign * wfx.nSamplesPerSec;
 		wfx.cbSize = sizeof(WAVEFORMATEX);

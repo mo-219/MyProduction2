@@ -6,36 +6,32 @@
 #include "EnemyManager.h"
 
 
-
+// コンストラクタ
 Sword::Sword(const char* filename)
 {
     model = new Model(filename);
-    scale.x = 100.0f;
-    scale.y = 100.0f;
-    scale.z = 100.0f;
+    scale.x = 130.0f;
+    scale.y = 130.0f;
+    scale.z = 130.0f;
 }
 
+// デストラクタ
 Sword::~Sword()
 {
     delete model;
 
 }
 
+// 更新処理
 void Sword::Update(float elapsedTime)
 {
     SetCollisionValue();
 
     // モデル行列更新
     model->UpdateTransform(transform);
-    
-
 }
 
-void Sword::Render(ID3D11DeviceContext* dc, Shader* shader)
-{
-    shader->Draw(dc, model);
-}
-
+// 描画処理
 void Sword::Render(const RenderContext& rc, ModelShader* shader)
 {
     // 送るデータ挿入
@@ -65,74 +61,9 @@ void Sword::Render(const RenderContext& rc, ModelShader* shader)
 
 }
 
-void Sword::DrawDebugGUI()
-{
-    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_FirstUseEver);
-
-    if (ImGui::Begin("Sword", nullptr, ImGuiWindowFlags_None))
-    {
-        // トランスフォーム
-        if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            // 位置
-            ImGui::InputFloat3("Position", &param.position.x);
-            DirectX::XMFLOAT4X4 nodeTransform = model->FindNode("Sword")->worldTransform;
-#if 0
-            ImGui::InputFloat("Transform11", &nodeTransform._11); 
-            ImGui::InputFloat("Transform12", &nodeTransform._12); 
-            ImGui::InputFloat("Transform13", &nodeTransform._13); 
-            ImGui::InputFloat("Transform14", &nodeTransform._14); 
-            ImGui::InputFloat("Transform21", &nodeTransform._21); 
-            ImGui::InputFloat("Transform22", &nodeTransform._22); 
-            ImGui::InputFloat("Transform23", &nodeTransform._23); 
-            ImGui::InputFloat("Transform24", &nodeTransform._24); 
-            ImGui::InputFloat("Transform31", &nodeTransform._31); 
-            ImGui::InputFloat("Transform32", &nodeTransform._32); 
-            ImGui::InputFloat("Transform33", &nodeTransform._33); 
-            ImGui::InputFloat("Transform34", &nodeTransform._34); 
-            ImGui::InputFloat("Transform41", &nodeTransform._41); 
-            ImGui::InputFloat("Transform42", &nodeTransform._42); 
-            ImGui::InputFloat("Transform43", &nodeTransform._43); 
-            ImGui::InputFloat("Transform44", &nodeTransform._44); 
-#endif
-            // 回転
-            DirectX::XMFLOAT3 a;
-            a.x = DirectX::XMConvertToDegrees(angle.x);
-            a.y = DirectX::XMConvertToDegrees(angle.y);
-            a.z = DirectX::XMConvertToDegrees(angle.z);
-            ImGui::InputFloat3("Angle", &a.x);
-            angle.x = DirectX::XMConvertToRadians(a.x);
-            angle.y = DirectX::XMConvertToRadians(a.y);
-            angle.z = DirectX::XMConvertToRadians(a.z);
-
-            // スケール
-            ImGui::InputFloat3("Scale", &scale.x);
-            ImGui::Separator();
-            ImGui::Text("CubicColor");
 
 
-
-
-
-        }
-    }
-    ImGui::End();
-
-}
-
-void Sword::DrawDebugPrimitive()
-{
-    DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
-
-    for (int i = 0; i < collisionNum; i++)
-    {
-        debugRenderer->DrawSphere(collisionPos[i], collisionRange, DirectX::XMFLOAT4(1, 0, 0, 1));
-    }
-
-
-}
-
+// ワールド座標の位置計算
 void Sword::UpdateTransform(DirectX::XMFLOAT4X4 handMat)
 {
 
@@ -152,6 +83,7 @@ void Sword::UpdateTransform(DirectX::XMFLOAT4X4 handMat)
     param.position.z = transform._43;
 }
 
+// 当たり判定の計算
 void Sword::SetCollisionValue()
 {
     DirectX::XMFLOAT3 vec = DirectX::XMFLOAT3(tipPos.x - param.position.x, tipPos.y - param.position.y, tipPos.z - param.position.z);
@@ -179,6 +111,7 @@ void Sword::SetCollisionValue()
 
 }
 
+// 敵との衝突処理
 void Sword::collisionWeaponVSEnemies()
 {
     EnemyManager& enemyManager = EnemyManager::Instance();
@@ -207,7 +140,7 @@ void Sword::collisionWeaponVSEnemies()
                     // 吹き飛ばす
                     {
                         DirectX::XMFLOAT3 impulse;
-                        const float power = 10.0f;
+                        const float power = 8.0f;
 
                         const DirectX::XMFLOAT3& e = enemy->GetPosition();
                         const DirectX::XMFLOAT3& p = collisionPos[i];
@@ -241,3 +174,72 @@ void Sword::collisionWeaponVSEnemies()
 }
 
 
+
+//-----------------------------------
+//
+//      デバッグ用
+//
+//-----------------------------------
+void Sword::DrawDebugGUI()
+{
+    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_FirstUseEver);
+
+    if (ImGui::Begin("Sword", nullptr, ImGuiWindowFlags_None))
+    {
+        // トランスフォーム
+        if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            // 位置
+            ImGui::InputFloat3("Position", &param.position.x);
+            DirectX::XMFLOAT4X4 nodeTransform = model->FindNode("Sword")->worldTransform;
+#if 1
+            ImGui::InputFloat("Transform11", &nodeTransform._11);
+            ImGui::InputFloat("Transform12", &nodeTransform._12);
+            ImGui::InputFloat("Transform13", &nodeTransform._13);
+            ImGui::InputFloat("Transform14", &nodeTransform._14);
+            ImGui::InputFloat("Transform21", &nodeTransform._21);
+            ImGui::InputFloat("Transform22", &nodeTransform._22);
+            ImGui::InputFloat("Transform23", &nodeTransform._23);
+            ImGui::InputFloat("Transform24", &nodeTransform._24);
+            ImGui::InputFloat("Transform31", &nodeTransform._31);
+            ImGui::InputFloat("Transform32", &nodeTransform._32);
+            ImGui::InputFloat("Transform33", &nodeTransform._33);
+            ImGui::InputFloat("Transform34", &nodeTransform._34);
+            ImGui::InputFloat("Transform41", &nodeTransform._41);
+            ImGui::InputFloat("Transform42", &nodeTransform._42);
+            ImGui::InputFloat("Transform43", &nodeTransform._43);
+            ImGui::InputFloat("Transform44", &nodeTransform._44);
+#endif
+            // 回転
+            DirectX::XMFLOAT3 a;
+            a.x = DirectX::XMConvertToDegrees(angle.x);
+            a.y = DirectX::XMConvertToDegrees(angle.y);
+            a.z = DirectX::XMConvertToDegrees(angle.z);
+            ImGui::InputFloat3("Angle", &a.x);
+            angle.x = DirectX::XMConvertToRadians(a.x);
+            angle.y = DirectX::XMConvertToRadians(a.y);
+            angle.z = DirectX::XMConvertToRadians(a.z);
+
+            // スケール
+            ImGui::InputFloat3("Scale", &scale.x);
+            ImGui::Separator();
+            ImGui::Text("CubicColor");
+
+        }
+    }
+    ImGui::End();
+
+}
+
+void Sword::DrawDebugPrimitive()
+{
+    DebugRenderer* debugRenderer = Graphics::Instance().GetDebugRenderer();
+
+    //debugRenderer->DrawSphere(DirectX::XMFLOAT3(transform._41, transform._42, transform._43), collisionRange, DirectX::XMFLOAT4(1, 0, 0, 1));
+
+    //for (int i = 0; i < collisionNum; i++)
+    //{
+    //    debugRenderer->DrawSphere(collisionPos[i], collisionRange, DirectX::XMFLOAT4(1, 0, 0, 1));
+    //}
+}

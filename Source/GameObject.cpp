@@ -19,11 +19,6 @@ void GameObject::Update(float elapsedTime)
     model->UpdateTransform(transform);
 }
 
-void GameObject::Render(ID3D11DeviceContext* dc, Shader* shader)
-{
-    shader->Draw(dc, model);
-}
-
 void GameObject::Render(const RenderContext& rc, ModelShader* shader)
 {
     shader->Draw(rc, model);

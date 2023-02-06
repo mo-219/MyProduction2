@@ -35,6 +35,9 @@ public:
     DirectX::XMFLOAT3 GetMinPos(){ return minPos; }
 
     int GetStageMax() { return stageSize; }
+
+    int GetEnemyCounts() { return enemyCounts; }
+
 private:
     LevelScript* pLevelScript;          // 1ステージごとのステージ情報を所持するポインター
     LevelScript** ppLevelScript;        // 全ステージ情報を所持したポインター
@@ -42,6 +45,9 @@ private:
     float timer = 0.0f;      // エネミー生成用タイマー
     int currentStageNum;
     int stageSize = 1;
+
+    int enemyCounts = 0;
+
 
     Effekseer::Handle generateEffectHandle = 0;
     Effect* generateEffect = nullptr;

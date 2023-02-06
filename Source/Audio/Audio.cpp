@@ -1,9 +1,15 @@
 #include "Misc.h"
 #include "Audio/Audio.h"
 
+Audio* Audio::instance = nullptr;
+
 // コンストラクタ
 Audio::Audio()
 {
+	// インスタンス設定
+	_ASSERT_EXPR(instance == nullptr, "already instantiated");
+	instance = this;
+
 	HRESULT hr;
 
 	// COMの初期化
@@ -46,8 +52,8 @@ Audio::~Audio()
 }
 
 // オーディオソース読み込み
-std::unique_ptr<AudioSource> Audio::LoadAudioSource(const char* filename, bool loop)
+std::unique_ptr<AudioSource> Audio::LoadAudioSource(const char* filename)
 {
 	std::shared_ptr<AudioResource> resource = std::make_shared<AudioResource>(filename);
-	return std::make_unique<AudioSource>(xaudio, resource, loop);
+	return std::make_unique<AudioSource>(xaudio, resource);
 }

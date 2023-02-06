@@ -2,7 +2,7 @@
 
 #include "Graphics/Graphics.h"
 #include "Graphics/Shader.h"
-#include "LoadObj.h"
+#include "DataLoading.h"
 
 #include<DirectXMATH.h>
 #include<string>
@@ -25,7 +25,6 @@ public:
 
 	virtual void Update(float elapsedTime);
 
-	void Render(ID3D11DeviceContext* context, Shader* shader);
 	virtual void Render(const RenderContext& rc, ModelShader* shader);
 
 	virtual void Hit(Character* chara,DirectX::XMFLOAT3 out);
@@ -35,7 +34,6 @@ public:
 	void UpdateTransform();
 
 	void UpdateOnlyTransform(float elapsedTime);
-
 
 
 	RenderContext SetRenderContext(const RenderContext& rc);

@@ -27,13 +27,7 @@ void StageManager::Update(float elapsedTime)
 
 }
 
-void StageManager::Render(ID3D11DeviceContext* dc, Shader* shader)
-{
-    for (Stage* stage : stages)
-    {
-        stage->Render(dc, shader);
-    }
-}
+
 void StageManager::Render(RenderContext& rc, ModelShader* shader)
 {
     for (Stage* stage : stages)
@@ -137,16 +131,15 @@ void StageManager::DrawDebugPrimitive()
     {
         if (stage->GetStageNum() != StageNumber::Door) continue;        // ƒhƒA‚¶‚á‚È‚©‚Á‚½‚ç”»’è–³‚µ   
 
-        DirectX::XMFLOAT3 pos = stage->GetPosition();
-        pos = DirectX::XMFLOAT3(pos.x - stage->GetWidth() / 2, pos.y +1, pos.z);
+
 
         if (!stage->GetCollisionFlag())
         {
-            debugRenderer->DrawCube(pos, stage->GetWidth(), stage->GetHeight(), stage->GetDepth(), DirectX::XMFLOAT4(1, 0, 0, 0));
+            debugRenderer->DrawCube(stage->GetPosition(), stage->GetWidth(), stage->GetHeight(), stage->GetDepth(), DirectX::XMFLOAT4(1, 0, 0, 0));
         }
         else
         {
-            debugRenderer->DrawCube(pos, stage->GetWidth(), stage->GetHeight(), stage->GetDepth(), DirectX::XMFLOAT4(1, 0, 0, 1));
+            debugRenderer->DrawCube(stage->GetPosition(), stage->GetWidth(), stage->GetHeight(), stage->GetDepth(), DirectX::XMFLOAT4(1, 0, 0, 1));
         }
     }
 

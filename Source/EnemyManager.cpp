@@ -49,13 +49,6 @@ void EnemyManager::UpdateOnlyTransform(float elapsedTime)
 }
 
 // •`‰æˆ—
-void EnemyManager::Render(ID3D11DeviceContext* context, Shader* shader)
-{
-    for (Enemy* enemy : enemies)
-    {
-        enemy->Render(context, shader);
-    }
-}
 void EnemyManager::Render(const RenderContext& rc, ModelShader* shader)
 {
     for (Enemy* enemy : enemies)
@@ -164,5 +157,7 @@ void EnemyManager::Remove(Enemy* enemy)
 {
     // ”jŠüƒŠƒXƒg‚É’Ç‰Á
     removes.insert(enemy);
+    currentEnemyCount++;
+
 }
 
