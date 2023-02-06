@@ -16,8 +16,8 @@ public:
     // XVˆ—
     void Update(float elapsedTime) override;
     void UpdateOnlyTransform(float elapsedTime)override;
+
     // •`‰æˆ—
-    void Render(ID3D11DeviceContext* dc, Shader* shader) override;
     void Render(const RenderContext& rc, ModelShader* shader) override;
     RenderContext SetRenderContext(const RenderContext& rc) override;
 

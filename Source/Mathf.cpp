@@ -13,6 +13,11 @@ float Mathf::RandomRange(float min, float max)
     return ((float)rand() / (float)RAND_MAX * (max - min)) + min;
 }
 
+int Mathf::RandomRange(int min, int max)
+{
+    return min + rand() % (max-min);
+}
+
 float Mathf::clamp(float min, float max, float num)
 {
     float value = num;

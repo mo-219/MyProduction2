@@ -181,15 +181,6 @@ void ObjectManager::Initialize()
 }
 
 // •`‰æˆ—
-void ObjectManager::Render(ID3D11DeviceContext* context, Shader* shader)
-{
-    for (GameObject* obj : objects)
-    {
-        obj->Render(context, shader);
-    }
-    //GameObject* obj = GetObj(count);
-    //obj->Render(context, shader);
-}
 void ObjectManager::Render(const RenderContext& rc, ModelShader* shader)
 {
     for (GameObject* obj : objects)

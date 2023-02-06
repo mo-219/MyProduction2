@@ -9,6 +9,9 @@ public:
     // 指定範囲のランダム値を計算する
     static float RandomRange(float min, float max);
 
+    // 指定範囲のランダム値を計算する
+    static int RandomRange(int min, int max);
+
     // 指定範囲を超えたら直す
     static float clamp(float min, float max, float num);
 

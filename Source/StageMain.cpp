@@ -31,12 +31,6 @@ void StageMain::Update(float elapsedTime)
 }
 
 // 描画処理
-void StageMain::Render(ID3D11DeviceContext* dc, Shader* shader)
-{
-    // シェーダーにモデルを描画してもらう
-    shader->Draw(dc, model);
-}
-
 void StageMain::Render(const RenderContext& rc, ModelShader* shader)
 {
     shader->Draw(rc, model);

@@ -75,10 +75,10 @@ dcl_temps 5
 //   v6.x <- boneIndices.x; v6.y <- boneIndices.y; v6.z <- boneIndices.z; v6.w <- boneIndices.w; 
 //   o0.x <- <main return value>.x; o0.y <- <main return value>.y; o0.z <- <main return value>.z; o0.w <- <main return value>.w
 //
-#line 11 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadowmapCasterVS.hlsl"
+#line 13 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadowmapCasterVS.hlsl"
 itof r0.xyz, l(0, 0, 0, 0)  // r0.x <- p.x; r0.y <- p.y; r0.z <- p.z
 
-#line 12
+#line 14
 mov r0.w, l(0)  // r0.w <- i
 mov r1.xyz, r0.xyzx  // r1.x <- p.x; r1.y <- p.y; r1.z <- p.z
 mov r1.w, r0.w  // r1.w <- i
@@ -86,7 +86,7 @@ loop
   ilt r2.x, r1.w, l(4)
   breakc_z r2.x
 
-#line 14
+#line 16
   dp4 r2.x, v5.xyzw, icb[r1.w + 0].xyzw
   and r3.xyzw, v6.xyzw, icb[r1.w + 4].xyzw
   or r2.yz, r3.yywy, r3.xxzx
@@ -102,11 +102,11 @@ loop
   mul r2.xyz, r2.yzwy, r2.xxxx
   add r1.xyz, r1.xyzx, r2.xyzx
 
-#line 15
+#line 17
   iadd r1.w, r1.w, l(1)
 endloop 
 
-#line 17
+#line 19
 mul r0.xyzw, r1.xxxx, cb0[0].xyzw
 mul r2.xyzw, r1.yyyy, cb0[1].xyzw
 add r0.xyzw, r0.xyzw, r2.xyzw

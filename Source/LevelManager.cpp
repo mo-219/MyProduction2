@@ -38,9 +38,25 @@ void LevelManager::Initialize(LevelScript** pp)
 void LevelManager::Initialize(int stageNum)
 {
     currentStageNum = stageNum;
-    pLevelScript = ppLevelScript[currentStageNum];
+    LevelScript* pEnemyCount = ppLevelScript[currentStageNum];
     timer = 0;
     EndFlag = false;
+    enemyCounts = 0;
+
+    for (;; pEnemyCount++)
+    {
+        if (pEnemyCount->objType == OBJ_TYPE::END)break;
+        if (pEnemyCount->objType == OBJ_TYPE::RESPAWN_POINT)continue;
+        if (pEnemyCount->objType == OBJ_TYPE::MAX_POS)continue;
+        if (pEnemyCount->objType == OBJ_TYPE::MIN_POS)continue;
+
+        enemyCounts++;
+    }
+
+    // エネミー数数え終わったら設定
+    pLevelScript = ppLevelScript[currentStageNum];
+
+
 }
 
 void LevelManager::Clear()

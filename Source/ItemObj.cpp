@@ -9,6 +9,9 @@ ItemHeel::ItemHeel(int i)
 
 ItemHeel::ItemHeel()
 {
+    Audio& audio = Audio::Instance();
+    se = audio.LoadAudioSource("Data/Audio/SE/HP.wav");
+
     scale = { 0.5f,0.5f,0.5f };
     code = "HeelItem";
     // ‚ ‚½‚è”»’èÝ’è
@@ -35,6 +38,7 @@ void ItemHeel::Hit(Character* chara, DirectX::XMFLOAT3 out)
     if (ActualHP >= chara->GetMaxHealth()) chara->SetHealth(chara->GetMaxHealth());
     else                                   chara->SetHealth(ActualHP);
 
+    se->Play(false);
 
     Destroy(); 
 }

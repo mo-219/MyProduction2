@@ -28,7 +28,6 @@ public:
     virtual void Update(float elapsedTime) = 0;
 
     //描画処理
-    virtual void Render(ID3D11DeviceContext* dc, Shader* shader) = 0;
     virtual void Render(const RenderContext& rc, ModelShader* shader) = 0;
 
     // シェーダー用設定関数

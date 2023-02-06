@@ -18,8 +18,7 @@ Meta::~Meta()
 
 void Meta::Update()
 {
-	// ここで自発的にメタAIが監視している処理があれば記載する
-	// 今課題ではメタAIのイベントトリガーはメッセージを受信したときのため記述する処理は無し
+	// メタAIが監視している処理
 }
 
 // メッセージ受信したときの処理
@@ -37,9 +36,8 @@ bool Meta::OnMessage(const Telegram& telegram)
 			// 送信者を除くエネミーにメッセージを送る
 			if (telegram.sender != enemyId)
 			{
-				// TODO 05_05 仲間を呼ぶメッセージの送信
 				// 誰かがプレイヤーを発見したので送信者を除く敵にメッセージを送る
-				// メタAIから各敵に送るメッセージも MsgCallHelp です。
+				// メタAIから各敵に送るメッセージも MsgCallHelp
 
 				SendMessaging(static_cast<int>(Meta::Identity::Meta), enemyManager->GetEnemy(i)->GetId(), MESSAGE_TYPE::MsgCallHelp);
 			}
@@ -65,10 +63,9 @@ bool Meta::OnMessage(const Telegram& telegram)
 		}
 		if (enmVec.size() > 0)
 		{
-			// TODO 05_05 攻撃権の付与
 			// enmVecのサイズで乱数を取得し、取得した値をインデックス値として
 			// enmVecに登録された敵の一人に攻撃権を与える
-			// 攻撃権を与えるメッセージはMsgGiveAttackRightです。
+			// 攻撃権を与えるメッセージはMsgGiveAttackRight
 
 			int random = Mathf::RandomRange(0, enmVec.size());
 			SendMessaging(static_cast<int>(Meta::Identity::Meta), enemyManager->GetEnemy(random)->GetId(), MESSAGE_TYPE::MsgGiveAttackRight);
@@ -85,10 +82,9 @@ bool Meta::OnMessage(const Telegram& telegram)
 			if (enemy->GetAttackFlg()) count++;
 		}
 		//他に攻撃権持っている敵がいないなら、要求してきた敵に攻撃権を与えるメッセージを送る。
-		//要求してきた敵のidはtelegramから取得出来ます。
+		//要求してきた敵のidはtelegramから取得出来る
 		if (count < 1)
 		{
-			// TODO 05_05 攻撃権の付与
 			// 誰も攻撃権を持っていなければMetaAIから送信者に攻撃権付与のメッセージを送る
 			// メッセージはMsgGiveAttackRight
 			SendMessaging(static_cast<int>(Meta::Identity::Meta), telegram.sender, MESSAGE_TYPE::MsgGiveAttackRight);
@@ -104,7 +100,8 @@ bool Meta::OnMessage(const Telegram& telegram)
 void Meta::SendMessaging(int sender, int receiver, MESSAGE_TYPE msg)
 {
 	if (receiver == static_cast<int>(Meta::Identity::Meta))
-	{// MetaAI宛の時
+	{
+		// MetaAI宛の時
 		//メッセージデータを作成
 		Telegram telegram(sender, receiver, msg);
 		// メッセージ送信
@@ -112,12 +109,16 @@ void Meta::SendMessaging(int sender, int receiver, MESSAGE_TYPE msg)
 	}
 	else
 	{// エネミーが受信者のとき、どのエネミーに送信するか
+
 		// 受信者のポインタを取得
 		Enemy* receiveEnemy = enemyManager->GetEnemyFromId(receiver);
+
 		//レシーバー居ないとき関数を終了する
 		if (receiveEnemy == nullptr) return;
+
 		//メッセージデータを作成
 		Telegram telegram(sender, receiver, msg);
+
 		//ディレイ無しメッセージ（即時配送メッセージ）
 		receiveEnemy->OnMessage(telegram);
 	}

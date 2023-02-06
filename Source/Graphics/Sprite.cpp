@@ -1,8 +1,12 @@
 #include <stdio.h> 
-#include <WICTextureLoader.h>
+#include "WICTextureLoader.h"
 #include "Sprite.h"
 #include "Misc.h"
 #include "Graphics/Graphics.h"
+
+#include "util.h"
+#include "ResourceManager.h"
+
 
 // コンストラクタ
 Sprite::Sprite()
@@ -193,7 +197,27 @@ void Sprite::SetShaderResourceView(const Microsoft::WRL::ComPtr<ID3D11ShaderReso
 
 //******************************************************************************
 
+DirectX::XMFLOAT2 adjustTextOrigin(TEXT_ALIGN align, const DirectX::XMFLOAT2& v, float w, float h)
+{
+	DirectX::XMFLOAT2 pos = v;
+	switch (align)
+	{
+	default:
+	case TEXT_ALIGN::UPPER_LEFT:                                    break;
+	case TEXT_ALIGN::UPPER_MIDDLE:  pos.x -= w / 2;                 break;
+	case TEXT_ALIGN::UPPER_RIGHT:   pos.x -= w;                     break;
+	case TEXT_ALIGN::MIDDLE_LEFT:   pos.y -= h / 2;                 break;
+	case TEXT_ALIGN::MIDDLE:        pos.y -= h / 2; pos.x -= w / 2; break;
+	case TEXT_ALIGN::MIDDLE_RIGHT:  pos.y -= h / 2; pos.x -= w;     break;
+	case TEXT_ALIGN::LOWER_LEFT:    pos.y -= h;                     break;
+	case TEXT_ALIGN::LOWER_MIDDLE:  pos.y -= h;     pos.x -= w / 2; break;
+	case TEXT_ALIGN::LOWER_RIGHT:   pos.y -= h;     pos.x -= w;     break;
+	}
 
+	return pos;
+}
+
+static const float UV_ADJUST = 1.0f;// 0.99994f;
 
 //--------------------------------------------------------------
 //  コンストラクタ
@@ -490,10 +514,14 @@ float SpriteBatch::textout(std::string str,
 	if (world)
 	{
 		RECT rc;
-		GetWindowRect(MouseController::Instance().GetHWnd(), &rc);
+		//GetWindowRect(MouseController::Instance().GetHWnd(), &rc);
+		//GetWindowRect(Graphics::Instance().GetDevice(), &rc);
 
 		//DirectX::XMFLOAT2 v = view::worldToScreen(position);
 		//DirectX::XMFLOAT2 s = scale * view::getScale();
+
+		rc = Graphics::Instance().GetRect();
+
 		DirectX::XMFLOAT2 v =
 		{ position.x - rc.left * 1.0f,
 		  position.y - rc.top * 1.0f };

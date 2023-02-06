@@ -1,5 +1,6 @@
 #pragma once
 #include "GameObject.h"
+#include "Audio/Audio.h"
 
 
 class Character;
@@ -18,4 +19,7 @@ public:
 private:
     int timer = 0;
     int heelPoint = 1;
+
+    std::unique_ptr<AudioSource> se;
+
 };

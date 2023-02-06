@@ -14,13 +14,13 @@ public:
 
 	struct Node
 	{
-		const char*			name;
-		Node*				parent;
-		DirectX::XMFLOAT3	scale;
-		DirectX::XMFLOAT4	rotate;
-		DirectX::XMFLOAT3	translate;
-		DirectX::XMFLOAT4X4	localTransform;
-		DirectX::XMFLOAT4X4	worldTransform;
+		const char*			name = "";
+		Node*				parent = nullptr;
+		DirectX::XMFLOAT3	scale = {1,1,1};
+		DirectX::XMFLOAT4	rotate = {0,0,0,0};
+		DirectX::XMFLOAT3	translate = {};
+		DirectX::XMFLOAT4X4	localTransform = {};
+		DirectX::XMFLOAT4X4	worldTransform = {};
 
 		std::vector<Node*>	children;
 	};

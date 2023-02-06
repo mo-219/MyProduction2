@@ -27,7 +27,6 @@ public:
 	static Meta& Instance();
 
 
-	// MetaAIの機能を追加していく
 	// 更新処理
 	void Update();
 

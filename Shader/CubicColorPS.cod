@@ -237,37 +237,37 @@ mov r7.xyz, v7.xyzx
 mov r8.xyz, cb3[4].xyzx
 mov r1.w, cb3[4].w
 
-#line 86 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadowmapFunctions.hlsli"
+#line 70 "C:\Users\2210131\Desktop\github\MyProduction2\HLSL\ShadowmapFunctions.hlsli"
 resinfo_indexable(texture2d)(float,float,float,float)_uint r9.xy, l(0), t2.xyzw
 mov r9.x, r9.x  // r9.x <- width
 mov r9.y, r9.y  // r9.y <- height
 
-#line 88
+#line 73
 utof r2.w, r9.x
 div r10.x, l(1.000000), r2.w  // r10.x <- texelSize.x
 utof r2.w, r9.y
 div r10.y, l(1.000000), r2.w  // r10.y <- texelSize.y
 
-#line 91
+#line 76
 itof r2.w, l(0)  // r2.w <- factor
 
-#line 94
-mov r3.w, l(-2)  // r3.w <- x
+#line 79
+mov r3.w, l(-1)  // r3.w <- x
 mov r4.w, r2.w  // r4.w <- factor
 mov r5.w, r3.w  // r5.w <- x
 loop 
-  ige r6.w, l(2), r5.w
+  ige r6.w, l(1), r5.w
   breakc_z r6.w
 
-#line 96
-  mov r6.w, l(-2)  // r6.w <- y
+#line 81
+  mov r6.w, l(-1)  // r6.w <- y
   mov r7.w, r4.w  // r7.w <- factor
   mov r8.w, r6.w  // r8.w <- y
   loop 
-    ige r9.x, l(2), r8.w
+    ige r9.x, l(1), r8.w
     breakc_z r9.x
 
-#line 99
+#line 84
     itof r9.x, r5.w
     itof r9.y, r8.w
     mul r9.xy, r9.xyxx, r10.xyxx
@@ -275,25 +275,25 @@ loop
     sample_indexable(texture2d)(float,float,float,float) r9.x, r9.xyxx, t2.xyzw, s1
     mov r9.x, r9.x  // r9.x <- depth
 
-#line 100
+#line 85
     mov r9.x, -r9.x
     add r9.x, r7.z, r9.x
     ge r9.x, r1.w, r9.x
     movc r9.x, r9.x, l(1.000000), l(0)
     add r7.w, r7.w, r9.x
 
-#line 101
+#line 86
     iadd r8.w, r8.w, l(1)
   endloop 
   mov r4.w, r7.w  // r4.w <- factor
 
-#line 102
+#line 88
   iadd r5.w, r5.w, l(1)
 endloop 
 
-#line 104
+#line 91
 itof r7.xyz, l(1, 1, 1, 0)
-itof r1.w, l(25)
+itof r1.w, l(9)
 div r1.w, r4.w, r1.w
 mov r9.xyz, -r8.xyzx
 add r7.xyz, r7.xyzx, r9.xyzx

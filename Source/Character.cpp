@@ -37,13 +37,8 @@ void Character::UpdateTransform()
 
 
 // 移動処理
-//void Character::Move(float elapsedTime, float vx, float vz, float speed)
 void Character::Move(float vx, float vz, float speed)
 {
-    //speed *= elapsedTime;
-    //position.x += vx * speed;
-    //position.z += vz * speed;
-
     // 移動方向ベクトルを設定
     moveVecX = vx;
     moveVecZ = vz;
@@ -114,6 +109,7 @@ void Character::UpdateVelocity(float elapsedTime)      // 後で色々変えること
     // 経過フレーム
     float elapsedFrame = 60.0f * elapsedTime;
 
+
     // 速力更新
     UpdateVerticalVelocity(elapsedFrame);    // 垂直速力更新処理
     UpdateHorizontalVelocity(elapsedFrame);  // 水平速力更新処理
@@ -123,6 +119,32 @@ void Character::UpdateVelocity(float elapsedTime)      // 後で色々変えること
     UpdateHorizontalMove(elapsedTime);       // 水平移動更新処理
 
 }
+
+void Character::UpdateVertical(float elapsedTime)
+{
+    // 経過フレーム
+    float elapsedFrame = 60.0f * elapsedTime;
+
+    // 速力更新
+    UpdateVerticalVelocity(elapsedFrame);    // 垂直速力更新処理
+
+    // 移動更新
+    UpdateVerticalMove(elapsedTime);         // 垂直移動更新処理
+}
+
+void Character::UpdateHorizontal(float elapsedTime)
+{
+    // 経過フレーム
+    float elapsedFrame = 60.0f * elapsedTime;
+
+    // 速力更新
+    UpdateHorizontalVelocity(elapsedFrame);  // 水平速力更新処理
+
+        
+    // 移動更新
+    UpdateHorizontalMove(elapsedTime);       // 水平移動更新処理
+}
+
 
 // ダメージを与える
 bool Character::ApplyDamage(int damage, float invincibleTime)
@@ -173,28 +195,6 @@ void Character::UpdateVerticalVelocity(float elapsedFrame)
 // 水平移動更新処理
 void Character::UpdateVerticalMove(float elapsedTime)
 {
-#if 0
-    // 移動処理
-    position.y += velocity.y * elapsedTime;
-
-    // 地面判定
-    if (position.y < 0.0f)
-    {
-        position.y = 0.0f;
-        velocity.y = 0.0f;
-
-        if (!IsGround())    // OnLanding関数が何度も呼ばれないように
-        {
-            OnLanding();
-        }
-        isGround = true;
-    }
-    else
-    {
-        isGround = false;
-    }
-#endif
-
     // 垂直方向の移動量
     float my = velocity.y * elapsedTime;
 
@@ -382,12 +382,8 @@ void Character::UpdateHorizontalMove(float elapsedTime)
 
         // レイキャストによる壁判定
         HitResult hit;
-        //if (StageManager::Instance().RayCast(start, end, hit))
         if (ObjectManager::Instance().RayCast(param, start, end, hit))
         {
-            // 壁から終点までベクトル
-            //DirectX::XMVECTOR HitPos = DirectX::XMLoadFloat3(&hit.position);
-
             DirectX::XMVECTOR Start = DirectX::XMLoadFloat3(&hit.position);
             DirectX::XMVECTOR End = DirectX::XMLoadFloat3(&end);
             DirectX::XMVECTOR Vec = DirectX::XMVectorSubtract(End, Start);
@@ -404,16 +400,13 @@ void Character::UpdateHorizontalMove(float elapsedTime)
             const float ofs = 0.001f;   // めり込み防止で少し戻す
             Dot = DirectX::XMVectorAdd(Dot, DirectX::XMLoadFloat(&ofs));
 
-            //DirectX::XMVECTOR V = DirectX::XMVectorMultiply(Normal, Dot);
-            //DirectX::XMVECTOR CollectPosition = DirectX::XMVectorSubtract(Vec, V);
             DirectX::XMVECTOR CollectPosition = DirectX::XMVectorMultiplyAdd(Normal, Dot, End);
 
             DirectX::XMFLOAT3 collectPosition;
             DirectX::XMStoreFloat3(&collectPosition, CollectPosition);
 
-            // レイきゃうs都による再チェック
+            // レイキャストによる再チェック
             HitResult hit2;
-            //if (!StageManager::Instance().RayCast(start, collectPosition, hit2))
             if (!ObjectManager::Instance().RayCast(param, start, collectPosition, hit2))
             {
                 param.position.x = collectPosition.x;

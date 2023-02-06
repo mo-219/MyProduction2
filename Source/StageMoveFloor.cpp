@@ -65,13 +65,6 @@ void StageMoveFloor::Update(float elapsedTime)
 }
 
 // 描画処理
-void StageMoveFloor::Render(ID3D11DeviceContext* dc, Shader* shader)
-{
-    // 表示用のためにワールド行列に更新する
-    model->UpdateTransform(transform);
-    shader->Draw(dc, model);
-}
-
 void StageMoveFloor::Render(const RenderContext& rc, ModelShader* shader)
 {
     model->UpdateTransform(transform);

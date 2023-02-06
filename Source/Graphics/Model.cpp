@@ -1,15 +1,14 @@
 #include "Graphics/Graphics.h"
 #include "Graphics/Model.h"
-
 #include "ResourceManager.h"
-
 
 // コンストラクタ
 Model::Model(const char* filename)
 {
 	// リソース読み込み
+	//resource = std::make_shared<ModelResource>();
+	//resource->Load(Graphics::Instance().GetDevice(), filename);
 	resource = ResourceManager::Instance().LoadModelResource(filename);
-
 
 	// ノード
 	const std::vector<ModelResource::Node>& resNodes = resource->GetNodes();
@@ -44,7 +43,6 @@ void Model::UpdateTransform(const DirectX::XMFLOAT4X4& transform)
 
 	for (Node& node : nodes)
 	{
-		node.name;
 		// ローカル行列算出
 		DirectX::XMMATRIX S = DirectX::XMMatrixScaling(node.scale.x, node.scale.y, node.scale.z);
 		DirectX::XMMATRIX R = DirectX::XMMatrixRotationQuaternion(DirectX::XMLoadFloat4(&node.rotate));
@@ -66,13 +64,9 @@ void Model::UpdateTransform(const DirectX::XMFLOAT4X4& transform)
 		// 計算結果を格納
 		DirectX::XMStoreFloat4x4(&node.localTransform, LocalTransform);
 		DirectX::XMStoreFloat4x4(&node.worldTransform, WorldTransform);
-
-		WorldTransform = LocalTransform * ParentTransform;
 	}
 }
 
-
-// アニメーション更新処理
 void Model::UpdateAnimation(float elapsedTime)
 {
 	// 再生中でないなら処理しない
@@ -87,9 +81,7 @@ void Model::UpdateAnimation(float elapsedTime)
 		blendRate = animationBlendTime / animationBlendSeconds;
 
 		blendRate *= blendRate;
-		// ブレンドレートを二乗
-		// 次のノードのほうがより依存する感じ
-		// いーじんぐ
+
 	}
 
 	// 指定のアニメーションデータを取得
@@ -132,15 +124,11 @@ void Model::UpdateAnimation(float elapsedTime)
 					// 現在の姿勢と次のキーフレームとの姿勢の補完
 
 					// ノード0型変換
-					//DirectX::XMVECTOR node0Scale, node0Translate;
-					//DirectX::XMVECTOR node0Rotate;
 					node0Scale = DirectX::XMLoadFloat3(&node.scale);
 					node0Translate = DirectX::XMLoadFloat3(&node.translate);
 					node0Rotate = DirectX::XMLoadFloat4(&node.rotate);
 
 					// ノード1型変換
-					//DirectX::XMVECTOR node1Scale, node1Translate;
-					//DirectX::XMVECTOR node1Rotate;
 					node1Scale = DirectX::XMLoadFloat3(&key1.scale);
 					node1Translate = DirectX::XMLoadFloat3(&key1.translate);
 					node1Rotate = DirectX::XMLoadFloat4(&key1.rotate);
@@ -148,8 +136,6 @@ void Model::UpdateAnimation(float elapsedTime)
 
 
 					// 計算した値を保存する変数
-					//DirectX::XMVECTOR Scale, Translate;
-					//DirectX::XMVECTOR Rotate;
 					Scale = DirectX::XMVectorLerp(node0Scale, node1Scale, blendRate);
 					Translate = DirectX::XMVectorLerp(node0Translate, node1Translate, blendRate);
 					Rotate = DirectX::XMQuaternionSlerp(node0Rotate, node1Rotate, blendRate);
@@ -160,15 +146,11 @@ void Model::UpdateAnimation(float elapsedTime)
 				{
 					// 前のキーフレームと次のキーフレームの姿勢を補完
 					// ノード0型変換
-					//DirectX::XMVECTOR node0Scale, node0Translate;
-					//DirectX::XMVECTOR node0Rotate;
 					node0Scale = DirectX::XMLoadFloat3(&key0.scale);
 					node0Translate = DirectX::XMLoadFloat3(&key0.translate);
 					node0Rotate = DirectX::XMLoadFloat4(&key0.rotate);
 
 					// ノード1型変換
-					//DirectX::XMVECTOR node1Scale, node1Translate;
-					//DirectX::XMVECTOR node1Rotate;
 					node1Scale = DirectX::XMLoadFloat3(&key1.scale);
 					node1Translate = DirectX::XMLoadFloat3(&key1.translate);
 					node1Rotate = DirectX::XMLoadFloat4(&key1.rotate);
@@ -176,8 +158,6 @@ void Model::UpdateAnimation(float elapsedTime)
 
 
 					// 計算した値を保存する変数
-					//DirectX::XMVECTOR Scale, Translate;
-					//DirectX::XMVECTOR Rotate;
 					Scale = DirectX::XMVectorLerp(node0Scale, node1Scale, rate);
 					Translate = DirectX::XMVectorLerp(node0Translate, node1Translate, rate);
 					Rotate = DirectX::XMQuaternionSlerp(node0Rotate, node1Rotate, rate);
@@ -219,34 +199,20 @@ void Model::UpdateAnimation(float elapsedTime)
 		// ループしないとき 
 		else
 		{
-			currentAnimationSeconds -= animation.secondsLength;
+			currentAnimationSeconds = animation.secondsLength;
 			animationEndFlag = true;
 		}
 	}
 
 }
 
-//// アニメーション再生
-//void Model::PlayAnimation(int index)
-//{
-//	currentAnimationIndex = index;
-//	currentAnimationSeconds = 0.0f;
-//}
-//void Model::PlayAnimation(int index, bool loop)
-//{
-//	currentAnimationIndex = index;
-//	currentAnimationSeconds = 0.0f;
-//	animationLoopFlag = loop;
-//	animationEndFlag = false;
-//}
-
+// アニメーション再生
 void Model::PlayAnimation(int index, bool loop, float speed, float blendSeconds)
 {
 	currentAnimationIndex = index;
 	currentAnimationSeconds = 0.0f;
 	animationLoopFlag = loop;
 	animationEndFlag = false;
-
 	animationSpeed = speed;
 	animationBlendTime = 0.0f;
 	animationBlendSeconds = blendSeconds;
@@ -255,24 +221,21 @@ void Model::PlayAnimation(int index, bool loop, float speed, float blendSeconds)
 // アニメーション再生中か
 bool Model::IsPlayAnimation() const
 {
-	if (currentAnimationIndex < 0)									return false;
-	if (currentAnimationIndex >= resource->GetAnimations().size())	return false;
-	if (animationEndFlag)											return false;
-
+	if (currentAnimationIndex < 0) return false;
+	if (currentAnimationIndex >= resource->GetAnimations().size()) return false;
 	return true;
 }
 
 Model::Node* Model::FindNode(const char* name)
 {
-	// 全てのノードを総当たりで名前を比較する
-	for (Node node : nodes)
+	// すべてのノードを総当たりで名前比較する
+	for (Node& node : nodes)
 	{
-		if (strcmp(node.name, name) == 0)	// 文字列(const char*)の比較は strcmp()を使う
-
+		if (strcmp(node.name, name) == 0)
 		{
 			return &node;
 		}
 	}
-
-	return nullptr;			// 見つからなかったとき
+	// 見つからなかった
+	return nullptr;
 }

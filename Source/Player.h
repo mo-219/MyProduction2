@@ -4,10 +4,11 @@
 #include "Graphics/Model.h"
 #include "Character.h"
 
-#include "ProjectileManager.h"
 #include "Sword.h"
 
 #include "Effect.h"
+
+#include "Audio/Audio.h"
 
 //プレイヤー
 class Player : public Character
@@ -24,34 +25,34 @@ public:
 
     // 更新処理
     void Update(float elapsedTime);
-
     void UpdateOnlyTransform(float elapsedTime);
 
+
     // 描画処理
-    void Render(ID3D11DeviceContext* dc, Shader* shader);
     void Render(const RenderContext& rc, ModelShader* shader);
 
-    // デバッグ用GUI描画
-    void DrawDebugGUI();
 
-    // デバッグプリミティブ描画
-    void DrawDebugPrimitive();
+    // デバッグ用
+    void DrawDebugGUI();    //GUI描画
+    void DrawDebugPrimitive();  //プリミティブ描画
 
-    // ジャンプ入力処理
-    bool ImputJump();
 
-    // 攻撃入力処理
-    bool InputAttack();
+    // 入力処理
+    bool ImputJump();                   // ジャンプ
+    bool InputWeakAttack();             // 弱攻撃
+    bool InputStrongAttack();           // 強攻撃
+    bool InputMove(float elapsedTime);  // 移動
+    bool InputDodge();                  // 避け
 
-    bool JudgeAttack(int Value);
 
+    // 避けステートがどうか
     bool IsDodge() { return state == State::Dodge; };
 
-    // 攻撃入力処理
-    bool InputDodge();
+    // 生きているかどうか
+    bool IsLive() { return isLive; }
 
-    bool CalcDodge();
 
+    // ゲッター、セッター
     void SetStageClearFlag(bool b) { stageClearFlag = b; }
     bool GetStageClearFlag() { return stageClearFlag; }
 
@@ -60,8 +61,12 @@ public:
     float GetCurrentAP() { return AP; }
     float GetMaxAP() { return MaxAP; }
 
-    void CalcAP(float value);
-    void AddAP(float value);
+
+    // 計算処理
+    bool CalcDodge();           // 避けSpeed計算
+    void CalcAP(float value);   // アタックポイント計算
+    void AddAP(float value);    // アタックポイント回復
+
 
 protected:
     // 接地したときに呼ばれる
@@ -73,36 +78,28 @@ protected:
     // 死亡したときに呼ばれる
     void OnDead()override;
 
-    void Attacked();
+    // 攻撃したときに呼ばれる
+    void OnAttacked();
+
 
 private:
     // スティック入力値から移動ベクトルを取得
     DirectX::XMFLOAT3 GetMoveVec() const;
 
 
-    // 移動入力処理
-    bool InputMove(float elapsedTime);
-
-
-    // プレイヤーとエネミーの衝突処理
+    // 衝突処理
     void CollisionPlayerVsEnemies();
-
-    // 弾丸と敵の衝突処理
-    void CollisionProjectilesVsEnemies();
-
     void CollisionPlayerVsStage();
-
     void CollisionPlayerVsObject();
+    void CollisionNodeVsEnemy(const char* nodeName, float nodeRadius);
 
-    // 弾丸入力処理
-    void InputProjectile();
 
 private:
     // アニメーション
     enum Animation
     {
         Anim_Error = -1,
-        Anim_Combo1,
+        Anim_Combo1 = 0,
         Anim_Combo2,
         Anim_Combo3,
         Anim_Combo4,
@@ -120,9 +117,9 @@ private:
         Anim_Jump_Peak,
         Anim_Running,
 
-
         Anim_Max
     };
+
     // ステート
     enum class State
     {
@@ -142,6 +139,8 @@ private:
         Max
     };
 
+
+
     //--------------------------------
     // 
     //      アニメーション
@@ -150,33 +149,35 @@ private:
     
     // アニメーションステート 
     // 待機ステート
-    void TransitionIdleState();                 // 遷移
-    void UpdateIdleState(float elapsedTime);    // 更新処理
+    void TransitionIdleState();                     // 遷移
+    void UpdateIdleState(float elapsedTime);        // 更新処理
 
     // 移動ステート
-    void TransitionMoveState();                 // 遷移
-    void UpdateMoveState(float elapsedTime);    // 更新処理
+    void TransitionMoveState();                     // 遷移
+    void UpdateMoveState(float elapsedTime);        // 更新処理
 
     // ジャンプステート
     void TransitionJumpInitState();                 // 遷移
     void UpdateJumpInitState(float elapsedTime);    // 更新処理
 
     // ジャンプステート
-    void TransitionJumpState();                 // 遷移
-    void UpdateJumpState(float elapsedTime);    // 更新処理
+    void TransitionJumpState();                     // 遷移
+    void UpdateJumpState(float elapsedTime);        // 更新処理
 
     // 着地ステート
-    void TransitionLandingState();              // 遷移
-    void UpdateLandingState(float elapsedTime); // 更新処理
+    void TransitionLandingState();                  // 遷移
+    void UpdateLandingState(float elapsedTime);     // 更新処理
 
     // 落ちステート
-    void TransitionFallingState();              // 遷移
-    void UpdateFallingState(float elapsedTime); // 更新処理
+    void TransitionFallingState();                  // 遷移
+    void UpdateFallingState(float elapsedTime);     // 更新処理
 
-    //*****
+
+    //****************
     // 
     //  攻撃ステート
     //
+    //****************
     // コンボ１
     void TransitionAttack1State();               // 遷移
     void UpdateAttack1State(float elapsedTime);  // 更新処理
@@ -192,68 +193,81 @@ private:
     // コンボ4
     void TransitionAttack4State();               // 遷移
     void UpdateAttack4State(float elapsedTime);  // 更新処理
-
-    //*****
+    //****************
     
-    // ダメージステート
-    void TransitionDamageState();               // 遷移
-    void UpdateDamageState(float elapsedTime);  // 更新処理
-
-    // 死亡ステート
-    void TransitionDeathState();               // 遷移
-    void UpdateDeathState(float elapsedTime);  // 更新処理
-
 
     // 避けステート
     void TransitionDodgeState();               // 遷移
     void UpdateDodgeState(float elapsedTime);  // 更新処理
 
-     
+
+    // ダメージステート
+    void TransitionDamageState();               // 遷移
+    void UpdateDamageState(float elapsedTime);  // 更新処理
+
+    // 死亡ステート
+    void TransitionDeathState();                // 遷移
+    void UpdateDeathState(float elapsedTime);   // 更新処理
+
     //---------------------------------
 
 
+
+    // モデルデータ保存
     Model* model            = nullptr;
-    Sword* sword            = nullptr;
 
-    float AnimationLimit = 0.0f;
+    // 武器保存
+    Sword* sword = nullptr;
 
+
+    // animation用変数
+    float animationLimit = 0.0f;
     State   state = State::Idle;
 
 
+    // 移動スピード用変数
     float  moveSpeed        = 5.0f;
 
-    float dodgeSpeed = 0.0f;
-    bool dodgeFlag = false;
+    float  dodgeSpeed = 0.0f;
+    bool   dodgeFlag = false;
 
     float  turnSpeed        = DirectX::XMConvertToRadians(720);     // 720回転までおk
 
+
     // ジャンプに必要な変数
-    float  jumpSpeed        = 20.0f;
-    int    jumpCount        = 0;
-    int    jumpLimit        = 1;
-    float  landingFallSpeed = -10.0f;
+    float  jumpSpeed        = 20.0f;    // ジャンプの速さ
+    int    jumpCount        = 0;        // ジャンプ回数
+    int    jumpLimit        = 1;        // ジャンプ回数の制限
+    float  landingFallSpeed = -10.0f;   // 落ちて行くスピード
 
-    int    attackCount = 0;
-    int    attackLimit = 1;
-    float  attackInputTimer = 0.0f;
+    // 攻撃用変数
+    float  attackInputTimer = 0.0f;     
+    bool   attackCollisionFlag = false;
 
-    bool attackCollisionFlag = false;
-
-    
-    ProjectileManager projectileManager;
-
+    // エフェクトの保存
     Effect* hitEffect = nullptr;
 
-    // 手のノード
-    Model::Node* handNode = nullptr;
-
-    // 一旦
+    // クリアフラグ保存用
     bool stageClearFlag = false;
-
 
 
     // アタックポイント
     float AP = 100;
     float MaxAP = 100;
 
+    // 生存フラグ
+    bool isLive = true;     // true: 生きている
+
+
+    // SE保存用変数
+    enum SEID
+    {
+        SE_Sword,
+        SE_JUMP,
+        SE_DODGE,
+        SE_HIT,
+        SE_MAX
+    };
+
+    std::unique_ptr<AudioSource> se[static_cast<int>(SEID::SE_MAX)];
 };

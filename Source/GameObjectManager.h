@@ -31,7 +31,6 @@ public:
     void Initialize();
 
     // 描画処理
-    void Render(ID3D11DeviceContext* context, Shader* shader);
     void Render(const RenderContext& rc, ModelShader* shader);
 
     // ゲームオブジェクト登録
