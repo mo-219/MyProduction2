@@ -59,7 +59,6 @@ public:
 		const DirectX::XMFLOAT4X4& view,
 		const DirectX::XMFLOAT4X4& projection);
 
-	void ScreenShake();
 
 
 	struct Font
@@ -122,6 +121,11 @@ private:
 	std::unique_ptr<Texture>	HPIconTexture;
 	std::unique_ptr<Sprite>		APIconSprite;
 	std::unique_ptr<Texture>	APIconTexture;
+
+	std::unique_ptr<Texture>	pressTexture;
+	std::unique_ptr<Sprite>		pressSprite;
+	float						pressTextureAlpha = 0;
+	bool						pressTextureAlphaFlag = false;
 
 
 //---------------------------------------------------
