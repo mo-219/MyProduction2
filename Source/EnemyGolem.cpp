@@ -548,7 +548,7 @@ void EnemyGolem::UpdateAttack1State(float elapsedTime)
         {
             DirectX::XMFLOAT3 pos = param.position;
             pos.y += GetHeight() / 2;
-            attackEffect->Play(pos);
+            //attackEffect->Play(pos);
 
 
             // 目玉ノードとプレイヤーの衝突処理

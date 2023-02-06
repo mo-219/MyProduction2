@@ -145,6 +145,10 @@ void SceneGame::Initialize()
 	APIconSprite->SetShaderResourceView(APIconTexture->GetShaderResourceView(), APIconTexture->GetWidth(), APIconTexture->GetHeight());
 
 
+	pressTexture = std::make_unique<Texture>("Data/Sprite/PressAnyKey.png");
+	pressSprite = std::make_unique<Sprite>();
+	pressSprite->SetShaderResourceView(pressTexture->GetShaderResourceView(), pressTexture->GetWidth(), pressTexture->GetHeight());
+
 
 	// カメラコントローラー初期化
 	cameraController = new CameraController();
@@ -369,6 +373,11 @@ void SceneGame::Update(float elapsedTime)
 			{
 				state = State::END;
 			}
+			return;
+		}
+		else
+		{
+			if (sceneChange)	return;
 		}
 
 		stageManager.Update(elapsedTime);
@@ -402,12 +411,33 @@ void SceneGame::Update(float elapsedTime)
 	case State::RESULT:
 		// 結果表示
 
+		// リザルトの動き更新
 		result->color.w += 0.01f;
 		if (result->color.w >= 0.8f)	result->color.w = 0.8f;
 		waveUI.enemy.color.w -= 0.03f;
 		waveUI.wave.position.y += 2.0f;
+
+
 		if (waveUI.wave.position.y >= 300)
 		{
+			// プレスエニーキーの動きの更新
+			if (pressTextureAlphaFlag)
+			{
+				pressTextureAlpha -= 0.02f;
+				if (pressTextureAlpha <= 0.2f)
+				{
+					pressTextureAlphaFlag = false;
+				}
+			}
+			else
+			{
+				pressTextureAlpha += 0.02f;
+				if (pressTextureAlpha >= 1.0f)
+				{
+					pressTextureAlphaFlag = true;
+				}
+			}
+
 			// 何かしらボタンが押されたら
 			waveUI.wave.position.y = 300;
 			const GamePadButton anyButton = GamePad::BTN_UP
@@ -541,7 +571,7 @@ void SceneGame::Render()
 	// 3Dデバッグ描画
 	{
 		//ImGui
-
+#if 0
 		
 		if (ImGui::TreeNode("Shadowmap"))
 		{
@@ -580,10 +610,9 @@ void SceneGame::Render()
 			EnemyManager::Instance().DrawDebugGUI();
 			shader->DebugGUI();
 
-			//ObjectManager::Instance().setNearNum(
-			//ObjectManager::Instance().findNear(player->GetPosition()));
-			//ObjectManager::Instance().DrawDebugGUI();
+
 		}
+#endif
 	}
 
 	// 2Dスプライト描画
@@ -626,6 +655,7 @@ void SceneGame::Render()
 		shader->Draw(rc, HPIconSprite.get());
 		shader->Draw(rc, APIconSprite.get());
 		shader->End(rc);
+		
 
 		// 結果発表描画
 		result->Render(rc, shader);
@@ -638,6 +668,19 @@ void SceneGame::Render()
 					waveUI.enemy.scale,
 					DirectX::XMFLOAT4(1, 1, 1, 1),
 					TEXT_ALIGN::MIDDLE);
+
+				// プレスエニーキーの描画
+				pressSprite->Update(Graphics::Instance().GetScreenWidth() / 2 +10, 620,
+					static_cast<float>(pressTexture->GetWidth()), static_cast<float>(pressTexture->GetHeight()),
+					0.0f, 0.0f,
+					static_cast<float>(pressTexture->GetWidth()), static_cast<float>(pressTexture->GetHeight()),
+					0.0f,
+					1.0f, 1.0f, 1.0f, pressTextureAlpha);
+
+				shader->Begin(rc);
+				shader->Draw(rc, pressSprite.get());
+				shader->End(rc);
+
 			}
 		}
 
@@ -740,9 +783,9 @@ void SceneGame::Render3DScene()
 
 	}
 
-
 	// デバッグプリミティブの表示
 	{
+#if 0
 		// グリッド描画
 		//player->DrawDebugPrimitive();
 		//player->sword->DrawDebugPrimitive();
@@ -754,7 +797,7 @@ void SceneGame::Render3DScene()
 		//graphics.GetLineRenderer()->Render(dc, rc.view, rc.projection);
 		//// デバッグレンダラ描画実行
 		//graphics.GetDebugRenderer()->Render(dc, rc.view, rc.projection);
-
+#endif
 	}
 
 }
