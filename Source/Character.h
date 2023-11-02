@@ -149,7 +149,7 @@ protected:
 
     float               gravity     = -1.0f;         // 1フレームの重力
     DirectX::XMFLOAT3   velocity    = { 0,0,0 };     // 速力
-    bool                isGround    = false;
+    bool                isGround    = true;
 
     bool                isInputMove = true;         // 移動入力処理を受け付けるかどうかのフラグ
 
